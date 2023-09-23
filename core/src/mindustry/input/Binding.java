@@ -1,9 +1,9 @@
 package mindustry.input;
 
-import arc.*;
 import arc.KeyBinds.*;
 import arc.input.InputDevice.*;
 import arc.input.*;
+import mindustry.*;
 
 public enum Binding implements KeyBind{
     move_x(new Axis(KeyCode.a, KeyCode.d), "general"),
@@ -70,7 +70,7 @@ public enum Binding implements KeyBind{
     block_select_10(KeyCode.num0),
 
     zoom(new Axis(KeyCode.scroll), "view"),
-    menu(Core.app.isAndroid() ? KeyCode.back : KeyCode.escape),
+    menu(Vars.android ? KeyCode.back : KeyCode.escape),
     fullscreen(KeyCode.f11),
     pause(KeyCode.space),
     minimap(KeyCode.m),
