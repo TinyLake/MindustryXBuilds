@@ -69,6 +69,18 @@ public class PlacementFragment{
         Binding.block_select_down
     };
 
+    Binding[] commandBindings = {
+        Binding.unit_command_1,
+        Binding.unit_command_2,
+        Binding.unit_command_3,
+        Binding.unit_command_4,
+        Binding.unit_command_5,
+        Binding.unit_command_6,
+        Binding.unit_command_7,
+        Binding.unit_command_8,
+        Binding.unit_command_9,
+    };
+
     public PlacementFragment(){
         Events.on(WorldLoadEvent.class, event -> {
             Core.app.post(() -> {
@@ -539,6 +551,13 @@ public class PlacementFragment{
                             if(curCount[0] != size){
                                 curCount[0] = size;
                                 rebuildCommand.run();
+                            }
+
+                            for(int i = 0; i < Math.min(commandBindings.length, commands.size); i++){
+                                //first stance must always be the stop stance
+                                if(Core.input.keyTap(commandBindings[i])){
+                                    Call.setUnitCommand(player, control.input.selectedUnits.mapInt(un -> un.id).toArray(), commands.get(i));
+                                }
                             }
                         });
                         rebuildCommand.run();
