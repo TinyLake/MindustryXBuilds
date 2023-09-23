@@ -203,7 +203,7 @@ public class TypeIO{
                 for(int i = 0; i < objlen; i++) objs[i] = readObjectBoxed(read, box);
                 yield objs;
             }
-            case 23 -> UnitCommand.all.get(read.us());
+            case 23 -> content.unitCommand(read.us());
             default -> throw new IllegalArgumentException("Unknown object type: " + type);
         };
     }
@@ -311,7 +311,7 @@ public class TypeIO{
 
     public static @Nullable UnitCommand readCommand(Reads read){
         int val = read.ub();
-        return val == 255 ? null : UnitCommand.all.get(val);
+        return val == 255 ? null : content.unitCommand(val);
     }
 
     public static void writeEntity(Writes write, Entityc entity){
@@ -546,7 +546,8 @@ public class TypeIO{
 
             if(type == 6){
                 byte id = read.b();
-                ai.command = id < 0 ? null : UnitCommand.all.get(id);
+                ai.command = id < 0 ? null : content.unitCommand(id);
+                if(ai.command == null) ai.command = UnitCommand.moveCommand;
             }
 
             return ai;
