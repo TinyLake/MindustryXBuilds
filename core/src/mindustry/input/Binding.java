@@ -12,16 +12,11 @@ public enum Binding implements KeyBind{
     pan(KeyCode.mouseForward),
 
     boost(KeyCode.shiftLeft),
-    command_mode(KeyCode.shiftLeft),
-    create_control_group(KeyCode.controlLeft),
-    control(KeyCode.controlLeft),
     respawn(KeyCode.v),
+    control(KeyCode.controlLeft),
     select(KeyCode.mouseLeft),
     deselect(KeyCode.mouseRight),
     break_block(KeyCode.mouseRight),
-
-    select_all_units(KeyCode.g),
-    select_all_unit_factories(KeyCode.h),
 
     pickupCargo(KeyCode.leftBracket),
     dropCargo(KeyCode.rightBracket),
@@ -39,15 +34,22 @@ public enum Binding implements KeyBind{
     schematic_flip_y(KeyCode.x),
     schematic_menu(KeyCode.t),
 
-    unit_command_1(KeyCode.unset),
-    unit_command_2(KeyCode.unset),
-    unit_command_3(KeyCode.unset),
-    unit_command_4(KeyCode.unset),
-    unit_command_5(KeyCode.unset),
-    unit_command_6(KeyCode.unset),
-    unit_command_7(KeyCode.unset),
-    unit_command_8(KeyCode.unset),
-    unit_command_9(KeyCode.unset),
+
+    command_mode(KeyCode.shiftLeft, "command"),
+    create_control_group(KeyCode.controlLeft),
+
+    select_all_units(KeyCode.g),
+    select_all_unit_factories(KeyCode.h),
+
+    unit_command_move(KeyCode.unset),
+    unit_command_repair(KeyCode.unset),
+    unit_command_rebuild(KeyCode.unset),
+    unit_command_assist(KeyCode.unset),
+    unit_command_mine(KeyCode.unset),
+    unit_command_boost(KeyCode.unset),
+    unit_command_load_units(KeyCode.unset),
+    unit_command_load_blocks(KeyCode.unset),
+    unit_command_unload_payload(KeyCode.unset),
 
     category_prev(KeyCode.comma, "blocks"),
     category_next(KeyCode.period),

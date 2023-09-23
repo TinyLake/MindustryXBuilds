@@ -11,7 +11,6 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
-import mindustry.*;
 import mindustry.ai.*;
 import mindustry.content.*;
 import mindustry.core.*;
@@ -67,18 +66,6 @@ public class PlacementFragment{
         Binding.block_select_right,
         Binding.block_select_up,
         Binding.block_select_down
-    };
-
-    Binding[] commandBindings = {
-        Binding.unit_command_1,
-        Binding.unit_command_2,
-        Binding.unit_command_3,
-        Binding.unit_command_4,
-        Binding.unit_command_5,
-        Binding.unit_command_6,
-        Binding.unit_command_7,
-        Binding.unit_command_8,
-        Binding.unit_command_9,
     };
 
     public PlacementFragment(){
@@ -553,10 +540,10 @@ public class PlacementFragment{
                                 rebuildCommand.run();
                             }
 
-                            for(int i = 0; i < Math.min(commandBindings.length, commands.size); i++){
+                            for(UnitCommand command : commands){
                                 //first stance must always be the stop stance
-                                if(Core.input.keyTap(commandBindings[i])){
-                                    Call.setUnitCommand(player, control.input.selectedUnits.mapInt(un -> un.id).toArray(), commands.get(i));
+                                if(command.keybind != null && Core.input.keyTap(command.keybind)){
+                                    Call.setUnitCommand(player, control.input.selectedUnits.mapInt(un -> un.id).toArray(), command);
                                 }
                             }
                         });
