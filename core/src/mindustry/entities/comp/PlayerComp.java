@@ -23,6 +23,7 @@ import mindustry.net.Packets.*;
 import mindustry.ui.*;
 import mindustry.world.blocks.storage.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
+import mindustryX.events.*;
 
 import static mindustry.Vars.*;
 
@@ -189,8 +190,11 @@ abstract class PlayerComp implements UnitController, Entityc, Syncc, Timerc, Dra
     }
 
     public void team(Team team){
+        Team last = this.team;
         this.team = team;
         unit.team(team);
+        //MDTX: PlayerTeamChangeEvent
+        Events.fire(new PlayerTeamChangedEvent(last, self()));
     }
 
     public void clearUnit(){
