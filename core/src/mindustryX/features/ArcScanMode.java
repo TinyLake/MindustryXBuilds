@@ -1,4 +1,4 @@
-package mindustry.arcModule.toolpack;
+package mindustryX.features;
 
 import arc.*;
 import arc.func.*;
@@ -11,7 +11,6 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.ai.types.*;
-import mindustry.arcModule.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.input.*;
@@ -23,9 +22,11 @@ import mindustry.world.blocks.liquid.*;
 import mindustry.world.blocks.production.*;
 import mindustry.world.blocks.storage.*;
 import mindustry.world.meta.*;
+import mindustryX.features.ui.*;
 
 import static mindustry.Vars.*;
 
+//move from mindustry.arcModule.toolpack.ArcScanMode
 public class ArcScanMode{
     public static boolean enabled = false;
     private static final Table ctTable = new Table();
@@ -71,8 +72,8 @@ public class ArcScanMode{
     private static void updateSpawnerDisplay(){
         spawnerTable.clear();
         flyerTable.clear();
-        if(arcWaveSpawner.arcWave.isEmpty()) return;
-        arcWaveSpawner.waveInfo thisWave = arcWaveSpawner.arcWave.get(Math.min(state.wave - 1, arcWaveSpawner.arcWave.size - 1));
+        if(ArcWaveSpawner.arcWave.isEmpty()) return;
+        ArcWaveSpawner.waveInfo thisWave = ArcWaveSpawner.arcWave.get(Math.min(state.wave - 1, ArcWaveSpawner.arcWave.size - 1));
         for(Tile tile : spawner.getSpawns()){
             if(Mathf.dst(tile.worldx(), tile.worldy(), Core.input.mouseWorldX(), Core.input.mouseWorldY()) < state.rules.dropZoneRadius){
                 float curve = Mathf.curve(Time.time % 240f, 120f, 240f);
@@ -85,7 +86,7 @@ public class ArcScanMode{
                 float spawnX = Mathf.clamp(world.width() * tilesize / 2f + Angles.trnsx(flyerAngle, trns), 0, world.width() * tilesize);
                 float spawnY = Mathf.clamp(world.height() * tilesize / 2f + Angles.trnsy(flyerAngle, trns), 0, world.height() * tilesize);
 
-                if(arcWaveSpawner.hasFlyer){
+                if(ArcWaveSpawner.hasFlyer){
                     Lines.line(tile.worldx(), tile.worldy(), spawnX, spawnY);
                     Tmp.v1.set(spawnX - tile.worldx(), spawnY - tile.worldy());
                     Tmp.v1.setLength(Tmp.v1.len() * curve);
@@ -94,7 +95,7 @@ public class ArcScanMode{
                     Vec2 v = Core.camera.project(spawnX, spawnY);
                     flyerTable.setPosition(v.x, v.y);
                     flyerTable.table(Styles.black3, tt -> {
-                        tt.add(RFuncs.calWaveTimer()).row();
+                        tt.add(FormatDefault.duration(state.wavetime / 60, false)).row();
                         thisWave.specLoc(tile.pos(), group -> group.type.flying);
                         tt.add(thisWave.proTable(false));
                         tt.row();
@@ -114,7 +115,7 @@ public class ArcScanMode{
                 Vec2 v = Core.camera.project(tile.worldx(), tile.worldy());
                 spawnerTable.setPosition(v.x, v.y);
                 spawnerTable.table(Styles.black3, tt -> {
-                    tt.add(RFuncs.calWaveTimer()).row();
+                    tt.add(FormatDefault.duration(state.wavetime / 60, false)).row();
                     thisWave.specLoc(tile.pos(), group -> !group.type.flying);
                     tt.add(thisWave.proTable(false));
                     tt.row();

@@ -9,6 +9,7 @@ import arc.util.*;
 import mindustry.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
+import mindustryX.features.ui.ArcMessageDialog;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -609,6 +610,7 @@ public class LExecutor{
         public void run(LExecutor exec){
             Object obj = exec.obj(target);
             if(obj instanceof Building b && (exec.privileged || (b.team == exec.team && exec.linkIds.contains(b.id)))){
+                b.lastLogicController = exec.build;
 
                 if(type == LAccess.enabled && !exec.bool(p1)){
                     b.lastDisabler = exec.build;
@@ -1206,7 +1208,7 @@ public class LExecutor{
         @Override
         public void run(LExecutor exec){
             if(headless) return;
-
+            if(Core.settings.getBool("removeLogicLock"))return;
             switch(action){
                 case pan -> {
                     control.input.logicCutscene = true;
@@ -1593,8 +1595,14 @@ public class LExecutor{
             }
 
             switch(type){
-                case notify -> ui.hudfrag.showToast(Icon.info, text);
-                case announce -> ui.announce(text, exec.numf(duration));
+                case notify -> {
+                    ui.hudfrag.showToast(Icon.info, text);
+                    ArcMessageDialog.addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.logicNotify,text).sendMessage());
+                }
+                case announce -> {
+                    ui.announce(text, exec.numf(duration));
+                    ArcMessageDialog.addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.logicAnnounce,text).sendMessage());
+                }
                 case toast -> ui.showInfoToast(text, exec.numf(duration));
                 //TODO desync?
                 case mission -> state.rules.mission = text;

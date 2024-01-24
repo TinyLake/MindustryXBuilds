@@ -6,15 +6,15 @@ import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.*;
+import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
-import mindustry.arcModule.*;
-import mindustry.arcModule.ui.dialogs.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
+import mindustryX.features.func.*;
 import mindustryX.features.ui.*;
 
 import java.util.regex.*;
@@ -155,7 +155,7 @@ public class MarkerType{
         var exists = (MarkElement)Groups.draw.find(it -> it instanceof MarkElement e && e.message == null && e.within(pos.scl(tilesize), 2 * tilesize));
         last = exists != null ? exists : type.at(pos.scl(tilesize));
         last.message = text;
-        MessageDialog.addMsg(new MessageDialog.advanceMsg(MessageDialog.arcMsgType.markLoc, text, pos));
+        ArcMessageDialog.addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.markLoc, text, pos));
         return true;
     }
 
@@ -199,9 +199,10 @@ public class MarkerType{
         @Override
         public void draw(){
             super.draw();
+            Draw.z(Layer.overlayUI);
             showArrow();
             if(message != null)
-                WorldLabel.drawAt(message, x, y, Layer.overlayUI, WorldLabel.flagOutline, 1);
+                FuncX.drawText(this, message);
         }
 
         private void showArrow(){
@@ -209,7 +210,7 @@ public class MarkerType{
             Drawf.arrow(player.x, player.y, x, y, 5f * tilesize, 4f, color);
 
             var p = Tmp.v1.set(this).sub(player).limit(4.5f * tilesize).add(player);
-            DrawUtilities.drawText((int)(dst(player) / 8) + "", 0.2f, p.x, p.y, color, Align.center);
+            FuncX.drawText(p, (int)(dst(player) / 8) + "", Scl.scl(1.25f), color);
         }
     }
 }
