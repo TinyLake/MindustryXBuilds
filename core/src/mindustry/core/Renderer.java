@@ -28,6 +28,7 @@ import static arc.Core.*;
 import static mindustry.Vars.*;
 
 public class Renderer implements ApplicationListener{
+    public boolean fogEnabled = true;
     /** These are global variables, for headless access. Cached. */
     public static float laserOpacity = 0.5f, bridgeOpacity = 0.75f;
 

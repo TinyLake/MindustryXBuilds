@@ -99,6 +99,12 @@ public enum Binding implements KeyBind{
     chat_mode(KeyCode.tab),
     console(KeyCode.f8),
 
+    superUnitEffect(KeyCode.o,"ARC"),
+    showRTSAi(KeyCode.l),
+    arcDetail(KeyCode.unset),
+    arcScanMode(KeyCode.unset),
+    oreAdsorption(KeyCode.unset),
+
     //MDTX
     toggle_unit(KeyCode.unset, "mindustryX"),
     point(KeyCode.j),

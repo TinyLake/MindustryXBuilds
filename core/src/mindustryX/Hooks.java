@@ -9,6 +9,7 @@ import mindustry.input.*;
 import mindustryX.features.Settings;
 import mindustryX.features.*;
 import mindustryX.features.func.*;
+import mindustryX.features.ui.*;
 
 import java.net.*;
 import java.util.*;
@@ -57,6 +58,14 @@ public class Hooks implements ApplicationListener{
         if(message == null) return null;
         if(Vars.ui != null){
             if(MarkerType.resolveMessage(message)) return message;
+            try{
+                ArcMessageDialog.resolveMsg(message, sender);
+                if(sender != null){
+                    message = (sender.dead() ? Iconc.alphaaaa : sender.unit().type.emoji()) + " " + message;
+                }
+            }catch(Exception e){
+                Log.err(e);
+            }
         }
         return message;
     }
@@ -82,6 +91,15 @@ public class Hooks implements ApplicationListener{
         }
         if(Core.input.keyTap(Binding.focusLogicController)){
             FuncX.focusLogicController();
+        }
+        if(Core.input.keyTap(Binding.arcScanMode)){
+            ArcScanMode.enabled = !ArcScanMode.enabled;
+        }
+        if(Core.input.keyTap(Binding.showRTSAi)){
+            Settings.toggle("alwaysShowUnitRTSAi");
+        }
+        if(Core.input.keyTap(Binding.superUnitEffect)){
+            Settings.cycle("superUnitEffect", 3);
         }
     }
 

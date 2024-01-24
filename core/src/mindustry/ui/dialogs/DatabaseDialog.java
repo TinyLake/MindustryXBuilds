@@ -20,8 +20,8 @@ import mindustry.ui.*;
 import mindustry.world.*;
 import mindustryX.features.*;
 
-import static arc.Core.*;
 import static mindustry.Vars.*;
+import static mindustryX.features.ArcOld.colorizeContent;
 
 public class DatabaseDialog extends BaseDialog{
     private TextField search;
@@ -58,6 +58,7 @@ public class DatabaseDialog extends BaseDialog{
         }).fillX().padBottom(4).row();
 
         cont.pane(all).scrollX(false);
+        colorizeContent();
     }
 
     void checkTabList(){
@@ -150,7 +151,7 @@ public class DatabaseDialog extends BaseDialog{
                                 ui.content.show(unlock);
                             }
                         });
-                        image.addListener(new Tooltip(t -> t.background(Tex.button).add(unlock.localizedName + (settings.getBool("console") ? "\n[gray]" + unlock.name : ""))));
+                        image.addListener(new Tooltip(t -> t.background(Tex.button).add(unlock.localizedName + "\n[gray]" + unlock.name + (logicVars.lookupLogicId(unlock) != -1 ? " <#" + logicVars.lookupLogicId(unlock) +">": ""))));
                     }
 
                     if((++count) % cols == 0){

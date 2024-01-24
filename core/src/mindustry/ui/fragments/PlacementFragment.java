@@ -1,6 +1,7 @@
 package mindustry.ui.fragments;
 
 import arc.*;
+import arc.func.Boolf;
 import arc.graphics.*;
 import arc.input.*;
 import arc.math.geom.*;
@@ -12,6 +13,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.ai.*;
+import mindustryX.features.ui.BlockSelectDialog;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.entities.*;
@@ -24,14 +26,14 @@ import mindustry.input.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
-import mindustry.world.blocks.*;
+import mindustry.world.blocks.ConstructBlock;
 import mindustry.world.blocks.ConstructBlock.*;
 import mindustryX.features.*;
 
 import static mindustry.Vars.*;
 
 public class PlacementFragment{
-    final int rowWidth = 4;
+    private int rowWidth, maxRow;
     private boolean lastAllUnlocked = LogicExt.allUnlocked;
 
     public Category currentCategory = Category.distribution;
@@ -39,10 +41,12 @@ public class PlacementFragment{
     Seq<Block> returnArray = new Seq<>(), returnArray2 = new Seq<>();
     Seq<Category> returnCatArray = new Seq<>();
     boolean[] categoryEmpty = new boolean[Category.all.length];
-    ObjectMap<Category,Block> selectedBlocks = new ObjectMap<>();
+    public ObjectMap<Category,Block> selectedBlocks = new ObjectMap<>();
     ObjectFloatMap<Category> scrollPositions = new ObjectFloatMap<>();
     @Nullable Block menuHoverBlock;
-    @Nullable Displayable hover;
+    @Nullable Displayable hover,hover2;
+    @Nullable Tile hoverTile;
+    @Nullable Object lastDisplayTile;
     @Nullable Building lastFlowBuild, nextFlowBuild;
     @Nullable Object lastDisplayState;
     @Nullable Team lastTeam;
@@ -110,7 +114,7 @@ public class PlacementFragment{
                 if(nextFlowBuild.liquids != null) nextFlowBuild.liquids.updateFlow();
             }
 
-            if(lastAllUnlocked != LogicExt.allUnlocked){
+            if(lastAllUnlocked != LogicExt.allUnlocked || rowWidth != Core.settings.getInt("itemSelectionWidth", 4) || maxRow != Core.settings.getInt("itemSelectionHeight", 4)){
                 rebuild();
             }
         });
@@ -271,6 +275,8 @@ public class PlacementFragment{
 
     public void build(Group parent){
         lastAllUnlocked = LogicExt.allUnlocked;
+        rowWidth = Core.settings.getInt("itemSelectionWidth", 4);
+        maxRow = Core.settings.getInt("itemSelectionHeight", 4);
         parent.fill(full -> {
             toggler = full;
             full.bottom().right().visible(() -> ui.hudfrag.shown);
@@ -347,19 +353,22 @@ public class PlacementFragment{
 
                         //find current hovered thing
                         Displayable hovered = hover;
+                        Displayable hovered2 = hover2;
+                        Displayable hoveredTile = hoverTile;
                         Block displayBlock = menuHoverBlock != null ? menuHoverBlock : control.input.block;
                         Object displayState = displayBlock != null ? displayBlock : hovered;
                         boolean isHovered = displayBlock == null; //use hovered thing if displayblock is null
 
                         //don't refresh unnecessarily
                         //refresh only when the hover state changes, or the displayed block changes
-                        if(wasHovered == isHovered && lastDisplayState == displayState && lastTeam == player.team()) return;
+                        if(wasHovered == isHovered && lastDisplayState == displayState && lastDisplayTile == hoveredTile) return;
 
                         topTable.clear();
                         topTable.top().left().margin(5);
 
                         lastDisplayState = displayState;
                         wasHovered = isHovered;
+                        lastDisplayTile = hoveredTile;
                         lastTeam = player.team();
 
                         //show details of selected block, with costs
@@ -428,6 +437,30 @@ public class PlacementFragment{
                         }else if(hovered != null){
                             //show hovered item, whatever that may be
                             hovered.display(topTable);
+                            if(hovered2 != hovered && hovered2 != null){
+                                topTable.row().image().color(Pal.gray).height(2).growX().pad(8).row();
+                                hovered2.display(topTable);
+                            }
+                        }
+
+                        //只要可行便绘制地板|建筑，移除了其他重复绘制
+                        if (Core.settings.getBool("hoveredTileInfo") && hoveredTile != null) {
+                            topTable.row().table(t -> {
+                                t.left();
+                                t.defaults().left();
+                                t.image(hoverTile.floor().uiIcon).size(iconSmall).padRight(4);
+                                t.add(hoverTile.floor().localizedName);
+                                if(hoverTile.block() != Blocks.air){
+                                    t.add(" | ");
+                                    t.image(hoverTile.block().uiIcon).size(iconSmall).padRight(4);
+                                    t.add(hoverTile.block().localizedName).color(hoverTile.team().color);
+                                }
+                                if(hoverTile.overlay() != Blocks.air){
+                                    t.add(" | ");
+                                    t.image(hoverTile.overlay().uiIcon).size(iconSmall).padRight(4);
+                                    t.add(hoverTile.overlay().localizedName);
+                                }
+                            }).padTop(8).left();
                         }
                     });
                 }).colspan(3).fillX().visible(this::hasInfoBox).touchable(Touchable.enabled).row();
@@ -479,6 +512,8 @@ public class PlacementFragment{
 
                         rebuildCommand = () -> {
                             u.clearChildren();
+
+                            boolean arcExtra = Core.settings.getBool("arcCommandTable");
                             var units = control.input.selectedUnits;
                             if(units.size > 0){
                                 int[] counts = new int[content.units().size];
@@ -549,7 +584,7 @@ public class PlacementFragment{
                                                 Call.setUnitCommand(player, units.mapInt(un -> un.id).toArray(), command);
                                             }).checked(i -> currentCommand[0] == command).size(50f).tooltip(command.localized(), true);
 
-                                            if(++scol % 6 == 0) coms.row();
+                                            if(++scol % (rowWidth + 2) == 0) coms.row();
                                         }
 
                                     }).fillX().padTop(4f).left();
@@ -568,12 +603,65 @@ public class PlacementFragment{
                                                 Call.setUnitStance(player, units.mapInt(un -> un.id).toArray(), stance);
                                             }).checked(i -> currentStance[0] == stance).size(50f).tooltip(stance.localized(), true);
 
-                                            if(++scol % 6 == 0) coms.row();
+                                            if(++scol % (rowWidth + 2) == 0) coms.row();
+                                        }
+                                    }).fillX().padTop(4f).left();
+                                }
+                                if(arcExtra && units.size > 0){
+                                    u.row();
+                                    u.table(sp -> {
+                                        float wound = (float) Core.settings.getInt("rtsWoundUnit") / 100f;
+                                        if (units.contains(unit -> unit.health >= unit.maxHealth * wound) && units.contains(unit -> unit.health < unit.maxHealth * wound)){
+                                            sp.table(spp->{
+                                                arcSelectUnits(spp,"[green]\uE813","高血量单位", unit -> unit.health >= unit.maxHealth * wound);
+                                                arcSelectUnits(spp,"[red]\uE80F","低血量单位", unit -> unit.health < unit.maxHealth * wound);
+                                            });
+                                        }
+
+                                        if (units.contains(unit -> unit.type.commands.length > 1) && units.contains(unit -> unit.type.commands.length <= 1)){
+                                            sp.table(spp->{
+                                                arcSelectUnits(spp,"\uE86E","进攻性单位", unit -> unit.type.commands.length <= 1);
+                                                arcSelectUnits(spp,"\uE86B","辅助性单位", unit -> unit.type.commands.length > 1);
+                                            });
+                                        }
+
+                                        boolean hasFlyer = units.contains(Flyingc::isFlying),
+                                        hasLand = units.contains(unit -> !unit.isFlying() && !unit.type.naval),
+                                        hasNaval = units.contains(unit -> unit.type.naval);
+                                        if((hasFlyer ? 1 : 0) + (hasLand ? 1 : 0) + (hasNaval ? 1 : 0) >= 2){
+                                            sp.table(spp -> {
+                                                if(hasFlyer) arcSelectUnits(spp, UnitTypes.flare.emoji(), "飞行单位", Flyingc::isFlying);
+                                                if(hasLand) arcSelectUnits(spp, UnitTypes.crawler.emoji(), "陆军单位", unit -> !unit.isFlying() && !unit.type.naval);
+                                                if(hasNaval) arcSelectUnits(spp, UnitTypes.retusa.emoji(), "海军单位", unit -> unit.type.naval);
+                                            });
                                         }
                                     }).fillX().padTop(4f).left();
                                 }
                             }else{
                                 u.add(Core.bundle.get("commandmode.nounits")).color(Color.lightGray).growX().center().labelAlign(Align.center).pad(6);
+                            }
+                            if(arcExtra && mobile){
+                                u.row();
+                                u.table(sp->{
+                                    sp.button("\uE86D", Styles.cleart, () -> {
+                                        control.input.selectedUnits.clear();
+                                        control.input.commandBuildings.clear();
+                                        for(var unit : player.team().data().units){
+                                            if(unit.isCommandable()){
+                                                control.input.selectedUnits.add(unit);
+                                            }
+                                        }
+                                    }).size(40f);
+                                    sp.button(Blocks.additiveReconstructor.emoji(), Styles.cleart, () -> {
+                                        control.input.selectedUnits.clear();
+                                        control.input.commandBuildings.clear();
+                                        for(var build : player.team().data().buildings){
+                                            if(build.block.commandable){
+                                                control.input.commandBuildings.add(build);
+                                            }
+                                        }
+                                    }).size(40f);
+                                }).fillX().padTop(4f).left().row();
                             }
                         };
 
@@ -643,7 +731,7 @@ public class PlacementFragment{
                 {
                     blockCatTable.table(Tex.pane2, blocksSelect -> {
                         blocksSelect.margin(4).marginTop(0);
-                        blockPane = blocksSelect.pane(blocks -> blockTable = blocks).height(194f).update(pane -> {
+                        blockPane = blocksSelect.pane(blocks -> blockTable = blocks).height(maxRow * 46f + 10f).update(pane -> {
                             if(pane.hasScroll()){
                                 Element result = Core.scene.getHoverElement();
                                 if(result == null || !result.isDescendantOf(pane)){
@@ -677,6 +765,17 @@ public class PlacementFragment{
                         boolean needsAssign = categoryEmpty[currentCategory.ordinal()];
 
                         int f = 0;
+                        if (maxRow > 5){
+                            categories.button(Icon.zoom, Styles.clearTogglei, () -> {
+                                new BlockSelectDialog(block -> block.replaceable, block -> {
+                                    control.input.block = block;
+                                    currentCategory = block.category;
+                                    rebuildCategory.run();
+                                    }, block -> control.input.block == block).show();
+                            }).group(group);
+                            categories.image(Styles.black6);
+                            categories.row();
+                        }
                         for(Category cat : getCategories()){
                             if(f++ % 2 == 0) categories.row();
 
@@ -736,36 +835,47 @@ public class PlacementFragment{
 
     boolean hasInfoBox(){
         hover = hovered();
-        return control.input.block != null || menuHoverBlock != null || hover != null;
+        return control.input.block != null || menuHoverBlock != null || hover != null || hoverTile != null;
     }
 
     /** Returns the thing being hovered over. */
     @Nullable
     Displayable hovered(){
-        Vec2 v = topTable.stageToLocalCoordinates(Core.input.mouse());
-
-        //if the mouse intersects the table or the UI has the mouse, no hovering can occur
-        if(Core.scene.hasMouse() || topTable.hit(v.x, v.y, false) != null) return null;
-
-        //check for a unit
-        Unit unit = Units.closestOverlap(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> !u.isLocal() && u.displayable());
-        //if cursor has a unit, display it
-        if(unit != null) return unit;
-
+        if(Core.scene.hasMouse() && !topTable.hasMouse()) return null;//MDTX: fix flashing. Note: when loading show, world is empty, and not use `Units`
         //check tile being hovered over
         Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
-        if(hoverTile != null){
-            //if the tile has a building, display it
-            if(hoverTile.build != null && hoverTile.build.displayable() && !hoverTile.build.inFogTo(player.team())){
-                return nextFlowBuild = hoverTile.build;
-            }
+        this.hoverTile = (hoverTile != null && (hoverTile.build == null || !hoverTile.build.inFogTo(player.team()))) ? hoverTile : null;
+        this.hover2 = nextFlowBuild = (hoverTile!=null && hoverTile.build != null && hoverTile.build.displayable() && !hoverTile.build.inFogTo(player.team()))?hoverTile.build:null;
 
-            //if the tile has a drop, display the drop
-            if((hoverTile.drop() != null && hoverTile.block() == Blocks.air) || hoverTile.wallDrop() != null || hoverTile.floor().liquidDrop != null){
-                return hoverTile;
-            }
-        }
+        //check for a unit
+        Unit unit = Units.closestOverlap(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> true);
+        //if cursor has a unit, display it
+        if(unit != null) return unit;
+        unit = Units.closestEnemy(player.team(), Core.input.mouseWorldX(), Core.input.mouseWorldY(), 5f, u -> true);
+        if(unit != null) return unit;
 
-        return null;
+        return hover2;
+    }
+
+    void arcSelectUnits(Table table, String icon, String info, Boolf<Unit> cons){
+        float size = 40f;
+
+        table.button(icon, Styles.cleart, () -> {}).tooltip(info).size(size).with(b->{
+            var listener = new ClickListener();
+            b.clicked(KeyCode.mouseLeft, () -> {
+                control.input.selectedUnits = control.input.selectedUnits.select(cons);
+                Events.fire(Trigger.unitCommandChange);
+                UIExt.announce("[cyan]arc控制器\n[acid]选择" + info + "！");
+            });
+            //right click -> remove
+            b.clicked(KeyCode.mouseRight, () -> {
+                control.input.selectedUnits.removeAll(cons);
+                Events.fire(Trigger.unitCommandChange);
+                UIExt.announce("[cyan]arc控制器\n[orange]移除" + info + "！");
+            });
+
+            b.addListener(listener);
+            b.addListener(new HandCursorListener());
+        });
     }
 }

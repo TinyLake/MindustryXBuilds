@@ -16,6 +16,7 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustryX.features.func.*;
 import mindustryX.features.ui.*;
+import mindustryX.features.ui.ArcMessageDialog.*;
 
 import java.util.regex.*;
 
@@ -157,6 +158,7 @@ public class MarkerType{
         var exists = (MarkElement)Groups.draw.find(it -> it instanceof MarkElement e && e.message == null && e.within(pos.scl(tilesize), 2 * tilesize));
         last = exists != null ? exists : type.at(pos.scl(tilesize));
         last.message = text;
+        ArcMessageDialog.addMsg(new Msg(Type.markLoc, text, pos));
         return true;
     }
 
