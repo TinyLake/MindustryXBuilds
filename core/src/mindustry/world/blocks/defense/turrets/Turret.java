@@ -7,6 +7,7 @@ import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.math.geom.*;
+import arc.scene.ui.layout.Table;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
@@ -129,6 +130,8 @@ public class Turret extends ReloadTurret{
     public float elevation = -1f;
     /** How much the screen shakes per shot. */
     public float shake = 0f;
+    /** arc绘图用 */
+    public int drawIndex = 0;
 
     /** Defines drawing behavior for this turret. */
     public DrawBlock drawer = new DrawTurret();
@@ -354,6 +357,18 @@ public class Turret extends ReloadTurret{
         @Override
         public void draw(){
             drawer.draw(this);
+        }
+
+        //show shoot target line
+        @Override
+        public void drawSelect(){
+            super.drawSelect();
+            if(targetPos.x != 0 && targetPos.y !=0 && Mathf.dst(targetPos.x,targetPos.y)<5e5){
+                Lines.stroke(1f);
+                Lines.dashLine(x, y, targetPos.x, targetPos.y, (int)(Mathf.len(targetPos.x - x, targetPos.y - y) / 8));
+                Lines.dashCircle(targetPos.x, targetPos.y, 8);
+                Draw.reset();
+            }
         }
 
         @Override
@@ -651,6 +666,14 @@ public class Turret extends ReloadTurret{
         @Override
         public byte version(){
             return 1;
+        }
+
+        @Override
+        public void displayBars(Table bars) {
+            super.displayBars(bars);
+            if (minWarmup > 0f) {
+                bars.add(new Bar(() -> Core.bundle.format("stat.warmupDetail", (int)(shootWarmup * 100 / minWarmup)), () -> Pal.ammo, () -> shootWarmup / minWarmup)).row();
+            }
         }
     }
 
