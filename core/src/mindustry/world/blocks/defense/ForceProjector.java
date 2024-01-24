@@ -1,6 +1,7 @@
 package mindustry.world.blocks.defense;
 
 import arc.*;
+import arc.Core;
 import arc.func.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
@@ -9,6 +10,7 @@ import arc.math.geom.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.NumberFormat;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
@@ -83,7 +85,11 @@ public class ForceProjector extends Block{
     @Override
     public void setBars(){
         super.setBars();
-        addBar("shield", (ForceBuild entity) -> new Bar("stat.shieldhealth", Pal.accent, () -> entity.broken ? 0f : 1f - entity.buildup / (shieldHealth + phaseShieldBoost * entity.phaseHeat)).blink(Color.white));
+        addBar("shield", (ForceBuild entity) -> new Bar(
+                () ->  NumberFormat.formatPercent("\uE84D", shieldHealth + phaseShieldBoost * entity.phaseHeat - entity.buildup, shieldHealth + phaseShieldBoost * entity.phaseHeat),
+                () -> Pal.accent,
+                () -> entity.broken ? 0f : 1f - entity.buildup / (shieldHealth + phaseShieldBoost * entity.phaseHeat))
+                .blink(Color.white));
     }
 
     @Override
@@ -119,6 +125,9 @@ public class ForceProjector extends Block{
         Draw.color(player.team().color);
         Lines.stroke(1f);
         Lines.poly(x * tilesize + offset, y * tilesize + offset, sides, radius, shieldRotation);
+        Draw.color(player.team().color);
+        Lines.stroke(1f);
+        Lines.poly(x * tilesize + offset, y * tilesize + offset, sides, radius+phaseRadiusBoost, shieldRotation);
         Draw.color();
     }
 
@@ -267,6 +276,22 @@ public class ForceProjector extends Block{
             }
 
             Draw.reset();
+        }
+
+        @Override
+        public void drawBars() {
+            super.drawBars();
+            if (Core.settings.getBool("blockBars_mend") && buildup > 0) {
+                Draw.color(Color.black, 0.3f);
+                Lines.stroke(4f);
+                Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
+                        x + block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f);
+                Draw.color(broken ? Pal.remove : Pal.stat, 1f);
+                Lines.stroke(2f);
+                Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
+                        x + 0.6f * (0.5f - buildup / (shieldHealth + phaseShieldBoost * phaseHeat)) * block.size * tilesize, y + block.size * tilesize / 2.5f);
+                Draw.color();
+            }
         }
 
         @Override

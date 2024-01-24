@@ -146,6 +146,10 @@ public class ModsDialog extends BaseDialog{
         float h = 110f;
         float w = Math.min(Core.graphics.getWidth() / Scl.scl(1.05f), 520f);
 
+        if (!Core.settings.getBool("arcDisableModWarning")){
+            ui.showInfo("@arcModLoad.warning");
+        }
+
         cont.clear();
         cont.defaults().width(Math.min(Core.graphics.getWidth() / Scl.scl(1.05f), 556f)).pad(4);
         cont.add("@mod.reloadrequired").visible(mods::requiresReload).center().get().setAlignment(Align.center);

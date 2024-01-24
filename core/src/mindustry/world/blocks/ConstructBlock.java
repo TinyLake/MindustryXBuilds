@@ -5,12 +5,15 @@ import arc.Graphics.*;
 import arc.Graphics.Cursor.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
+import arc.scene.ui.layout.Scl;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.*;
+import mindustry.Vars;
 import mindustry.annotations.Annotations.*;
 import mindustry.content.*;
+import mindustry.core.UI;
 import mindustry.entities.*;
 import mindustry.entities.units.*;
 import mindustry.game.EventType.*;
@@ -27,6 +30,7 @@ import mindustry.world.modules.*;
 import java.util.*;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.DrawUtilities.arcDrawText;
 
 /** A block in the process of construction. */
 public class ConstructBlock extends Block{
@@ -168,6 +172,36 @@ public class ConstructBlock extends Block{
 
         private float[] accumulator;
         private float[] totalAccumulator;
+
+        @Override
+        public void drawSelect(){
+            /**移植 minerTool, 显示建造中的建筑花费，略作修改*/
+            if(team.core() != null){
+                // BlockUnit之上
+                Draw.z(Layer.flyingUnit + 0.1f);
+
+                float scl = block.size / 8f / 2f / Scl.scl(1f);
+
+                arcDrawText(String.format("%.2f", progress * 100) + "%", scl, x, y + block.size * Vars.tilesize / 2f, Pal.accent, Align.center);
+
+                float nextPad = 0f;
+                for(int i = 0; i < current.requirements.length; i++){
+                    ItemStack stack = current.requirements[i];
+
+                    float dx = x - (block.size * Vars.tilesize) / 2f, dy = y - (block.size * Vars.tilesize) / 2f + nextPad;
+                    boolean hasItem = (1.0f - progress) * Vars.state.rules.buildCostMultiplier * stack.amount <= team.core().items.get(stack.item);
+                    int investItem = (int) (progress * Vars.state.rules.buildCostMultiplier * stack.amount);
+                    int needItem = (int)(Vars.state.rules.buildCostMultiplier * stack.amount) - investItem;
+
+                    nextPad += arcDrawText(
+                            stack.item.emoji() + (hasItem?"[#ffd37f]":"[#e55454]") + investItem + "/" +
+                                    needItem + "/" +
+                                    UI.formatAmount(team.core().items.get(stack.item)),
+                            scl, dx, dy, Align.left);
+                    nextPad ++;
+                }
+            }
+        }
 
         @Override
         public String getDisplayName(){

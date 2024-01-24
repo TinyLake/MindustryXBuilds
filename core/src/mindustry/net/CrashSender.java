@@ -20,18 +20,16 @@ import static mindustry.Vars.*;
 public class CrashSender{
 
     public static String createReport(String error){
-        String report = "Mindustry has crashed. How unfortunate.\n";
-        if(mods != null && mods.list().size == 0 && Version.build != -1){
-            report += "Report this at " + Vars.reportIssueURL + "\n\n";
-        }
+        String report = "喜报！你的学术端崩溃了！\n";
+        report += "在确定不是你自己的问题后在这里报告: " + Vars.reportIssueURL + "\n\n";
         return report
-        + "Version: " + Version.combined() + (Vars.headless ? " (Server)" : "") + "\n"
-        + "OS: " + OS.osName + " x" + (OS.osArchBits) + " (" + OS.osArch + ")\n"
+        + "版本: " + Version.combined() + (Vars.headless ? " (服务器)" : "") + "\n"
+        + "系统: " + OS.osName + " x" + (OS.osArchBits) + " (" + OS.osArch + ")\n"
         + ((OS.isAndroid || OS.isIos) && app != null ? "Android API level: " + Core.app.getVersion() + "\n" : "")
-        + "Java Version: " + OS.javaVersion + "\n"
-        + "Runtime Available Memory: " + (Runtime.getRuntime().maxMemory() / 1024 / 1024) + "mb\n"
-        + "Cores: " + Runtime.getRuntime().availableProcessors() + "\n"
-        + (mods == null ? "<no mod init>" : "Mods: " + (!mods.list().contains(LoadedMod::shouldBeEnabled) ? "none (vanilla)" : mods.list().select(LoadedMod::shouldBeEnabled).toString(", ", mod -> mod.name + ":" + mod.meta.version)))
+        + "Java版本: " + OS.javaVersion + "\n"
+        + "可用内存: " + (Runtime.getRuntime().maxMemory() / 1024 / 1024) + "mb\n"
+        + "核心数量: " + Runtime.getRuntime().availableProcessors() + "\n"
+        + (mods == null ? "<没有mod>" : "Mods: " + (!mods.list().contains(LoadedMod::shouldBeEnabled) ? "没有 (原版)" : mods.list().select(LoadedMod::shouldBeEnabled).toString(", ", mod -> mod.name + ":" + mod.meta.version)))
         + "\n\n" + error;
     }
 

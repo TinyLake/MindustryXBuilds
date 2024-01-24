@@ -1,10 +1,13 @@
 package mindustry.world.blocks.power;
 
+import arc.*;
 import arc.math.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.gen.*;
 import mindustry.world.consumers.*;
+import mindustry.game.Team;
+import mindustry.Vars;
 
 public class PowerGraph{
     private static final Queue<Building> queue = new Queue<>();
@@ -22,9 +25,12 @@ public class PowerGraph{
     private final WindowedMean powerBalance = new WindowedMean(60);
     private float lastPowerProduced, lastPowerNeeded, lastPowerStored;
     private float lastScaledPowerIn, lastScaledPowerOut, lastCapacity;
+    public boolean active = true;
+    public Team team;
     //diodes workaround for correct energy production info
     private float energyDelta = 0f;
 
+    private long lastFrameUpdated = -1;
     private final int graphID;
     private static int lastGraphID;
 
@@ -215,6 +221,7 @@ public class PowerGraph{
     }
 
     public void update(){
+        team = all.size == 0 ? null : all.first().team;
         if(!consumers.isEmpty() && consumers.first().cheating()){
             //when cheating, just set status to 1
             for(Building tile : consumers){
@@ -224,6 +231,8 @@ public class PowerGraph{
             lastPowerNeeded = lastPowerProduced = 1f;
             return;
         }
+
+        lastFrameUpdated = Core.graphics.getFrameId();
 
         float powerNeeded = getPowerNeeded();
         float powerProduced = getPowerProduced();
@@ -377,6 +386,10 @@ public class PowerGraph{
         if(entity != null) entity.remove();
     }
 
+    public int getId(){
+        return graphID;
+    }
+
     @Deprecated
     private boolean otherConsumersAreValid(Building build, Consume consumePower){
         if(!build.enabled) return false;
@@ -402,6 +415,7 @@ public class PowerGraph{
         ", consumers=" + consumers +
         ", batteries=" + batteries +
         ", all=" + all +
+        ", lastFrameUpdated=" + lastFrameUpdated +
         ", graphID=" + graphID +
         '}';
     }

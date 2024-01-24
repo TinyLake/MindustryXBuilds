@@ -17,6 +17,9 @@ import mindustry.ai.*;
 import mindustry.ai.Pathfinder.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.NumberFormat;
+import mindustry.arcModule.draw.ARCUnits;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -41,10 +44,18 @@ import mindustryX.features.*;
 
 import static arc.graphics.g2d.Draw.*;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.maxBuildPlans;
+import static mindustry.arcModule.toolpack.arcPlayerEffect.drawPlayerEffect;
 
 public class UnitType extends UnlockableContent implements Senseable{
     public static final float shadowTX = -12, shadowTY = -13;
     private static final Vec2 legOffset = new Vec2();
+
+    //MI2 unit transparency
+    private static float unitTrans = 1f;
+    private boolean drawUnit = true, drawUnitBar = false;
+
+    private Table unitStatus = new Table();
 
     /** Environmental flags that are *all* required for this unit to function. 0 = any environment */
     public int envRequired = 0;
@@ -237,6 +248,11 @@ public class UnitType extends UnlockableContent implements Senseable{
     drawBody = true,
     /** if false, the unit is not drawn on the minimap. */
     drawMinimap = true;
+
+    /** If `flying` and this is true, the unit can appear on the title screen */
+    public boolean onTitleScreen = true;
+    /** The default AI controller to assign on creation. */
+    public Prov<? extends UnitController> defaultController = () -> !flying ? new GroundAI() : new FlyingAI();
 
     /** The default AI controller to assign on creation. */
     public Prov<? extends UnitController> aiController = () -> !flying ? new GroundAI() : new FlyingAI();
@@ -502,23 +518,93 @@ public class UnitType extends UnlockableContent implements Senseable{
 
     public void landed(Unit unit){}
 
+    private void displayStatusEffect(Unit unit,Table table){
+        if (unit.statuses().isEmpty()) return;
+        table.row().table(t -> {
+            for(StatusEntry entry : unit.statuses().copy()) {
+                if (t.getChildren().size % 5 == 0) t.row();
+                t.add(new ItemImage(entry.effect.uiIcon,
+                        entry.effect.permanent || entry.time > Time.toHours * 10f ? "Inf" : UI.formatTime(entry.time)
+                )).padLeft(8f);
+            }
+        });
+    }
+
+    private void updateStatusTable(Unit unit){
+        unitStatus.clear();
+        displayStatusEffect(unit,unitStatus);
+
+        Table statusText = getStatustext(unit.healthMultiplier(), unit.damageMultiplier(), unit.reloadMultiplier(), unit.speedMultiplier());
+        if(statusText != null){
+            unitStatus.row();
+            unitStatus.add(statusText).growX().wrap().left();
+        }
+    }
+
+    public static Table getStatustext(float healthMultiplier, float damageMultiplier, float reloadMultiplier, float speedMultiplier){
+        Seq<String> statusText = new Seq<>();
+        if(healthMultiplier != 1f){
+            statusText.add(NumberFormat.formatFloat(healthMultiplier, " [acid]血量[white]: @@"));
+        }
+        if(damageMultiplier != 1f){
+            statusText.add(NumberFormat.formatFloat(damageMultiplier, " [red]伤害[white]: @@"));
+        }
+        if(reloadMultiplier != 1f){
+            statusText.add(NumberFormat.formatFloat(reloadMultiplier, " [violet]攻速[white]: @@"));
+        }
+        if(speedMultiplier != 1f){
+            statusText.add(NumberFormat.formatFloat(speedMultiplier, " [cyan]移速[white]: @@"));
+        }
+        if (statusText.isEmpty()) return null;
+        Table table = new Table();
+        for (int i = 0;i < statusText.size;i++) {
+            if (i % 2 == 0) table.add(">>");
+            table.add(statusText.get(i)).left();
+            if (i % 2 == 1) table.row();
+        }
+        return table;
+    }
+
     public void display(Unit unit, Table table){
         table.table(t -> {
             t.left();
             t.add(new Image(uiIcon)).size(iconMed).scaling(Scaling.fit);
-            t.labelWrap(unit.isPlayer() ? unit.getPlayer().coloredName() + "\n[lightgray]" + localizedName : localizedName).left().width(190f).padLeft(5);
+            if(unit.team.id < 6){
+                if (unit.isPlayer()) {
+                    t.labelWrap(unit.getPlayer().coloredName() + "\n[#" + unit.team.color + "]" + localizedName).left().width(190f).padLeft(5);
+                } else {
+                    t.labelWrap("[#" + unit.team.color + "]" + localizedName).left().width(190f).padLeft(5);
+                }
+            }else{
+                if (unit.isPlayer()) {
+                    t.labelWrap(unit.getPlayer().coloredName() + "\n[#" + unit.team.color + "]" + localizedName + "[" + unit.team.id + "]").left().width(190f).padLeft(5);
+                } else {
+                    t.labelWrap("[#" + unit.team.color + "]" + localizedName + "[" + unit.team.id + "]").left().width(190f).padLeft(5);
+                }
+            }
         }).growX().left();
         table.row();
 
         table.table(bars -> {
             bars.defaults().growX().height(20f).pad(4);
 
-            //TODO overlay shields
-            bars.add(new Bar("stat.health", Pal.health, unit::healthf).blink(Color.white));
+            bars.add(new Bar(() -> {
+                updateStatusTable(unit);
+                StringBuilder str = new StringBuilder();
+                if(unit.shield() > 0){
+                    str.append(NumberFormat.autoFixed(unit.health)).append("[gray]+[white]").append(NumberFormat.autoFixed(unit.shield));
+                }else{
+                    str.append(NumberFormat.formatPercent("\uE813", unit.health, unit.maxHealth, 4));
+                }
+                if (!Mathf.equal(unit.healthBalance.rawMean(), 0f, 0.1f)) {
+                    str.append(NumberFormat.autoFixed(unit.healthBalance.rawMean() * Time.toSeconds, 2, unit.healthBalance.rawMean() < 0 ? "[scarlet]@@/s[]" : "[acid]+@@/s[]"));
+                }
+                return str.toString();
+            }, () -> Pal.health, unit::healthf).blink(Color.white));
             bars.row();
 
             if(state.rules.unitAmmo){
-                bars.add(new Bar(ammoType.icon() + " " + Core.bundle.get("stat.ammo"), ammoType.barColor(), () -> unit.ammo / ammoCapacity));
+                bars.add(new Bar(() -> ammoType.icon() + " " + Core.bundle.format("stat.ammoDetail", unit.ammo, ammoCapacity), () -> ammoType.barColor(), () -> unit.ammo / ammoCapacity));
                 bars.row();
             }
 
@@ -526,8 +612,13 @@ public class UnitType extends UnlockableContent implements Senseable{
                 ability.displayBars(unit, bars);
             }
 
-            if(payloadCapacity > 0 && unit instanceof Payloadc payload){
-                bars.add(new Bar("stat.payloadcapacity", Pal.items, () -> payload.payloadUsed() / unit.type().payloadCapacity));
+            if(unit instanceof Payloadc payload){
+                bars.add(new Bar(NumberFormat.formatPercent("装载：",
+                        payload.payloadUsed() / tilesize / tilesize, true,
+                        unit.type().payloadCapacity / tilesize / tilesize, true,
+                        StatUnit.blocksSquared.localized(),
+                        4
+                ), Pal.items, () -> payload.payloadUsed() / unit.type().payloadCapacity));
                 bars.row();
 
                 var count = new float[]{-1};
@@ -537,18 +628,21 @@ public class UnitType extends UnlockableContent implements Senseable{
                         count[0] = payload.payloadUsed();
                     }
                 }).growX().left().height(0f).pad(0f);
+                bars.row();
             }
         }).growX();
+        table.row();
+        table.table(t-> unitStatus = t).growX();
 
         if(unit.controller() instanceof LogicAI ai){
             table.row();
-            table.add(Blocks.microProcessor.emoji() + " " + Core.bundle.get("units.processorcontrol")).growX().wrap().left();
-            if(ai.controller != null && (Core.settings.getBool("mouseposition") || Core.settings.getBool("position"))){
-                table.row();
-                table.add("[lightgray](" + ai.controller.tileX() + ", " + ai.controller.tileY() + ")").growX().wrap().left();
-            }
+            table.table(tt->{
+                tt.add(Blocks.microProcessor.emoji() + " " + Core.bundle.get("units.processorcontrol")).growX().left();
+                if(ai.controller != null && (Core.settings.getBool("mouseposition") || Core.settings.getBool("position"))){
+                    tt.add("[lightgray](" + ai.controller.tileX() + ", " + ai.controller.tileY() + ")").growX().right();
+                }
+            }).growX().wrap().left();
             table.row();
-            table.label(() -> Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX().wrap().left();
             if(net.active() && ai.controller != null && ai.controller.lastAccessed != null){
                 table.row();
                 table.add(Core.bundle.format("lastaccessed", ai.controller.lastAccessed)).growX().wrap().left();
@@ -558,6 +652,11 @@ public class UnitType extends UnlockableContent implements Senseable{
             table.add(Core.bundle.format("lastcommanded", unit.lastCommanded)).growX().wrap().left();
         }
 
+        table.row();
+        table.table(t -> {
+            t.add(Iconc.settings + " " + (long)unit.flag + "").color(Color.lightGray).growX();
+            t.add(Fonts.getUnicodeStr(unit.type().name) + unit.team.data().countType(unit.type()) + "/" + Units.getStringCap(unit.team)).color(Color.lightGray).growX();
+        }).growX();
         table.row();
     }
 
@@ -913,10 +1012,10 @@ public class UnitType extends UnlockableContent implements Senseable{
         cellRegion = Core.atlas.find(name + "-cell", Core.atlas.find("power-cell"));
         //when linear filtering is on, it's acceptable to use the relatively low-res 'particle' region
         softShadowRegion =
-            squareShape ? Core.atlas.find("square-shadow") :
-            hitSize <= 10f || (Core.settings != null && Core.settings.getBool("linear", true)) ?
-                Core.atlas.find("particle") :
-                Core.atlas.find("circle-shadow");
+                squareShape ? Core.atlas.find("square-shadow") :
+                        hitSize <= 10f || (Core.settings != null && Core.settings.getBool("linear", true)) ?
+                                Core.atlas.find("particle") :
+                                Core.atlas.find("circle-shadow");
 
         outlineRegion = Core.atlas.find(name + "-outline");
         shadowRegion = fullIcon;
@@ -1186,8 +1285,57 @@ public class UnitType extends UnlockableContent implements Senseable{
 
         boolean isPayload = !unit.isAdded();
 
-        Mechc mech = unit instanceof Mechc ? (Mechc)unit : null;
-        float z = isPayload ? Draw.z() : unit.elevation > 0.5f ? (lowAltitude ? Layer.flyingUnitLow : Layer.flyingUnit) : groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
+        //透明度
+        unitTrans = ARCUnits.unitTrans;
+
+        Mechc mech = unit instanceof Mechc ? (Mechc) unit : null;
+        float z = unit.elevation > 0.5f ? (lowAltitude ? Layer.flyingUnitLow : Layer.flyingUnit) : groundLayer + Mathf.clamp(hitSize / 4000f, 0, 0.01f);
+
+        drawUnit = (unit.maxHealth + unit.shield) > ARCUnits.unitDrawMinHealth;
+        drawUnitBar = (unit.maxHealth + unit.shield) > ARCUnits.unitBarDrawMinHealth;
+
+        if (!drawUnit) {
+            unitTrans = 0f;
+            drawUnitBar = false;
+        }
+        if (ARCVars.arcInfoControl(unit.team())) {
+            //玩家操控的单位具有炫酷特效
+            if (unit.controller() instanceof Player) {
+                drawPlayerEffect(unit);
+                if (Core.settings.getBool("alwaysShowPlayerUnit")) {
+                    unitTrans = 100f;
+                    drawUnitBar = true;
+                }
+            }
+            if (drawUnitBar) {
+                ARCUnits.drawWeaponRange(unit);
+            }
+
+            if (!control.input.commandMode && Core.settings.getBool("alwaysShowUnitRTSAi") && unit.isCommandable() && unit.command().command != null && unit.command().command.name.equals("move")) {
+                Draw.z(Layer.effect);
+                CommandAI ai = unit.command();
+                //draw target line
+                if (ai.targetPos != null) {
+                    Position lineDest = ai.attackTarget != null ? ai.attackTarget : ai.targetPos;
+                    Draw.color(unit.team.color);
+                    Drawf.limitLineColor(unit, lineDest, unit.hitSize / 2f, 3.5f, unit.team.color);
+
+                    if (ai.attackTarget == null) {
+                        Draw.color(unit.team.color);
+                        Drawf.square(lineDest.getX(), lineDest.getY(), 3.5f, unit.team.color);
+                    }
+                }
+
+                if (ai.attackTarget != null) {
+                    Draw.color(unit.team.color);
+                    Drawf.target(ai.attackTarget.getX(), ai.attackTarget.getY(), 6f, unit.team.color);
+                }
+                Draw.color();
+            }
+
+        }
+
+        if(unitTrans == 0) return;
 
         if(unit.controller().isBeingControlled(player.unit())){
             drawControl(unit);
@@ -1201,7 +1349,7 @@ public class UnitType extends UnlockableContent implements Senseable{
         Draw.z(z - 0.02f);
 
         if(mech != null){
-            drawMech(mech);
+            if(unitTrans > 0f) drawMech(mech);
 
             //side
             legOffset.trns(mech.baseRotation(), 0f, Mathf.lerp(Mathf.sin(mech.walkExtend(true), 2f/Mathf.PI, 1) * mechSideSway, 0f, unit.elevation));
@@ -1222,31 +1370,32 @@ public class UnitType extends UnlockableContent implements Senseable{
 
         Draw.z(Math.min(z - 0.01f, Layer.bullet - 1f));
 
-        if(unit instanceof Payloadc){
+        if(unit instanceof Payloadc && unitTrans > 0f){
             drawPayload((Unit & Payloadc)unit);
         }
+        if(unitTrans > 0f){
+            drawSoftShadow(unit);
 
-        drawSoftShadow(unit);
+            Draw.z(z);
 
-        Draw.z(z);
+            if(unit instanceof Crawlc c){
+                drawCrawl(c);
+            }
 
-        if(unit instanceof Crawlc c){
-            drawCrawl(c);
+            if(drawBody) drawOutline(unit);
+            drawWeaponOutlines(unit);
+            if(engineLayer > 0) Draw.z(engineLayer);
+            if(trailLength > 0 && !naval && (unit.isFlying() || !useEngineElevation)){
+                drawTrail(unit);
+            }
+            if(engines.size > 0) drawEngines(unit);
+            Draw.z(z);
+            if(drawBody) drawBody(unit);
+            if(drawCell) drawCell(unit);
+            drawWeapons(unit);
+            if(drawItems) drawItems(unit);
+            drawLight(unit);
         }
-
-        if(drawBody) drawOutline(unit);
-        drawWeaponOutlines(unit);
-        if(engineLayer > 0) Draw.z(engineLayer);
-        if(trailLength > 0 && !naval && (unit.isFlying() || !useEngineElevation)){
-            drawTrail(unit);
-        }
-        if(engines.size > 0) drawEngines(unit);
-        Draw.z(z);
-        if(drawBody) drawBody(unit);
-        if(drawCell) drawCell(unit);
-        drawWeapons(unit);
-        if(drawItems) drawItems(unit);
-        drawLight(unit);
 
         if(unit.shieldAlpha > 0 && drawShields){
             drawShield(unit);
@@ -1284,7 +1433,142 @@ public class UnitType extends UnlockableContent implements Senseable{
         }
 
         Draw.reset();
+
+        Draw.z(Layer.shields + 6f);
+        float y_corr = 0f ;
+        if (unit.hitSize<30f && unit.hitSize>20f && unit.controller().isBeingControlled(player.unit())) y_corr = 2f;
+        if(Core.settings.getBool("unitHealthBar")){
+            if(drawUnitBar){
+                if (unit.health < unit.maxHealth){
+                    Draw.reset();
+                    Lines.stroke(4f);
+                    Draw.color(unit.team.color, 0.5f);
+                    Lines.line(unit.x - unit.hitSize() * 0.6f, unit.y + (unit.hitSize() / 2f) + y_corr, unit.x + unit.hitSize() * 0.6f, unit.y + (unit.hitSize() / 2f) + y_corr);
+                    Lines.stroke(2f);
+                    Draw.color(Pal.health, 0.8f);
+                    Lines.line(
+                            unit.x - unit.hitSize() * 0.6f, unit.y + (unit.hitSize() / 2f) + y_corr,
+                            unit.x + unit.hitSize() * (Math.min(Mathf.maxZero(unit.health), unit.maxHealth) * 1.2f / unit.maxHealth - 0.6f), unit.y + (unit.hitSize() / 2f) + y_corr);
+                    Lines.stroke(2f);
+                }
+                if(unit.shield > 0 && unit.shield<1e20){
+                    for(int didgt = 1; didgt <= Mathf.digits((int)(unit.shield / unit.maxHealth)) + 1; didgt++){
+                        Draw.color(Pal.shield, 0.8f);
+                        float shieldAmountScale = unit.shield / (unit.maxHealth * Mathf.pow(10f, (float)didgt - 1f));
+                        if(didgt > 1){
+                            Lines.line(unit.x - unit.hitSize() * 0.6f,
+                                    unit.y + (unit.hitSize() / 2f) + (float)didgt * 2f + y_corr,
+                                    unit.x + unit.hitSize() * ((Mathf.ceil((shieldAmountScale - Mathf.floor(shieldAmountScale)) * 10f) - 1f + 0.0001f) * 1.2f * (1f / 9f) - 0.6f),
+                                    unit.y + (unit.hitSize() / 2f) + (float)didgt * 2f + y_corr);
+                            //(s-1)*(1/9)because line(0) will draw length of 1
+                        }else{
+                            Lines.line(unit.x - unit.hitSize() * 0.6f,
+                                    unit.y + (unit.hitSize() / 2f) + (float)didgt * 2f + y_corr,
+                                    unit.x + unit.hitSize() * ((shieldAmountScale - Mathf.floor(shieldAmountScale) - 0.001f) * 1.2f - 0.6f),
+                                    unit.y + (unit.hitSize() / 2f) + (float)didgt * 2f + y_corr);
+                        }
+                    }
+                }
+                Draw.reset();
+
+                float index = 0f;
+                float iconSize = 4f;
+                int iconColumns = Math.max((int) (unit.hitSize() / (iconSize + 1f)), 4);
+                float iconWidth = Math.min(unit.hitSize() / iconColumns, iconSize + 1f);
+                for(var entry : unit.statuses()){
+                    Draw.rect(entry.effect.uiIcon,
+                            unit.x - unit.hitSize() * 0.6f + iconWidth * (index % iconColumns),
+                            unit.y + (unit.hitSize() / 2f) + 3f + iconSize * Mathf.floor(index / iconColumns),
+                            iconSize, iconSize);
+                    index++;
+                }
+
+                index = 0f;
+                if(unit instanceof Payloadc payload && payload.payloads().any()){
+                    for(Payload p : payload.payloads()){
+                        Draw.rect(p.icon(),
+                                unit.x - unit.hitSize() * 0.6f + 0.5f * iconSize * index,
+                                unit.y + (unit.hitSize() / 2f) - 4f,
+                                4f, 4f);
+                        index++;
+                    }
+                    Draw.reset();
+                }
+            }
+        }
+
+        //display logicAI info by MI2
+        if(unit.controller() instanceof LogicAI logicai){
+            Draw.reset();
+            if(Core.settings.getBool("unitLogicMoveLine") && Mathf.len(logicai.moveX - unit.x, logicai.moveY - unit.y) <= 1200f){
+                Lines.stroke(1f);
+                Draw.color(0.2f, 0.2f, 1f, 0.9f);
+                Lines.dashLine(unit.x, unit.y, logicai.moveX, logicai.moveY, (int)(Mathf.len(logicai.moveX - unit.x, logicai.moveY - unit.y) / 8));
+                Lines.dashCircle(logicai.moveX, logicai.moveY, logicai.moveRad);
+                Draw.reset();
+            }
+
+            //logicai timers
+            if(Core.settings.getBool("unitLogicTimerBars")){
+
+                Lines.stroke(2f);
+                Draw.color(Pal.heal);
+                Lines.line(unit.x - (unit.hitSize() / 2f), unit.y - (unit.hitSize() / 2f), unit.x - (unit.hitSize() / 2f), unit.y + unit.hitSize() * (logicai.controlTimer / logicai.logicControlTimeout - 0.5f));
+
+                Draw.reset();
+            }
+        }
+
+        if(Core.settings.getBool("unithitbox")){
+            Draw.color(unit.team.color, 0.5f);
+            Lines.circle(unit.x, unit.y, unit.hitSize / 2f);
+        }
+
+        if(Core.settings.getBool("unitbuildplan") && !unit.plans().isEmpty()) {
+
+            int counter = 0;
+            if (unit != player.unit()) {
+                for (BuildPlan b : unit.plans()) {
+                    unit.drawPlan(b, 0.5f);
+                    counter += 1;
+                    if (counter >= maxBuildPlans) break;
+                }
+            }
+            counter = 0;
+            Draw.color(Pal.gray);
+            Lines.stroke(2f);
+            float x = unit.x, y = unit.y, s = unit.hitSize / 2f;
+            for (BuildPlan b : unit.plans()) {
+                Tmp.v2.trns(Angles.angle(x, y, b.drawx(), b.drawy()), s);
+                Tmp.v3.trns(Angles.angle(x, y, b.drawx(), b.drawy()), b.block.size * 2f);
+                Lines.circle(b.drawx(), b.drawy(), b.block.size * 2f);
+                Lines.line(x + Tmp.v2.x, y + Tmp.v2.y, b.drawx() - Tmp.v3.x, b.drawy() - Tmp.v3.y);
+                x = b.drawx();
+                y = b.drawy();
+                s = b.block.size * 2f;
+                counter += 1;
+                if (counter >= maxBuildPlans) break;
+            }
+
+            counter = 0;
+            Draw.color(unit.team.color);
+            Lines.stroke(0.75f);
+            x = unit.x; y = unit.y; s = unit.hitSize / 2f;
+            for (BuildPlan b : unit.plans()) {
+                Tmp.v2.trns(Angles.angle(x, y, b.drawx(), b.drawy()), s);
+                Tmp.v3.trns(Angles.angle(x, y, b.drawx(), b.drawy()), b.block.size * 2f);
+                Lines.circle(b.drawx(), b.drawy(), b.block.size * 2f);
+                Lines.line(x + Tmp.v2.x, y + Tmp.v2.y, b.drawx() - Tmp.v3.x, b.drawy() - Tmp.v3.y);
+                x = b.drawx();
+                y = b.drawy();
+                s = b.block.size * 2f;
+                counter += 1;
+                if (counter >= maxBuildPlans) break;
+            }
+        }
     }
+
+
 
     public <T extends Unit & Payloadc> void drawPayload(T unit){
         if(unit.hasPayload()){
@@ -1298,8 +1582,8 @@ public class UnitType extends UnlockableContent implements Senseable{
         float alpha = unit.shieldAlpha();
         float radius = unit.hitSize() * 1.3f;
         Fill.light(unit.x, unit.y, Lines.circleVertices(radius), radius,
-            Color.clear,
-            Tmp.c2.set(unit.team.color).lerp(Color.white, Mathf.clamp(unit.hitTime() / 2f)).a(0.7f * alpha)
+                Color.clear,
+                Tmp.c2.set(unit.team.color).lerp(Color.white, Mathf.clamp(unit.hitTime() / 2f)).a(0.7f * alpha)
         );
     }
 
@@ -1350,11 +1634,13 @@ public class UnitType extends UnlockableContent implements Senseable{
             float size = (itemSize + Mathf.absin(Time.time, 5f, 1f)) * unit.itemTime;
 
             Draw.mixcol(Pal.accent, Mathf.absin(Time.time, 5f, 0.1f));
+            Draw.alpha(unitTrans);
             Draw.rect(unit.item().fullIcon,
-            unit.x + Angles.trnsx(unit.rotation + 180f, itemOffsetY),
-            unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY),
-            size, size, unit.rotation);
+                    unit.x + Angles.trnsx(unit.rotation + 180f, itemOffsetY),
+                    unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY),
+                    size, size, unit.rotation);
             Draw.mixcol();
+            Draw.alpha(unitTrans);
 
             size = ((3f + Mathf.absin(Time.time, 5f, 1f)) * unit.itemTime + 0.5f) * 2;
             Draw.color(Pal.accent);
@@ -1363,11 +1649,11 @@ public class UnitType extends UnlockableContent implements Senseable{
             unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY),
             size, size);
 
-            if(unit.isLocal() && !renderer.pixelator.enabled()){
+            if(Core.settings.getBool("unitItemCarried") || (unit.isLocal() && !renderer.pixelator.enabled())){
                 Fonts.outline.draw(unit.stack.amount + "",
-                unit.x + Angles.trnsx(unit.rotation + 180f, itemOffsetY),
-                unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY) - 3,
-                Pal.accent, 0.25f * unit.itemTime / Scl.scl(1f), false, Align.center
+                        unit.x + Angles.trnsx(unit.rotation + 180f, itemOffsetY),
+                        unit.y + Angles.trnsy(unit.rotation + 180f, itemOffsetY) - 3,
+                        Pal.accent, 0.25f * unit.itemTime / Scl.scl(1f), false, Align.center
                 );
             }
 
@@ -1424,10 +1710,12 @@ public class UnitType extends UnlockableContent implements Senseable{
 
     public void drawOutline(Unit unit){
         Draw.reset();
+        Draw.alpha(unitTrans); //
 
         if(Core.atlas.isFound(outlineRegion)){
             applyColor(unit);
             applyOutlineColor(unit);
+            Draw.alpha(unitTrans);
             Draw.rect(outlineRegion, unit.x, unit.y, unit.rotation - 90);
             Draw.reset();
         }
@@ -1435,6 +1723,8 @@ public class UnitType extends UnlockableContent implements Senseable{
 
     public void drawBody(Unit unit){
         applyColor(unit);
+
+        Draw.alpha(unitTrans); //
 
         Draw.rect(region, unit.x, unit.y, unit.rotation - 90);
 
@@ -1445,6 +1735,9 @@ public class UnitType extends UnlockableContent implements Senseable{
         applyColor(unit);
 
         Draw.color(cellColor(unit));
+
+        Draw.alpha(unitTrans); //
+
         Draw.rect(cellRegion, unit.x, unit.y, unit.rotation - 90);
         Draw.reset();
     }
@@ -1510,9 +1803,11 @@ public class UnitType extends UnlockableContent implements Senseable{
                 float scl = shadowElevation * invDrown;
                 float elev = Mathf.slope(1f - leg.stage) * scl;
                 Draw.color(Pal.shadow);
+                Draw.alpha(unitTrans); //
                 Draw.rect(footRegion, leg.base.x + shadowTX * elev, leg.base.y + shadowTY * elev, position.angleTo(leg.base));
                 Draw.color();
             }
+            Draw.alpha(unitTrans); //
 
             Draw.mixcol(Tmp.c3, Tmp.c3.a);
 
@@ -1527,12 +1822,14 @@ public class UnitType extends UnlockableContent implements Senseable{
             Lines.line(legBaseRegion, leg.joint.x + Tmp.v1.x, leg.joint.y + Tmp.v1.y, leg.base.x, leg.base.y, false);
 
             if(jointRegion.found()){
+                Draw.alpha(unitTrans);
                 Draw.rect(jointRegion, leg.joint.x, leg.joint.y);
             }
         }
 
         //base joints are drawn after everything else
         if(baseJointRegion.found()){
+            Draw.alpha(unitTrans);
             for(int j = legs.length - 1; j >= 0; j--){
                 //TODO does the index / draw order really matter?
                 Vec2 position = unit.legOffset(legOffset, (j % 2 == 0 ? j/2 : legs.length - 1 - j/2)).add(unit);
@@ -1541,6 +1838,7 @@ public class UnitType extends UnlockableContent implements Senseable{
         }
 
         if(baseRegion.found()){
+            Draw.alpha(unitTrans);
             Draw.rect(baseRegion, unit.x, unit.y, rotation - 90);
         }
 
@@ -1594,7 +1892,7 @@ public class UnitType extends UnlockableContent implements Senseable{
 
         for(int i : Mathf.signs){
             Draw.mixcol(Tmp.c1.set(mechLegColor).lerp(Color.white, Mathf.clamp(unit.hitTime)), Math.max(Math.max(0, i * extension / mechStride), unit.hitTime));
-
+            Draw.alpha(unitTrans); //
             Draw.rect(legRegion,
             unit.x + Angles.trnsx(mech.baseRotation(), extension * i - boostTrns, -boostTrns*i),
             unit.y + Angles.trnsy(mech.baseRotation(), extension * i - boostTrns, -boostTrns*i),
@@ -1610,6 +1908,8 @@ public class UnitType extends UnlockableContent implements Senseable{
         }else{
             Draw.color(Color.white);
         }
+
+        Draw.alpha(unitTrans); //
 
         Draw.rect(baseRegion, unit, mech.baseRotation() - 90);
 
@@ -1634,6 +1934,13 @@ public class UnitType extends UnlockableContent implements Senseable{
         }
     }
 
+    public String typeColor() {
+        if (naval) return "[cyan]";
+        else if (allowLegStep) return "[magenta]";
+        else if (flying) return "[acid]";
+        else if (hovering) return "[sky]";
+        else return "[stat]";
+    }
     //endregion
 
     public static class UnitEngine implements Cloneable{
@@ -1650,6 +1957,7 @@ public class UnitType extends UnlockableContent implements Senseable{
         }
 
         public void draw(Unit unit){
+            if(unitTrans == 0) return;
             UnitType type = unit.type;
             float scale = type.useEngineElevation ? unit.elevation : 1f;
 
@@ -1673,16 +1981,18 @@ public class UnitType extends UnlockableContent implements Senseable{
             Draw.z(z);*/
 
             Draw.color(color);
+            Draw.alpha(unitTrans);
             Fill.circle(
-            unit.x + ex,
-            unit.y + ey,
-            (radius + Mathf.absin(Time.time, 2f, radius / 4f)) * scale
+                    unit.x + ex,
+                    unit.y + ey,
+                    (radius + Mathf.absin(Time.time, 2f, radius / 4f)) * scale
             );
             Draw.color(type.engineColorInner);
+            Draw.alpha(unitTrans);
             Fill.circle(
-            unit.x + ex - Angles.trnsx(rot + rotation, 1f),
-            unit.y + ey - Angles.trnsy(rot + rotation, 1f),
-            (radius + Mathf.absin(Time.time, 2f, radius / 4f)) / 2f  * scale
+                    unit.x + ex - Angles.trnsx(rot + rotation, 1f),
+                    unit.y + ey - Angles.trnsy(rot + rotation, 1f),
+                    (radius + Mathf.absin(Time.time, 2f, radius / 4f)) / 2f  * scale
             );
         }
 

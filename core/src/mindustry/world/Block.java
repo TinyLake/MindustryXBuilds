@@ -14,6 +14,8 @@ import arc.struct.*;
 import arc.util.*;
 import arc.util.pooling.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.NumberFormat;
+import mindustry.arcModule.draw.ARCBuilds;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -28,6 +30,7 @@ import mindustry.logic.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.blocks.*;
+import mindustry.world.blocks.defense.turrets.BaseTurret;
 import mindustry.world.blocks.environment.*;
 import mindustry.world.blocks.power.*;
 import mindustry.world.consumers.*;
@@ -355,7 +358,7 @@ public class Block extends UnlockableContent implements Senseable{
     /** Map of bars by name. */
     protected OrderedMap<String, Func<Building, Bar>> barMap = new OrderedMap<>();
     /** List for building up consumption before init(). */
-    protected Seq<Consume> consumeBuilder = new Seq<>();
+    public Seq<Consume> consumeBuilder = new Seq<>();
 
     protected TextureRegion[] generatedIcons;
     protected TextureRegion[] editorVariantRegions;
@@ -385,6 +388,7 @@ public class Block extends UnlockableContent implements Senseable{
         //delegates to entity unless it is null
         if(tile.build != null){
             tile.build.draw();
+            if (tile.block instanceof BaseTurret t) ARCBuilds.arcTurret((BaseTurret.BaseTurretBuild) tile.build);
         }else{
             Draw.rect(
                 variants == 0 ? region :
@@ -465,8 +469,64 @@ public class Block extends UnlockableContent implements Senseable{
         return width;
     }
 
+    public float drawPurePlaceText(String text, int x, int y, boolean valid){
+        if(renderer.pixelator.enabled()) return 0;
+
+        Color color = valid ? Pal.accent : Pal.remove;
+        Font font = Fonts.outline;
+        GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
+        boolean ints = font.usesIntegerPositions();
+        font.setUseIntegerPositions(false);
+        font.getData().setScale(1f / 4f / Scl.scl(1f));
+        layout.setText(font, text);
+
+        float width = layout.width;
+
+        float dx = x * tilesize + offset, dy = y * tilesize + offset + size * tilesize / 2f + 3;
+        font.draw(text, dx, dy + layout.height + 1, Align.center);
+        dy -= 1f;
+        Lines.stroke(2f, Color.darkGray);
+        Lines.line(dx - layout.width / 2f - 2f, dy, dx + layout.width / 2f + 1.5f, dy);
+        Lines.stroke(1f, color);
+        Lines.line(dx - layout.width / 2f - 2f, dy, dx + layout.width / 2f + 1.5f, dy);
+
+        font.setUseIntegerPositions(ints);
+        font.setColor(Color.white);
+        font.getData().setScale(1f);
+        Draw.reset();
+        Pools.free(layout);
+
+        return width;
+    }
     /** Drawn when placing and when hovering over. */
     public void drawOverlay(float x, float y, int rotation){
+    }
+
+    public float drawText(String text, float x, float y, boolean valid, float scl){
+        if(renderer.pixelator.enabled()) return 0;
+
+        Color color = valid ? Pal.accent : Pal.remove;
+        Font font = Fonts.outline;
+        GlyphLayout layout = Pools.obtain(GlyphLayout.class, GlyphLayout::new);
+        boolean ints = font.usesIntegerPositions();
+        font.setUseIntegerPositions(false);
+        font.getData().setScale(1f / 4f / Scl.scl(1f) * scl);
+        layout.setText(font, text);
+
+        float width = layout.width;
+
+        font.setColor(color);
+        float dx = x, dy = y;
+        font.draw(text, dx, dy + layout.height + 1, Align.center);
+        dy -= 1f;
+
+        font.setUseIntegerPositions(ints);
+        font.setColor(Color.white);
+        font.getData().setScale(1f);
+        Draw.reset();
+        Pools.free(layout);
+
+        return width;
     }
 
     public float sumAttribute(@Nullable Attribute attr, int x, int y){
@@ -477,6 +537,11 @@ public class Block extends UnlockableContent implements Senseable{
             .sumf(other -> !floating && other.floor().isDeep() ? 0 : other.floor().attributes.get(attr));
     }
 
+    public float sumAttribute(@Nullable Attribute attr, Tile tile){
+        if(attr == null) return 0;
+        return tile.getLinkedTilesAs(this, tempTiles)
+                .sumf(other -> !floating && other.floor().isDeep() ? 0 : other.floor().attributes.get(attr));
+    }
     public TextureRegion getDisplayIcon(Tile tile){
         return tile.build == null ? uiIcon : tile.build.getDisplayIcon();
     }
@@ -529,7 +594,7 @@ public class Block extends UnlockableContent implements Senseable{
             }
         }
 
-        if(requirements.length > 0){
+        if(canBeBuilt() && requirements.length > 0){
             stats.add(Stat.buildTime, buildCost / 60, StatUnit.seconds);
             stats.add(Stat.buildCost, StatValues.items(false, requirements));
         }
@@ -562,7 +627,7 @@ public class Block extends UnlockableContent implements Senseable{
 
     public void addLiquidBar(Liquid liq){
         addBar("liquid-" + liq.name, entity -> !liq.unlockedNow() ? null : new Bar(
-            () -> liq.localizedName,
+            () -> NumberFormat.formatPercent(liq.localizedName + " " + liq.emoji(), entity.liquids.get(liq), liquidCapacity),
             liq::barColor,
             () -> entity.liquids.get(liq) / liquidCapacity
         ));
@@ -571,14 +636,16 @@ public class Block extends UnlockableContent implements Senseable{
     /** Adds a liquid bar that dynamically displays a liquid type. */
     public <T extends Building> void addLiquidBar(Func<T, Liquid> current){
         addBar("liquid", entity -> new Bar(
-            () -> current.get((T)entity) == null || entity.liquids.get(current.get((T)entity)) <= 0.001f ? Core.bundle.get("bar.liquid") : current.get((T)entity).localizedName,
+            () -> current.get((T)entity) == null || entity.liquids.get(current.get((T)entity)) <= 0.001f ? Core.bundle.get("bar.liquid") :
+                    NumberFormat.formatPercent(current.get((T)entity).localizedName + " " + current.get((T)entity).emoji(), entity.liquids.get(current.get((T)entity)), liquidCapacity),
             () -> current.get((T)entity) == null ? Color.clear : current.get((T)entity).barColor(),
             () -> current.get((T)entity) == null ? 0f : entity.liquids.get(current.get((T)entity)) / liquidCapacity)
         );
     }
 
     public void setBars(){
-        addBar("health", entity -> new Bar("stat.health", Pal.health, entity::healthf).blink(Color.white));
+        addBar("health", entity -> new Bar(() -> NumberFormat.formatPercent("\uE813", entity.health, entity.maxHealth, 4),
+                () -> Pal.health, entity::healthf).blink(Color.white));
 
         if(consPower != null){
             boolean buffered = consPower.buffered;
@@ -586,7 +653,10 @@ public class Block extends UnlockableContent implements Senseable{
 
             addBar("power", entity -> new Bar(
                 () -> buffered ? Core.bundle.format("bar.poweramount", Float.isNaN(entity.power.status * capacity) ? "<ERROR>" : UI.formatAmount((int)(entity.power.status * capacity))) :
-                Core.bundle.get("bar.power"),
+                        NumberFormat.formatPercent(String.valueOf(Iconc.power),
+                                entity.power.status * consPower.usage * 60 * entity.timeScale() * (entity.shouldConsume() ? 1f : 0f),
+                                consPower.usage * 60 * entity.timeScale() * (entity.shouldConsume() ? 1f : 0f),
+                                 NumberFormat.buildPercent((int)(entity.timeScale() * 100 * (entity.shouldConsume() ? 1f : 0f) * entity.efficiency))),
                 () -> Pal.powerBar,
                 () -> Mathf.zero(consPower.requestedPower(entity)) && entity.power.graph.getPowerProduced() + entity.power.graph.getBatteryStored() > 0f ? 1f : entity.power.status)
             );
@@ -695,7 +765,12 @@ public class Block extends UnlockableContent implements Senseable{
 
     public void drawPlan(BuildPlan plan, Eachable<BuildPlan> list, boolean valid, float alpha){
         Draw.reset();
-        Draw.mixcol(!valid ? Pal.breakInvalid : Color.white, (!valid ? 0.4f : 0.24f) + Mathf.absin(Time.globalTime, 6f, 0.28f));
+        if (!valid)  Draw.mixcol(Pal.breakInvalid, 0.4f + Mathf.absin(Time.globalTime, 6f, 0.28f));
+        else {
+            if (player.unit().within(plan.x * tilesize,plan.y * tilesize,player.unit().type.buildRange))
+                Draw.mixcol(Color.white, 0.24f + Mathf.absin(Time.globalTime, 6f, 0.28f));
+            else Draw.mixcol(Color.valueOf("#FFE4B5"), 0.33f + Mathf.absin(Time.globalTime, 6f, 0.28f));
+        }
         Draw.alpha(alpha);
         float prevScale = Draw.scl;
         Draw.scl *= plan.animScale;
@@ -882,7 +957,7 @@ public class Block extends UnlockableContent implements Senseable{
     }
 
     public boolean isPlaceable(){
-        return isVisible() && (!state.rules.isBanned(this) || state.rules.editor) && supportsEnv(state.rules.env);
+        return Core.settings.getBool("allBlocksReveal") || isVisible() && (!state.rules.isBanned(this) || state.rules.editor) && supportsEnv(state.rules.env);
     }
 
     /** @return whether this block supports a specific environment. */

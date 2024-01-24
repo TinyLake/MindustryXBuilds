@@ -15,6 +15,7 @@ import arc.util.io.Streams.*;
 import arc.util.pooling.*;
 import arc.util.serialization.*;
 import mindustry.*;
+import mindustry.arcModule.ARCVars;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.ctype.*;
@@ -39,6 +40,7 @@ import java.io.*;
 import java.util.zip.*;
 
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ui.quickTool.AdvanceBuildTool.buildPlansConstrain;
 
 /** Handles schematics.*/
 public class Schematics implements Loadable{
@@ -97,7 +99,7 @@ public class Schematics implements Loadable{
         all.sort();
 
         if(shadowBuffer == null){
-            Core.app.post(() -> shadowBuffer = new FrameBuffer(maxSchematicSize + padding + 8, maxSchematicSize + padding + 8));
+            Core.app.post(() -> shadowBuffer = new FrameBuffer(ARCVars.getMaxSchematicSize() + padding + 8, ARCVars.getMaxSchematicSize() + padding + 8));
         }
     }
 
@@ -276,7 +278,7 @@ public class Schematics implements Loadable{
     /** Creates an array of build plans from a schematic's data, centered on the provided x+y coordinates. */
     public Seq<BuildPlan> toPlans(Schematic schem, int x, int y){
         return schem.tiles.map(t -> new BuildPlan(t.x + x - schem.width/2, t.y + y - schem.height/2, t.rotation, t.block, t.config).original(t.x, t.y, schem.width, schem.height))
-            .removeAll(s -> (!s.block.isVisible() && !(s.block instanceof CoreBlock)) || !s.block.unlockedNow()).sort(Structs.comparingInt(s -> -s.block.schematicPriority));
+            .removeAll(s -> buildPlansConstrain && ((!s.block.isVisible() && !(s.block instanceof CoreBlock)) || !s.block.unlockedNow())).sort(Structs.comparingInt(s -> -s.block.schematicPriority));
     }
 
     /** @return all the valid loadouts for a specific core type. */
@@ -366,7 +368,7 @@ public class Schematics implements Loadable{
     /** Creates a schematic from a world selection. */
     public Schematic create(int x, int y, int x2, int y2){
         Team team = headless ? null : Vars.player.team();
-        NormalizeResult result = Placement.normalizeArea(x, y, x2, y2, 0, false, maxSchematicSize);
+        NormalizeResult result = Placement.normalizeArea(x, y, x2, y2, 0, false, ARCVars.getMaxSchematicSize());
         x = result.x;
         y = result.y;
         x2 = result.x2;
@@ -542,7 +544,7 @@ public class Schematics implements Loadable{
         try(DataInputStream stream = new DataInputStream(new InflaterInputStream(input))){
             short width = stream.readShort(), height = stream.readShort();
 
-            if(width > 128 || height > 128) throw new IOException("Invalid schematic: Too large (max possible size is 128x128)");
+            if(width > 1024 || height > 1024) throw new IOException("Invalid schematic: Too large (max possible size is 128x128)");
 
             StringMap map = new StringMap();
             int tags = stream.readUnsignedByte();
@@ -568,7 +570,7 @@ public class Schematics implements Loadable{
 
             int total = stream.readInt();
 
-            if(total > 128 * 128) throw new IOException("Invalid schematic: Too many blocks.");
+            if(!Core.settings.getBool("arcInfSchem") && total > 128 * 128) throw new IOException("Invalid schematic: Too many blocks.");
 
             Seq<Stile> tiles = new Seq<>(total);
             for(int i = 0; i < total; i++){
