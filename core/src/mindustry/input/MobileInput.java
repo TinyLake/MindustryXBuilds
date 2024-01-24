@@ -11,7 +11,7 @@ import arc.scene.ui.ImageButton.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
-import mindustry.*;
+import mindustry.arcModule.ARCVars;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.entities.*;
@@ -274,7 +274,7 @@ public class MobileInput extends InputHandler implements GestureListener{
     public void buildUI(Group group){
 
         group.fill(t -> {
-            t.visible(this::showCancel);
+            t.visible(() ->showCancel() && !settings.getBool("showAdvanceToolTable"));
             t.bottom().left();
             t.button("@cancel", Icon.cancel, () -> {
                 player.unit().clearBuilding();
@@ -285,7 +285,7 @@ public class MobileInput extends InputHandler implements GestureListener{
         });
 
         group.fill(t -> {
-            t.visible(() -> !showCancel() && block == null && !hasSchem());
+            t.visible(() -> !showCancel() && block == null && !hasSchem() && !settings.getBool("showAdvanceToolTable"));
             t.bottom().left();
             t.button("@command", Icon.units, Styles.squareTogglet, () -> {
                 commandMode = !commandMode;
@@ -323,7 +323,9 @@ public class MobileInput extends InputHandler implements GestureListener{
                     //why the heck doesn't setOrigin work for scaling
                     img.setTranslation(img.getWidth(), 0f);
                 });
-
+                b.button(Icon.info, style, this::showSchematicPreview).disabled(f -> lastSchematic == null || lastSchematic.file != null);
+                b.row();
+                b.button(Icon.cancel, style, ()->{});
             }).margin(4f);
         });
     }
@@ -377,7 +379,7 @@ public class MobileInput extends InputHandler implements GestureListener{
     @Override
     public void drawTop(){
         if(mode == schematicSelect){
-            drawSelection(lineStartX, lineStartY, lastLineX, lastLineY, Vars.maxSchematicSize);
+            drawSelection(lineStartX, lineStartY, lastLineX, lastLineY, ARCVars.getMaxSchematicSize());
         }else if(mode == rebuildSelect){
             drawRebuildSelection(lineStartX, lineStartY, lastLineX, lastLineY);
         }
@@ -1006,18 +1008,23 @@ public class MobileInput extends InputHandler implements GestureListener{
             payloadTarget = null;
         }
 
-        movement.set(targetPos).sub(player).limit(speed);
-        movement.setAngle(Mathf.slerp(movement.angle(), unit.vel.angle(), 0.05f));
+        if (!Core.settings.getBool("viewMode")) {
+            movement.set(targetPos).sub(player).limit(speed);
+            movement.setAngle(Mathf.slerp(movement.angle(), unit.vel.angle(), 0.05f));
 
-        if(player.within(targetPos, attractDst)){
+            if(player.within(targetPos, attractDst)){
+                movement.setZero();
+                unit.vel.approachDelta(Vec2.ZERO, unit.speed() * type.accel / 2f);
+            }
+        }
+        else {
             movement.setZero();
-            unit.vel.approachDelta(Vec2.ZERO, unit.speed() * type.accel / 2f);
         }
 
         unit.hitbox(rect);
         rect.grow(4f);
 
-        player.boosting = collisions.overlapsTile(rect, EntityCollisions::solid) || !unit.within(targetPos, 85f);
+        player.boosting = collisions.overlapsTile(rect, EntityCollisions::solid) || !unit.within(targetPos, 85f) || Core.settings.getBool("forceBoost");
 
         unit.movePref(movement);
 
@@ -1058,6 +1065,13 @@ public class MobileInput extends InputHandler implements GestureListener{
         }
 
         unit.controlWeapons(player.shooting && !boosted);
+    }
+
+    public void arcClearPlans(){
+        player.unit().clearBuilding();
+        selectPlans.clear();
+        mode = none;
+        block = null;
     }
 
     //endregion

@@ -2,6 +2,7 @@ package mindustry.world.blocks.heat;
 
 import arc.math.*;
 import arc.util.io.*;
+import mindustry.arcModule.NumberFormat;
 import mindustry.graphics.*;
 import mindustry.ui.*;
 import mindustry.world.blocks.production.*;
@@ -33,7 +34,7 @@ public class HeatProducer extends GenericCrafter{
     public void setBars(){
         super.setBars();
 
-        addBar("heat", (HeatProducerBuild entity) -> new Bar("bar.heat", Pal.lightOrange, () -> entity.heat / heatOutput));
+        addBar("heat", (HeatProducerBuild entity) -> new Bar(()-> NumberFormat.formatPercent("热量", entity.heat , heatOutput), () -> Pal.lightOrange, () -> entity.heat / heatOutput));
     }
 
     public class HeatProducerBuild extends GenericCrafterBuild implements HeatBlock{

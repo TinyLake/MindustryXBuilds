@@ -1,0 +1,729 @@
+
+# [stat]学术端手册  [orange]手机端请横屏或缩放ui阅览
+
+[acid]---------------------[源码声明]-----------------------
+当前学术端已在github  CN-ARC组下公开源码，欢迎各位提出建议或提供pr！如果觉得好用欢迎star！
+[red]如果fork本端，请<arcVersion+=你自己的子版本>字符，或者你私仓版本的代号（如3.0.1selfclient)
+[orange]135端源码已在CN-ARC组旗下公开
+
+[acid]---------------------[作者声明]-----------------------
+关于更详细的游戏说明/机制，欢迎跟我补充。我们希望做一个[red]真正的核心数据库
+主要负责人：[violet]Lucky_Clover
+v3学术端制作团队：[violet]Lucky_Clover[white]、blac8、[orange]squirrel[]、[blue]xkldklp[white]、[yellow]miner
+v2-支持：[green]Root[blue]Channel[white]、[blue]MyIndustry2[white]、[yellow]wayzer、[brown]Xor
+翻译：
+[sky]Somall_dumpling
+工作元件详细说明：
+[yellow]Carrot
+[red]不鼓励传播到国外！未经授权请不要转载或搬运到任何游戏平台或论坛！但允许在Q群内传播
+
+[acid]---------------------[使用说明]-----------------------
+在正式游戏前先进入设置-[cyan]学术端！[white]调整好你需要的设置项
+[orange]首次游玩请设置好后重启一次，大量设置需要重启生效
+[acid]问题反馈：
+本端几乎所有外显和辅助都可以关闭，如果不能通常是[red]你没找到
+请自己仔细试一次调整设置，并阅读更新日志后再在群里提问
+[yellow]不要动不动喊bug，如果不会调群里先问，不要@制作团队
+[yellow]如果怀疑有bug，确定更新到最新版本，反馈时请汇报[red]如何复现+报错日志[white]。
+[red]学术端是给进阶玩家设计的，完全不适合入门玩家。不会用就不要用！
+
+[acid]特色
+更多的工厂显示！从超速范围到工作细节！
+更多的兵种显示！从攻击范围到单位血量！
+更多的辅助功能！从地图属性到蓝图大小！
+更多的地图设置！从更多队伍到强化波次！
+强化核心数据库！给大量工厂和兵种配备详细机制用法讲解！
+
+[acid]设置方面标识
+[cyan]cyan[white]标识的为覆盖原版设置
+[acid]acid[white]标识的为ARC端设置
+[red]red[white]涉及作弊相关的设置
+透明度实际上指的是显示程度，透明度为0不显示，为100全显示
+具体设置含义请翻看更新日志
+
+[acid]显示方面标识
+单位显示处的血|伤|速为[cyan]倍率[white]，盾|甲为数值
+
+[acid]声明
+鉴于本端改动辅助内容过多，为减少玩家不平衡，国内微泽系服务器[orange]将会收到你正在使用学术端的状态与配置信息
+如果你发现无法进入国内微泽系服务器，可能是版本过低，请加入核心数据库群或在其他群寻找最新学术端！
+PVP下影响操作的功能将被自动禁用！擅自修改代码规避限制[red]本端不负任何责任[white]。
+如果需要源码请私戳作者申请
+
+[acid]------------------------[mod兼容性]---------------------------
+已加入友链：模组-导入模组-[cyan]冷冻液[white]的mod资源站，有需要的可以在这个资源站找
+[cyan]定制|推荐mod~~移除重复功能及适配ui
+PVPnotifs_arc_version (author:?、klp、miner、blac8、lc)      [cyan]AI功能
+testing_utilities_lc_version  (author：MEEP、lc)    [orange]仅用于高级作图大师，一般不推荐使用
+wz-contentloader-mod 允许适配其他参数游玩
+
+[acid]可使用mod
+中文输入法修复
+Logic Debugger
+PictoLogic              [yellow]来多点涩图秋梨膏
+Unit Factory            [orange]仅用于高级作图大师，一般不推荐使用
+Time Extender
+
+[yellow]对大型mod的支持     [white]请各位帮忙反馈支持情况，如果有定制函数需要也可以找我
+对mod现支持更大的物品选择框！还挣扎于寻找几十种材料和工厂吗？
+创世神      --[green]支持
+Extra Utilities|EUE     --[green]支持
+
+[orange]不建议使用（可能有功能覆盖/明确不匹配）
+吐槽语言、中文翻译等mod     [red]会覆盖强化核心数据库
+透视类mod       [red]已包含
+隐藏物品解锁mod       [red]已包含
+更多兵种建筑等属性显示类mod       [red]已包含
+修改缩放类mod       [red]已包含
+MI2tool_lc_version (author:MI2->miner)   [red]已合并
+显示电量                 [red]已由miner合并进pvpnotifs
+
+[cyan]---------------------[更新日志]-----------------------
+[cyan]请仔细阅读学术端  [cyan]设置答案：
+将本答案填入设置界面并[orange]重启游戏[white]，欢迎来到学术端！
+
+[orange]后续更新日志可以前往学术端github官网查看
+https://github.com/CN-ARC/Mindustry-CN-ARC/
+
+[acid]5/9[white]:
+[violet]Lucky Clover[white]:
+适配中文翻译
+允许打开世界编辑器（在显示其他队伍状态设置开启后）
+[blue]xkldklp
+编辑器更新，修复编辑器bug
+
+[acid]5/8[white]: 3.0
+[violet]Lucky Clover[white]:
+修复常用功能
+增加设置-弱作弊-显示全部物品，可以排除原版核心数据库的隐藏资源限制
+
+[acid]5/7[white]: 3.0.beta0507a
+[violet]Lucky Clover[white]:
+基于v7更改，[red]大量功能暂未修复
+
+[cyan]---------------------[135]-----------------------
+[acid]4/30[white]: v2.24
+[violet]Lucky Clover[white]:
+编辑器允许自定义笔刷大小（可能导致同类mod冲突）
+编辑器允许自定义辅助线宽度(若设置成小于1，则不绘制）
+对于特定种类的兵种，玩家控制时血条上移（需要测试）
+
+[acid]4/25[white]: v2.23.1
+[violet]Lucky Clover[white]:
+复制单个建筑时显示属性-->设置
+更新无敌图标，感谢9527提供
+
+[acid]4/19[white]:
+[violet]Lucky Clover[white]:v2.23
+科技树透视器
+允许玩家编辑器开启作弊模式（无限火力）
+
+[acid]4/17[white]:
+[violet]Lucky Clover[white]:
+自定义编辑器简单适配巨多队伍（我测试了200个没问题，但依然建议只调30个以内），但过多可能导致[red]游戏崩溃，慎用
+只是很简单的做了框架，ui之类没调，并不建议经常使用。如果你的设备不佳，建议先备份数据以防炸档
+（若内存溢出无法启动，可通过删除数据文件夹的setting恢复）
+
+[acid]4/15[white]:  v2.22.1
+[violet]Lucky Clover[white]:
+调整banUnit的数量
+
+[acid]4/14[white]:
+[violet]Lucky Clover[white]:
+显示：单位携带的物品
+
+[acid]4/13[white]:
+[violet]Lucky Clover[white]:
+修复：纯净聊天下显示服务器toast信息
+修复：聊天框不会正常显示10条信息
+
+[acid]4/12[white]:  v2.22
+[violet]Lucky Clover[white]:
+允许强制移除服务器发送的信息版
+可以设置聊天框显示|导出的内容类型
+原版模式:字面
+纯净聊天：去除什么玩家进出服务器等的闲杂无用信息(只排除部分常见信息,不是全部排除)
+服务器记录：只显示服务器发送的showInfoToast类型信息，例如wz的corewar中单位购买信息
+全部记录：原版+服务器记录
+
+
+[acid]4/11[white]:
+[violet]Lucky Clover[white]:
+复制|清除信息。[orange]通过在信息框输入!help查询相关使用方法
+
+[acid]4/8[white]: v2.21
+[violet]Lucky Clover[white]:
+炮塔射程：添加[强制显示]，可在沙盒下使用（留意炮台部分需要重新设置）
+添加选择队伍框的缩小ui
+快捷设置：单位武器射程透明度
+[violet]欢迎大家填写学术端问卷：[cyan]https://www.wjx.cn/vj/e1yyEoa.aspx[violet] 反馈使用情况
+[white]可在'关于'处直接点链接
+
+[acid]4/7[white]:
+[violet]Lucky Clover[white]:
+参考[yellow]minertool[white]代码，炮台子弹显示
+
+[acid]4/5[white]: v2.20.1
+[violet]Lucky Clover[white]:
+单位显示数量及上限
+输入信息时，如果有前缀不会重复添加(不会出现/t/t)
+默认允许console
+
+[acid]4/1[white]: v2.20
+[violet]Lucky Clover[white]:
+更新至135.1（合并了一些更新内容。留意这会让学术端比服务器领先一个小版本，如果出现bug请及时反馈！)
+修复观察者下允许使用查看队伍状态的功能
+[yellow]miner[white]:
+修复复制单个方块自动选择的bug
+
+[acid]3/29[white]: v2.18.1
+[violet]Lucky Clover[white]:
+撤回：复制单个方块时自动选择
+修复ob下无限显示单位射程的bug
+观察者下允许使用查看队伍状态的功能（team255)
+
+[acid]3/23[white]: v2.18
+此次应为v6最后一次更新（如果是4/1发布新版本的话）
+[yellow]miner[white]:
+复制单个方块时自动选择
+修复若干bug
+[violet]Lucky Clover[white]:
+可识别wayzer服的gather命令（一个红圈，消失时表示可第二次发起gather)
+
+[acid]3/7[white]: v2.17
+[violet]Lucky Clover[white]:
+移除蓝图范围现在与选择蓝图大小保持一致
+添加微泽系的服务器模式编辑器
+
+[acid]3/1[white]: v2.16
+[violet]Lucky Clover[white]:
+合并anuke拒绝的好用pr部分代码:6512 6404
+移除flood模式
+标记更加显著
+增加单位射程警告线
+
+[acid]2/25[white]: v2.15.1
+[yellow]miner[white]:
+修复地图太小时崩溃bug
+[violet]Lucky Clover[white]:
+sync flood
+
+[acid]2/22[white]: v2.15
+[violet]Lucky Clover[white]:
+增加mod适配，以后会专门适配更多的Mod
+
+[acid]2/14[white]: v2.14.1
+[violet]Lucky Clover[white]:
+修改minisetting界面
+允许隐藏墙体
+shift复制物品图标（原版功能，关闭后可防止陆辅等飞行时无法选择建筑）
+
+[acid]2/14[white]: v2.14
+[violet]Lucky Clover[white]:
+flood-mode说明：请使用wayzer的contentmod！学术端flood模式仅在私服测试使用，普通玩家[red]请不要开启！--已移除
+允许关闭|打开逻辑边框
+修复少量bug
+
+[acid]2/6[white]: v2.13.5
+[violet]Lucky Clover[white]:
+update flood
+[yellow]miner[white]:
+修复mi2tool有时不显示的bug
+
+[acid]2/6[white]: v2.13.2
+[violet]Lucky Clover[white]:
+标记时会触发特效
+mi2tool中的血量会被简写
+[orange]flood模式
+修复bug
+[yellow]miner[white]:
+修复mi2tool有时不显示的bug
+mi2tool现在更好的进行字体调节
+
+[acid]2/4[white]:
+[violet]Lucky Clover[white]:
+戳一戳
+
+[acid]2/2[white]: v2.12.1
+[violet]Lucky Clover[white]:
+修复血量超出显示范围的bug
+修复无法标记的bug
+[yellow]miner[white]:
+mi2tool里boss敌人不显示红色
+修正若干体验
+
+[acid]1/28[white]: v2.12
+[yellow]miner[white]:
+更新若干调试内容等
+更新说明日志等
+[violet]Lucky Clover[white]:
+允许核心建造时，可以使用载荷源建造核心
+设置：装卸|分类显示物品图标
+
+[acid]1/15[white]: v2.11.1
+[violet]Lucky Clover[white]:
+修复bug
+
+[acid]1/15[white]: v2.11
+[yellow]miner[white]:
+重做mi2tool
+[violet]Lucky Clover[white]:
+小幅优化
+
+[acid]1/1[white]: v2.10.1
+[blue]xkldklp[white]:
+[red]mi2tool添加runwave
+波次升级：指定目标出怪点进行生成（填坐标）
+按j标记坐标
+[yellow]miner[white]:
+优化若干
+flag不为0时强制显示
+修复几个bug
+
+[acid]12/28[white]: v2.9.2
+[violet]Lucky Clover[white]:
+mod-导入mod界面，增加冷冻液的mod仓库链接
+回滚特性，将核心数据库放回手机主界面（交流群投票决定）
+模组模式：工作时间超长（超过1min）的工厂会显示生产剩余时间
+
+[acid]12/18[white]: v2.9.1
+[violet]Lucky Clover[white]:
+mod加载界面显著提醒
+玩家列表可始终显示队伍颜色（设置）
+[yellow]miner[white]:
+?
+[green]Root[blue]Channel[white][white]:
+修复bug
+
+[acid]12/15[white]:
+[violet]Lucky Clover[white]:
+标记想用的蓝图
+
+[acid]12/14[white]: v2.9
+[violet]Lucky Clover[white]:
+钻头常亮标记
+增加若干详细数值显示
+调整手机ui--核心数据库调整至暂停界面
+增加分享核心数据库（标记某物品、兵种等）
+
+[acid]12/13[white]: v2.8.4
+[violet]Lucky Clover[white]:
+修订wiki错误，并增加显示采矿时间属性
+
+[acid]12/12[white]: v2.8.3
+[violet]Lucky Clover[white]:
+MI2tool修改ui大小现在是用按钮来进行的
+增加分享波次信息
+
+[acid]12/11[white]:  v2.8.1
+[violet]Lucky Clover[white]:
+MI2tool现在和coreitem一样的方式进行调节
+[red]左上角学术端定制界面可能在未来会被强制推广，请留意
+
+[acid]12/9[white]:
+[violet]Lucky Clover[white]:
+快捷设置：放置在右边中部
+
+[acid]12/8[white]:      [cyan]v2.8
+[violet]Lucky Clover[white]:
+优化快捷设置
+team>6时兵种显示队伍id（HEX快乐功能）
+
+[acid]12/3[white]:      [cyan]v2.7.1
+[violet]Lucky Clover[white]:
+设置：单位|建筑详细信息   详细模式显示所有属性，且实时更新。
+简略模式只显示改变了的信息，且如果有新的改变不会更新
+[gray]举例：放在单位上，如果单位移速等属性改变，均会更新。
+但如果是空军转载了物品，只有详细模式会更新，简略模式需要移到其他方块并移回来，才会更新。
+
+[acid]12/2[white]:      [cyan]v2.7.1
+[violet]Lucky Clover[white]:
+修复：显示蓝图选择区的大小
+
+[acid]12/2[white]:      [cyan]v2.7
+[violet]Lucky Clover[white]:
+PR5129 Display Launchpad Import Timer
+
+[acid]12/1[white]:
+[violet]Lucky Clover[white]:
+显示蓝图选择区的大小
+
+[acid]11/30[white]:
+[violet]Lucky Clover[white]:
+作弊设置：允许无限制建造核心
+设置：arc核心物资--允许选择性显示兵种、物质，通过点击电量条切换
+
+[acid]11/29[white]:     [cyan]v2.6.2
+[violet]Lucky Clover[white]:
+更新学术端特殊ui界面及单位血量显示
+MI2tool更改为双击波次区打开|关闭
+[violet]Lucky Clover[white]+[brown]Xor[white]:
+特殊的全局语言设置-类似于router，但可以自定义语言内容。娱乐向功能
+
+[acid]11/25[white]:     [cyan]v2.6
+[violet]Lucky Clover[white]:
+更新学术端特殊ui界面
+现在在特制ui下，点击波次区弹出mi2box
+增加微泽插件模式设置，取消后显示原版玩家界面。微泽插件模式下，快捷命令将适配微泽系服务器命令
+[blue]xkldklp[white]：
+更多的地图属性设置
+
+[acid]11/25[white]:     [cyan]v2.5.1      [orange]135.1
+[violet]Lucky Clover[white]:
+更新：135
+加入wayzer的PC输入法补丁
+
+[acid]11/24[white]:     [cyan]v2.4.3
+[violet]Lucky Clover[white]:
+自动识别胜利波次---只有所有波次都有结束波时才计算。
+更改学术端定制界面的ui
+
+[acid]11/20[white]:     [cyan]v2.4.2
+[violet]Lucky Clover[white]:
+地图设置：胜利波次。这是战役属性，调出后其他学术端玩家可以通过这个识别地图进度。
+[orange]不影响原版，但谁能确保anuke怎么改呢？
+[brown]Xor[white]:
+修订炮台射程bug
+增加作弊功能：？
+
+[acid]11/21[white]:     [cyan]v2.4.1
+[green]Root[blue]Channel[white][white]:
+steam版
+[violet]Lucky Clover[white]:
+帧率重调装置：隐藏子弹功能。留意请搭配隐藏特效使用
+
+[acid]11/20[white]:     [cyan]v2.4
+[violet]Lucky Clover[white]:
+核心数据库-增加复制图标、名称的功能（手机玩家也可以复制图标了）
+手机增加显示核心数据库功能
+学术端特制左上角界面
+修复mi2tool读取无buff敌人时的bug
+现在会向服务器发送版本信息
+调整ui，ui在不展开时占用更小的面积
+[yellow]miner[white]:
+核心数据库：点击图标时也可复制
+电量-->显示全局
+修复若干bug
+修复无法读取电系武器是否工作的bug
+
+[acid]11/19[white]:     [cyan]v2.3
+[violet]Lucky Clover[white]:
+设置：首页飞机数量
+设置：首页飞机射程
+设置：首页飞机小弟模式
+设置：电量统计
+[brown]Xor[white]:
+实时修改小地图大小
+按F3建造所有被破坏的建筑，手机端按钮在侧边栏
+
+[acid]11/18[white]:     [cyan]v2.2.3
+[violet]Lucky Clover[white]:
+快捷设置：增加快捷sync|ob，重做界面
+炮台射程显示
+修复：资源计划显示的bug
+coreitem不会影响后面按钮的点击
+
+[acid]11/17[white]:     [cyan]v2.2.1
+[violet]Lucky Clover[white]:
+快捷设置界面
+手机端的核心资源显示不再影响触碰
+[violet]Lucky Clover[white]+[yellow]miner[white]：
+参考foo做电力显示和储存条
+
+[acid]11/16[white]:     [cyan]v2.1
+[violet]Lucky Clover[white]:
+修订changelog,核心数据库增加更多数据[材料]
+关闭环境光可以在PVP模式使用     [gray]--原版光照系统对手机玩家过于不友好,据调查大家普遍希望不要光照
+设置：忽视跳波限制   防止战役速通等误触
+增加更多质驱引导线设置项
+修改设置项的说明
+[brown]Xor[white]:
+透明度
+
+[acid]11/13[white]:     [cyan]v2.0
+[violet]Lucky Clover[white]:
+核心数据库：显示英文名
+大幅修订UI
+增加-学术小百科功能
+编辑器：地图大小可以几乎可以无限设置
+首页会飞过更多的兵种
+蓝图库增加档案馆外链
+修订翻译，更新至2.0
+[yellow]miner[white]：
+修复更多队伍属性的bug
+[brown]Xor[white]:
+修复设置恢复默认选项导致的bug
+[blue]xkldklp:
+增加作弊功能：？
+
+
+[acid]11/12[white]:
+[violet]Lucky Clover[white]:
+修复：建筑状态无法正常关闭
+mi2toolbox-增加显示出怪buff
+
+[acid]11/10[white]:  [cyan]v1.15.1
+[brown]Xor[white]:
+修复光照导致的内存泄露bug
+[violet]Lucky Clover[white]:
+调整、合并设置项
+
+[acid]11/9[white]
+[brown]Xor[white]:
+优化程序
+[violet]Lucky Clover[white]:
+修订翻译
+[yellow]miner[white]：
+fix bug
+
+[acid]11/8[white]
+[yellow]miner[white]：
+增加锁定玩家视角
+将pvpno核心资源显示整合进端
+[brown]Xor[white]:
+修复bug
+[violet]Lucky Clover[white]:
+调整作弊功能：开放部分作弊选项，留意他们通常是[orange]PVP禁用的
+
+[acid]11/6[white]
+[yellow]miner[white]:
+更新手机时间管理大师
+[brown]Xor[white]:
+建筑渲染等级|快捷键调节渲染
+
+[acid]11/5[white]
+[violet]Lucky Clover[white]:
+设置：所有玩家具有炫酷特效，此时他们的颜色和队伍颜色保持一致
+
+[acid]11/4[white]
+[yellow]miner[white]:
+优化玩家列表|MI2TOOLBOX
+增加：手机时间管理大师
+[violet]Lucky Clover[white]:
+修订单位显示的bug
+
+[acid]11/2[white]
+[green]Root[blue]Channel[white]:
+帮忙搞定github
+修订贴图bug
+[violet]Lucky Clover[white]:
+进入134.1时代
+设置：玩家射程具有炫酷特效      [orange]更多特效还在做
+统一化射程显示，之前有些有bug
+作弊:[red]时间管理大师   [cyan]玩家在建造|挖矿时依然能射击，服务器生效
+[brown]Xor:
+蓝图界面增加发电机计算
+设置界面增加主题颜色设置
+
+[acid]11/1[white]
+[violet]Lucky Clover[white]:
+增加查看单位装载物品的功能      参考了klp和mi2代码
+重写单位血条————[orange]显示单位血条控制血条|buff|携带；而单位满血时隐藏血条，buff和装载物照旧显示
+
+
+[acid]10/31[white]
+[blue]xkldklp:
+mi2tool 快捷自动射击切换
+mi2tool 添加跳转波次
+更强大的光照:可为太阳能多提供至多10倍的发电量的高光照以及更黑暗的低光照
+[brown]Xor:
+蓝图界面增加产量信息。增加选中方块后的蓝图预览功能。
+优化观察模式按钮显示。调整代码缩进。
+[violet]Lucky Clover[white]:
+修复10.0版本bug
+
+[acid]10/30[white]
+[blue]xkldklp:
+逻辑去边框      [yellow]快去用逻辑作图吧！
+[violet]Lucky Clover[white]:
+回复玩家名称
+开放[red]作弊模式[white]，留意他们只能在单机或是服务器非PVP状态下使用|有效
+
+[acid]10/29[white]
+[brown]Xor:
+增加-手机端固定视角
+[violet]Lucky Clover[white]:
+炮台警戒范围修正：只显示有子弹的
+
+[acid]10/28[white]
+[green]Root[blue]Channel[white][white]:
+git v134 到ARC仓库并指导LC如何合并
+[violet]Lucky Clover[white]:
+合并代码，[yellow]学术端进入134时代！
+增加-版本更新日志说明
+首次指引系统
+增加-模组模式   [orange]还在纠结原版4排总是找不到物品吗？模组模式可以增加装卸器|分类器选择框的大小
+[brown]Xor:
+隐藏挖矿光束    （LC:修改为显示光束）
+
+[acid]10/27[white]
+[brown]Xor:
+修复海军自动射击
+[yellow]miner[white]:
+逻辑链接顺序
+[violet]Lucky Clover[white]:
+开发者模式  [orange]普通玩家请不要设置这个，是给mod作者设计的
+设置：强制显示建筑所有地形加成效果
+只有不满血的单位才显示血条
+修复bug
+
+[acid]10/26[white]
+[brown]Xor:
+PC：自动射击
+关闭环境光  [red]作弊模式
+[violet]Lucky Clover[white]:
+增加自定义色彩影响的内容
+
+[acid]10/25[white]
+[violet]Lucky Clover[white]:
+重做设置系统与中文翻译的设置界面
+[orange]如果你找不到翻译，说明原来中文翻译[red]严重错误[orange]，我们进行了订正
+移植：Xor的电量消耗和挖掘进度
+测试性功能：修改主体颜色（在这个界面，输入6位html编码的颜色代码，重启即可更改主题颜色）
+如果依然为cyan说明输入失败。输入实例：DB7093
+手机端首页增加核心数据库
+[blue]xkldklp[white]:
+无条件踢人
+
+[acid]10/24[white]
+[violet]Lucky Clover[white]:
+优化核心数据库      [red]请PVP交流群的成员把每个炮台的数据库看一遍，真的给我整高血压了
+[cyan]实验性功能：[red]帧率提高器           [orange]大图下能提高一倍帧率，有损优化，自行取舍
+[red]重做设置系统
+[white]我反正感觉挺好用的，之前归类有点乱   [orange]不要问原来的设置都去哪了！
+设置：玩家操控和带领的单位将永不隐藏
+修复bug
+增加：单位攻速显示
+设置：队伍更换  [orange]仅限沙盒
+[yellow]miner[white]:
+可复制玩家名称
+[blue]xkldklp[white]:
+战役/菜单核心数据库无条件解锁
+取消编辑器内pvp清理战败队伍选项的仅pvp模式
+
+[acid]10/23[white]--[cyan]done by [violet]Lucky Clover
+[violet]Lucky Clover[white]:
+优化右下属性
+作弊-增加重建被ban建筑
+[red]增加地图任意属性设置
+提高mod兼容性，能显示mod单位
+关于其他队伍资源显示：从作弊模式移除，但PVP模式强制关闭
+增加设置——炮台警戒
+
+[acid]10/22[white]--[cyan]done by [violet]Lucky Clover
+[violet]Lucky Clover[white]:
+立场二段显示
+修复一些bug
+右下单位属性UI修复|美化|翻译
+
+[acid]10/21[white]--[cyan]done by [violet]Lucky Clover
+[violet]Lucky Clover[white]:
+github仓库化    感谢RootChannel的支持，仅限arc查看与编辑
+设置：编辑器作弊模式与显示方块
+超速/修复放置二段范围显示
+服务器交互      感谢wayzer提供的代码，支持wayzer系服务器
+设置：显示碰撞箱      根据size绘制六边形
+设置：始终显示是否被锁定
+添加简单的反修改源码设置
+修复大型蓝图范围不显示bug
+作弊模式--增加建造沙盒建筑
+
+[acid]10/20[white]--[cyan]done by [violet]Lucky Clover
+[violet]Lucky Clover[white]:
+设置：编辑器自定义更多队伍  [yellow]可以在编辑器中编辑更多队伍的属性
+移植：编辑器-波次可增加更多选项   [yellow]origin:klp
+
+[acid]10/19[white]--[cyan]done by [violet]Lucky Clover
+[violet]Lucky Clover[white]:
+显示：空军单位不会pathfind
+修复很多的bug
+设置：建筑属性，可开关和使用可调血量限制    [yellow]大部分移植mi2
+
+[acid]10/17-18[white]--[cyan]done by [violet]Lucky Clover
+[violet]Lucky Clover[white]:
+更新至132       [red]只完成部分，很多bug及报错是正常的！
+由于更新迭代未能完成，设置极其容易导致崩溃
+[red]禁用玩家的作弊类设置项，如果想要使用请私戳LC
+设置:保存战役与编辑器  [red]战役地图与战役同步，删除将导致地图重置！
+删去可能影响游戏进行的内容，优化bug
+
+
+[red]--------------------[作弊模式]-------------------[orange]已废弃
+[red]警告！服务器会接收到你使用作弊模式的信息！请合理使用！
+隐藏水印        [yellow]移除用户名与版本号水印
+高级工作包-开启下列功能
+    B: 将损坏的建筑加入建造序列
+    D: 自动给周围炮台、工厂装填携带的物质
+显示所有队伍资源    [yellow]显示所有队伍的资源和兵种状态
+解除禁蓝图限制     [yellow]在ban蓝图地图依然可使用蓝图
+强制覆盖        [yellow]单机[white]可无视类型强制覆盖建筑甚至地形墙
+超级逻辑链接        [yellow]单机[white]逻辑可超距离跨队伍进行链接，并且有效
+显示与修改其他队伍状态    [yellow]可查阅或[red]修改[yellow]其他队伍的工厂与兵种状态
+
+[gray]------------------------------------------------------------
+[gray]---------------------[131更新日志]-----------------------
+[gray]------------------------------------------------------------
+[acid]10/16[white]--[cyan]done by [violet]Lucky Clover
+[violet]Lucky Clover[white]:
+设置：可隐藏小于一定血量的单位    [cyan]优化性能！感觉卡吗，隐藏所有低级单位吧。
+[red]增加[cyan]请仔细阅读更新日志   [cyan]此行答案：怎么可能还在这啊，看最新的日志！
+（请不要分享本答案，自行作答）
+[red]再重申一遍，没阅读就不要用，不会用就别勉强用！这个端是给高手设计的
+设置：逻辑超级链接：使其跨范围和队伍链接目标    [yellow]add by klp，仅限单机
+
+[acid]10/15[white]--[cyan]done by [violet]Lucky Clover
+[violet]Lucky Clover[white]:
+修复：钍反贴图
+修复：强制建造
+优化手机显示，增加更多设置项
+设置：只有单位血量大于一定时才显示血条     10/16 应小锉刀要求将血量限制改成0-2500
+设置：炮台瞄准线
+
+[acid]10/14[white]--[cyan]done by [violet]Lucky Clover
+[violet]Lucky Clover[white]:
+[cyan]内置[white]：MI2 Table + all core resources
+吸收miner js mod: DR
+增加[red]作弊模式[white]设置     [red]服务器会接受相关信息
+显示效果修正
+将1000等显示改成2500后才显示k
+增强MI2 TOOLBOX
+单位透明度修复
+质驱引导线设置
+加入大量mi2功能
+单位射程常亮
+
+[acid]10/13[white]--[cyan]done by [violet]Lucky Clover
+[violet]Lucky Clover[white]:
+回滚特性：布修现在显示为橙色
+调整修理和超速范围的颜色
+透明度设置：修复与超速范围
+质驱线路常亮  [cyan]再也不怕找不到复杂的质驱连接了
+
+[acid]10/12[white]--[cyan]done by [violet]Lucky Clover
+[violet]Lucky Clover[white]:
+add APK version
+可调透视度--bridge/junction，参考MI2/透视mod
+任意时候均显示单位flag
+修复寄吧翻译
+强化核心数据库 [cyan] 增加更为深入的游戏机制
+增加设置--强制显示出怪点
+小地图-鼠标指示坐标
+超速范围透明度
+
+[violet]Lucky Clover[white]移植:
+单位透明度设置
+MI2牌钍反贴图
+单位射程显示
+单位在建筑上时显示双重属性
+最大蓝图大小设置
+advanced TAB  [red]玩家定位功能存在bug，需要点多几次，且只能定位至大概位置
+pr5921: Better Item Selection UI
+
+[acid]10/11[white]--[cyan]done by [violet]Lucky Clover
+1. 移植: mi2及pr中--更详细的炮台/子弹/兵种说明
+2. 移植：增加minimap大小设置
+
+[acid]内部测试版
+1. klp: 提供的增强出怪和地图设置
+2. 移植pr: 地图搜索
+3. 移植pr: 超速/修复等二段范围显示

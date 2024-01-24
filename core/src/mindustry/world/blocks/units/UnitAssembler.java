@@ -9,6 +9,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
+import mindustry.Vars;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.content.*;
@@ -92,7 +93,11 @@ public class UnitAssembler extends PayloadBlock{
     public void setBars(){
         super.setBars();
 
-        addBar("progress", (UnitAssemblerBuild e) -> new Bar("bar.progress", Pal.ammo, () -> e.progress));
+        addBar("progress", (UnitAssembler.UnitAssemblerBuild e) -> new Bar(() ->
+                Iconc.units + " " + (int)(e.progress * 100) + "%" + " | " +Strings.fixed((e.plan().time * (1-e.progress))/(60f * Vars.state.rules.unitBuildSpeed(e.team) * e.timeScale()),0) +  " s",
+                () -> Pal.ammo, () -> e.progress
+
+        ));
 
         addBar("units", (UnitAssemblerBuild e) ->
             new Bar(() ->
@@ -455,6 +460,22 @@ public class UnitAssembler extends PayloadBlock{
             progress = 0f;
             Fx.unitAssemble.at(spawn.x, spawn.y, 0f, plan.unit);
             blocks.clear();
+        }
+
+        @Override
+        public void drawBars(){
+            super.drawBars();
+            Draw.color(Color.black, 0.3f);
+            Lines.stroke(4f);
+            Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
+                    x + block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f);
+            Draw.color(Pal.accent, 1f);
+            Lines.stroke(2f);
+            Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
+                    x + 0.6f * (Mathf.clamp(progress, 0f, 1f) - 0.5f) * block.size * tilesize, y + block.size * tilesize / 2.5f);
+            Draw.color();
+
+            block.drawText((int)(progress * 100) + "%" + " | " +Strings.fixed((plan().time * (1-progress))/(60f * Vars.state.rules.unitBuildSpeed(team) * timeScale()),0) +  " s", x, y + block.size * tilesize / 2.5f - 5f, true, 0.9f);
         }
 
         @Override

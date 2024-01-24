@@ -1,0 +1,554 @@
+[cyan]------------------------[v146-9/4]---------------------------
+Fixed a variety of issues with unit & block cost multiplier rules
+Fixed many various crashes
+Fixed various Steam achievements not triggering
+Fixed pathfinding not being able to path through solid enemy blocks
+Fixed naval units sometimes attempting to pathfind through land
+Fixed game data not exporting with large saves on iOS
+Fixed water tiles with space background resulting in a black background
+Fixed internal legacy blocks being logic constants
+Fixed power node double-click leading to interaction rate limit triggering
+Fixed units sometimes being unkillable
+Fixed units with long paths sometimes recalculating forever
+Fixed serious issue with player units getting bugged in certain maps with puddles
+Fixed Neoplasia reactor sometimes not exploding
+Fixed units randomly dying when hitting corners
+Fixed piercing bullets permaturely hitting blocks "under" bullets
+Fixed missiles dealing double damage to units
+Fixed FPS not limiting accurately
+Added setting to disable all lighting
+Added logic unit autoPathfind command (default wave pathfinding)
+Made logic unbind command set @unit to null
+Made "any" environment accessible outside of sandbox
+Made payload loaders no longer accept inputs from payload unloaders
+Added logic sensors for shields, content ID (inverse of lookup command)
+Added logic particle effect instruction
+Added logic sync instruction
+Setting factory output points now updates "last accessed"
+Disabled team switching menu in multiplayer outside of sandbox/PvP
+Decreased canvas block silicon cost slightly
+Scathe ammo usage decreased to 15
+Buffed Precept unit
+
+[cyan]------------------------[v145-6/18]---------------------------
+Fixed logic icons for certain content being squished
+Fixed a freeze caused by stack routers
+Fixed Base AI not working sometimes
+Fixed mods not being able to override UI images
+Fixed map flags added in objectives not syncing
+Fixed a crash related to editing canvases
+Added votekick reason option, made votekicks cancel-able by admins (contributed by @frieda666)
+Added button for admins to switch player teams
+Added past player names / IPs to player trace info
+Added fill erase mode to editor
+Added option to adapt UI to Macbook notches (contributed by @alxgsv)
+Made Serpulo attack sectors not invade nearby sectors while you are attacking them
+Various improvements to the schematics UI (Contributed by @JniTrRny)
+Starting unit command can now be selected in reconstructors
+Units now retain their last command when controlled and un-controlled by players
+[cyan]------------------------[v144.3-5/23]---------------------------
+Fixed various crashes related to mods
+Fixed hail using incorrect heat sprite
+Fixed disabled payload conveyors still moving units on them
+Added new scorch sprite (Contributed by Fox1va_)
+[cyan]------------------------[v144.2-5/22]---------------------------
+Fixed Mindustry consuming ~44mb more RAM on startup than v6 did - this will fix random out-of-memory crashes on many low-end phones
+Fixed logic blocks not re-enabling blocks when unlinking from them
+Updated various Serpulo turret sprites/animations (Contributed by several community members on Discord)
+Re-added the base builder AI rule and enabled it in the existing custom game attack/PvP maps
+Buffed Tecta unit
+Made file chooser on Linux now use Zenity when possible
+Improved schematics used in base generation on Serpulo (Contributed by @BlueWolf3682)
+Various minor improvements to modding API
+[cyan]------------------------[v144.1-5/12]---------------------------
+Fixed Erekir missile units committing suicide after shooting (amazing I know)
+Reverted new gas sprites (too wacky)
+[cyan]------------------------[v144-5/12]---------------------------
+Fixed "any" environment button not enabling
+Fixed a crash related to an experimental rule being enabled on certain servers
+Fixed lag caused by sorters updating minimap very quickly
+Fixed Serpulo generated bases sometimes having unlinked power nodes
+Fixed JSON planets/sectors/status effects not having a mod name prefix - this may break bundles
+Fixed invalid liquid consumption stats on plasma bores
+Doubled max schematic size
+Canvas blocks now show their image preview in the schematics dialog
+Newly created maps and schematics now use the provided name as a filename instead of random numbers (Limited to alphanumeric characters)
+Added camera rectangle to map view, right-click to move the camera [Desktop]
+Added building damage indicators to minimap
+Added logic pathfind instruction - supports arbitrary coordinates
+Added unit health multiplier rule
+Added map 'ends after wave' rule (Contributed by @JniTrRny)
+Added search bar for wave UI (Contributed by @JniTrRny)
+Added new Erekir gas and liquid sprites (Contributed by @stacktrace-error)
+Added functionality to make overlays/floors place-able in mods (or servers with the revealedBlocks rule edited)
+Added piston regions to blocks that did not have them (Contributed by @MEEPofFaith)
+Added search bar to custom game menu
+Added 'rebuild area' button to mobile - note that the mod scheme-size V2.7.54 breaks this functionality - disable or update it to use this feature properly!
+Improved server list UI
+[cyan]------------------------[v143.1-4/8]---------------------------
+Fixed startup crash when changing UI scale to 5%
+Fixed network error when calling world logic explosion instruction with a null team
+Fixed sector background simulation not taking into account builder/repair units
+Fixed server-side network error when placing certain large logic schematics
+Fixed force projector hitbox being a square
+Fixed blank weapon stat boxes for certain units
+Fixed various regressions from last release (batteries being broken in mods, server menus not closing...)
+Added support for multi-barrel recoil in mods (Contributed by @MEEPofFaith)
+Made duo barrels move separately when shooting
+Improved stat display for various blocks (Contributed by @JniTrRny)
+[cyan]------------------------[v143-4/1]---------------------------
+Fixed some keybinds missing translations
+Fixed a long-standing pathfinding issue of enemy wave units exhibiting "confused" behavior in certain maps
+Fixed a server exploit that allowed users to block others from connecting
+Made entity sync network errors log a warning instead of forcibly disconnecting clients
+Made server list show multiple servers per row on wide screens
+Misc fixes to Steam lobby system; you can now set a name/color when hosting
+New UI for turret/unit weapon stats in core database (Contributed by @MEEPofFaith)
+Improved support for modded planets with different radii (Contributed by @Pasu4)
+Added support for cloudMesh: and HexSkyMesh as a type for planets in JSON mods
+Added world logic setProp instruction - while unfinished, this instruction allows world processors to set attributes of buildings and units, like health or items stored
+Added server Call#textInput method for getting text input from players (Contributed by @Darkness6030)
+Added server Call#followUpMenu method for showing menus that replace the last shown menu without an animation (Contributed by @Xasmedy)
+[cyan]------------------------[v142-2/22]---------------------------
+Actually fixed host research not syncing to clients correctly (for real this time)
+Fixed Steam workshop maps displaying an error upon update attempt
+Fixed sublimates targeting ducts but being unable to hit them
+Fixed sandbox displaying as survival with Discord integration
+Fixed certain blocks not displaying placement efficiency on mobile
+Fixed repair turrets incorrectly displaying status as red when not targeting
+Fixed 'hidden' content (planets, etc) displaying in list of mod content
+Fixed several crashes
+Fixed Oct shield break effect being hexagonal
+Improved mod dependency resolution (Contributed by @Phinner)
+Buffed Conquer slightly, nerfed Collaris range slightly
+Made Disrupt/Quell no longer target air units
+Added a boost toggle command for units that can support it (nova, etc) - keep in mind that these units cannot shoot when flying, and will not try to find a landing position if blocked
+Decreased frequency of save events on dedicated server; may fix some player connection performance issues
+
+[cyan]------------------------[v141.3-1/23]---------------------------
+Fixed host research not syncing to clients correctly
+Fixed clients being able to open research dialog
+Fixed a crash with certain mods
+Fixed "consumer-less" modded blocks always being at 100% efficiency
+
+[cyan]------------------------[v141.2-1/15]---------------------------
+Fixed Sublimate not working correctly
+Fixed Spanish language having corrupted letters
+Fixed server chatSpamLimit config having wrong value
+
+[cyan]------------------------[v141.1-1/13]---------------------------
+Fixed some new crashes
+Reverted addition to env mapping due to instability - do not use the Env#add method, it will not work correctly
+
+[cyan]------------------------[v141-1/12]---------------------------
+Fixed many various crashes
+Fixed world message being replaceable
+Fixed various Serpulo sectors having no waves
+Fixed inaccessible resources under blocks appearing in sector resources info
+Fixed units following wrong team when assisting
+Fixed liquid puddles not syncing in multiplayer
+Many other minor bugfixes
+Improved loading speed of maps with many power graphs
+Improved performance of entity removal (should make effects/bullets less laggy)
+Made Oct shield an octagon
+Made block statuses flash when low on power/liquid instead of staying green
+Disabled campaign research/state syncing across multiplayer due to confusion - campaigns should be completely separate now
+Decreased Scathe fog uncover range (75% of range -> 40% of range)
+Increased Quell build cost
+Nerfed Locus, buffed Vanquish, Conquer, Cleroi
+Added rule for unit crash damage
+
+[cyan]------------------------[v140.4-11/13]---------------------------
+Fixed some placeholder/unfinished sector descriptions in many languages
+Fixed payload blocks rotating to face unit direction
+Fixed duplicate UUIDs being allowed on servers in certain circumstances
+Fixed some minor crashes
+Fixed incorrect shoot speed multiplier display for blocks
+Fixed certain Erekir resources being unlocked while on Serpulo (although the tech tree items are still shared)
+Fixed commanding all unit factories triggering rate limit on servers
+Many other small bugfixes
+Increased long tap duration on mobile for less annoying accidental payload pickup
+Made most turrets target conveyors/ducts/etc again
+
+[cyan]------------------------[v140.3-11/11]---------------------------
+7.0, an update that has been in development for more than 1.5 years, is finally here.
+
+As with earlier major updates, there are too many changes to list in a single changelog - these are just the highlights.
+
+An entirely new planet - Erekir - with its own campaign, tech tree, units and blocks
+100+ new blocks to research
+18 new units for Erekir, 5 new naval support units on Serpulo
+Tanks, hovercrafts, insectoid walkers and more
+10 new turrets
+Entire new systems for transporting power and items on Erekir
+A new, more direct system of commanding units to move to specific locations and attack enemies
+Special thanks to the community members who helped create maps for use in the campaign:
+
+Mechanicalfish
+ThatOneBepis
+hhhi17
+Note: Server-wise, this release should be compatible with beta 140.x versions.
+
+
+[cyan]------------------------[v140.2-11/9]---------------------------
+This is a minor bugfix patch, intended to be the last beta release before 7.0 is fully available.
+
+Fixed minimap block colors not updating on servers with fog enabled
+Fixed some screen bounds issues on mobile
+Fixed some unit targeting issues relating to fog
+Fixed units piling up at last core in Origin sector
+Fixed coastline unlocking too early on Serpulo
+Minor improvements to campaign completion dialog
+Added basic descriptions to Coastline/Naval Fortress
+Made canvas blocks blend together seamlessly
+Various improvements to display of stats/multipliers (Contributed by @MEEPofFaith)
+
+[cyan]------------------------[v140.1-11/3]---------------------------
+This is a hotfix for block targeting and Steam achievements.
+
+Fixed blocks on Serpulo not being targeted by units/turrets
+Fixed ability descriptions for some Erekir units
+Fixed several Steam achievements not triggering correctly
+Fixed various crafter lights flickering
+Fixed BuildingBulletDestroyEvent not firing (API fix)
+Buffed Shockwave Tower range and reload slightly
+API change: Removed GameState.serverPaused, you can set to State.paused instead now
+Removed screenshots from game data export
+Added heat icon to stats for easier differentiation
+Added extra hint about building cores to Basin nuke warning
+
+[cyan]------------------------[v140-11/1]---------------------------
+This version can be considered a pre-release. The Erekir campaign is complete, and now has a final sector.
+With the release in 10 or so days, all that remains is bugfixes and balancing.
+
+Fixed canvas being available on Serpulo
+Fixed RTS AI targeting unreachable locations and thus piling up units more than necessary
+Fixed tanks not applying crush damage on servers
+Made RTS AI target more structure types
+Made Scathe turret only reveal fog in a fraction of its range - a spotter is required for more range
+Made tank assembler require cyanogen
+Hosts can now pause in multiplayer (this does not affect headless servers)
+Misc unit balance
+Decreased cost of T2/3 Erekir cores significantly
+:emojis: for blocks in chat now automatically get replaced when typing on desktop (try :router:)
+Added new achievements - these have NOT been tested yet, and some will be broken! [Steam]
+Added 'rebuild selection' key - holding B (default) and dragging in an area will add ghost blocks to your build queue (Desktop only)
+Added a packet rate limit for servers - sending packets too fast will get you blocked/kicked
+Added a default max player limit for servers
+Added a message block for Erekir (yes it's literally just a recolor, I had no better ideas)
+Added a unbreakable message block for mapmakers
+Added a keybind to select all units while in command mode (G by default)
+Added support for selecting multiple unit factories at once (still no area selection yet)
+Stretched out 'landing' sound to sync with core landing - yes, very lazy, I wil make a new one at some point
+Increased speed of block constructors slightly
+Campaign:
+
+Improved hints for Onset
+Reduced research costs for most blocks
+Added neoplasm to tech tree
+Fixed objectives still continuing after capture
+Fixed sectors across Erekir/Serpulo updating or preventing launch when they shouldn't
+Added 'abandon' button in pause menu for easier access
+Added Ground Zero tutorial (Original implementation by @MEEPofFaith)
+Added several new Erekir maps
+Added (WIP) final map completion dialog
+Removed Interplanetary Accelerator from Serpulo research (it has no use)
+
+[cyan]------------------------[v139-10/5]---------------------------
+v7 is now moving into the beta stage. The campaign system has been (mostly) stabilized, and all that remains in terms of content is approximately 5 more Erekir maps.
+
+Fixed neoplasm being incinerated when contacting slag-bearing blocks
+
+Fixed tank units not working correctly in mods
+
+Fixed ground units moving too "smoothly" around corners
+
+Misc balancing
+
+Made Corvus and Vela no longer stop to shoot when commanded to a target
+
+Made internal 'Canvas' block show up on Erekir - not particularly useful, but some may find it interesting
+
+Made liquid tanks/containers solid and targetable by turrets again
+
+Made mirror filter support increments smaller than 45 degrees (contributed by @hortiSquash)
+
+Made neoplasm slightly more dangerous / spread faster
+
+Removed the 'unit ammo' rule from custom game selection - this rule never worked properly on Erekir, is not balanced, and is seldom used
+
+Improved planet selection UI
+
+Improved item/block selection UI in certain blocks (contributed by @MEEPofFaith)
+
+Added Heat Router block (Code contributed by @l-Luna, sprites by @kapzduke)
+
+Added unit cost multiplier rule (Code partially contributed by @Ilya246)
+
+Misc improvements to AI behavior in "RTS" maps
+
+Mixed tech is now disabled as an option in new maps; the two tech trees are not meant to be used together - no, I will not be changing this back
+
+API change: Made Separator class use a drawer field like GenericCrafter
+
+Added several new maps [Campaign]
+
+Added first-time planet/campaign selection dialog [Campaign]
+
+Made 'global items' of Erekir and Serpulo separate [Campaign]
+
+Removed Tantros from solar system, visually [Campaign]
+
+Removed shield breaker block [Campaign]
+
+
+[cyan]------------------------[v138-8/30]---------------------------
+Fixed an exploit allowing logic-controlled units to transfer items with no cooldown
+Fixed objectives edit dialog being broken with UI scaling
+Fixed logic-spawned waves creating ghost units
+Fixed non-hittable units being targeted in certain situations
+Made player list more compact
+Made clicking player on list jump to their position
+Made Neoplasm stay on most liquids instead of disappearing
+Various minor balancing changes
+Changed interplanetary accelerator launch text for Serpulo with some beta clarification
+Added Call.openURI method for servers to share links to players
+Added sounds for most Erekir blocks/units
+Added descriptions for Erekir content
+Added two new campaign maps
+
+[cyan]------------------------[v137]---------------------------
+Fixed boosting units jittering when near obstacles [Mobile]
+Fixed command UI not refreshing when switching single units
+Fixed shielded walls being available on Serpulo
+Fixed core schematics not connecting bridges on launch
+Fixed some random network errors
+Fixed various resource duping bugs in launch UI
+Fixed certain Serpulo generators not displaying liquids
+Fixed lightning not being able to damage conveyors
+Fixed seams in tiles on certain mobile devices
+Fixed various duct-related blending issues
+Fixed stack router not outputting evenly
+Fixed legged units being able to drown even when the body is on land
+Fixed certain icons being squished
+Added Flux Reactor block (unbalanced!)
+Added Neoplasia Reactor block (unbalanced!)
+Added Heat Source block for sandbox
+Added command order system for Serpulo support units
+Made Neoplasm liquid accessible in liquid sources/core database
+Made drills only display mine-able resources from current map
+
+[cyan]------------------------[v136.1]---------------------------
+Fixed some menus being cut off in portrait mode [Mobile]
+Fixed Erekir core units being able to target enemies [Mobile]
+Fixed Erekir tutorial mentioning "shift key" on mobile devices
+Fixed objective display showing empty dialog box on click
+Fixed various minor crashes
+Fixed certain crafters always requiring power even with no input
+Fixed Erekir sector launch dialog showing copper/lead when Serpulo sector is loaded
+Fixed unit repair beams still drawing when unit boosts
+Fixed Arkycite floor applying wet status effect
+Added hint for controlling unit factory output locations
+Made mod browser filter out mods that don't have minGameVersion >= 136
+Disabled resource sharing in campaign
+Various minor tweaks and improvements to campaign maps
+
+[cyan]------------------------[v136]---------------------------
+The first Erekir build is finally here.
+
+This is a massive update that brings with it an entirely new planet - Erekir - with a completely new tech tree. It would take too long to list all the changes and additions in this build, but here are the highlights:
+
+A new, separate (but incomplete) campaign on the planet Erekir with its own mechanics
+100+ new blocks
+New units
+New items
+New factories, turrets, distribution blocks, support structures, etc
+New systems for "scripting" maps with logic blocks and objectives
+A fog-of-war system, available as a custom map rule and enabled on Erekir
+Countless tweaks, improvements and QoL changes
+Countless bugfixes... and probably even more new bugs
+The old command center and formation mechanics have been replaced with a 'RTS' command system. On desktop, holding [Shift] places you in 'Command Mode', which gives you RTS-like control over your units. Left-click to select groups of units, and right-click to order them to locations or targets.
+
+Note that there is currently no way to RTS-control builder/support units present on Serpulo, like Poly or Mega.
+
+Please keep in mind that the Erekir campaign is still completely unfinished, and covers less than half of the tech tree. While Erekir is nearly completely in terms of block/unit content, most things not covered in the campaign are completely unbalanced, and should be treated as such! Damage/speed/reload/etc values of end-game content are essentially untested placeholder values.
+
+For an introduction to the new systems introduced in this build, play the campaign first. The content added in this update has not been properly tested in custom maps or PvP yet.
+
+[cyan]------------------------[v136test 5/8]---------------------------
+下列更新由[yellow]carrot[white]提供
+单位
+星辉物品容量降至10，开火速率降低，射程大砍，体积变小，略微提高生命
+天垠和苍穹不再能携带物品
+爬爬系单位不再能协助建
+略微提高了爬爬系单位的移速和生命
+略微提高了玄武闪电的伤害
+将玄武的雷达范围从4格提升至22格
+电鳗（t2海辅）的射程7格->12格
+略微提高了战锤的生命和移速
+王座的子弹和分裂子弹伤害稍微提高
+
+炮塔
+双管炮:移除硫子弹，强化所需液体减半，加成效果减半
+分裂:玻璃范围伤害45
+火焰:液体需求12->6，加成效果减半
+冰雹:同上
+兰瑟:对建筑伤害100%->25%，造价新增30钛，取消无限穿透
+电弧:对建筑伤害100%->25%，液体需求12->6，加强效果减半
+蜂群:液体需求12->18，加成相应提高
+齐射:稍微提高铜，石墨，硫化物子弹伤害
+裂解:造价新增40钛，生命250->1000
+雷光:液体需求12->18，加成效果相应提高
+浪涌:液体需求12->18，加成效果相应提高，硫化物伤害35->45
+气旋:液体需求12->18，加成效果相应提高，玻璃子弹3伤害->9伤害，27范伤->48范围伤害，范围2.0格->3.1格，分裂子弹5伤害->8伤害；塑钢分裂子弹10伤害->12伤害
+
+质量驱动器:生命360->430
+热能坩埚:生命360->395
+巨浪合金厂:生命360->430
+RTG发电机:生命160->245
+解离机:生命360->465
+超速穹顶:生命360->485
+爆破钻头:生命640->765
+大型太阳能板:生命360->450
+逻辑处理器:生命160->190
+超核处理器:生命360->520
+内存库:生命160->200
+大型逻辑显示屏:生命1440->1800
+热能泵:生命360->430
+相位编制器:生命160->190
+载荷驱动器:生命1000->1550
+t5厂:生命3240->5830
+t4厂:生命1968->3035
+t3厂:生命1000->1200
+
+
+[cyan]------------------------[v135.1 4/1]---------------------------
+[acid]官方更新日志
+sdgjkhgjskgdf[gray]没错官方更新日志就是这个
+[acid]解读
+实际上是加了个新音游游戏，以及将爆混的图标改成了among us。（留意：[red]学术端没有同步这两个功能[white]）
+以及更新了若干代码
+
+[cyan]------------------------[v135 11/25]---------------------------
+[acid]官方更新日志
+Fixed spawnpoint shockwave not killing units
+Fixed payEnter logic command creating infinite ghost units
+Fixed modded attributes wiping vanilla attributes
+Fixed some overdrive projector application inconsistencies
+Fixed some launch pad export calculation issues
+Fixed some unloader edge cases
+Fixed unit sector icons not saving
+Switched Linux audio backend to PulseAudio - if your sound breaks/gets distorted after this release, please report it
+Added WorldLabel entity for server-side persistent messages (no documentation yet)
+[acid]解读
+修复逻辑兵种进入载荷|兵厂时产生幽灵bug
+修复一堆bug
+
+[cyan]------------------------[v134.1 11/02]---------------------------
+[acid]官方更新日志
+Fixed block pickup on servers not removing block clientside
+Fixed certain blocks rendering/updating incorrectly on payload conveyors
+Fixed shoot effects not following units
+Fixed a turret select crash
+Fixed disabled mods appearing in crash logs
+Added unit build requirements to stats
+Unloaders: Fixed outputs with equal weight not being alternated
+Modding: Added deprecated ChatFragment method so certain mods don't crash
+Modding: Added Weapon#layerOffset
+Modding: Added support for reading JSON environment flags as string arrays
+[acid]解读
+增加单位建造花费属性（可是有什么用呢）
+修复了一堆bug，没有改动游戏机制|属性
+
+[cyan]------------------------[v134 10/20]---------------------------
+[acid]官方更新日志
+Fixed leg units using ground unit pathfinding
+Fixed some payload-related crashes
+Fixed all ground waves on Serpulo being replaced by flying units
+Fixed host not being able to make other users admin locally
+Fixed payload constructor blocks sharing the same scroll bar position
+Fixed a pixelation-related crash
+Fixed plastanium conveyors having infinite capacity when loaded
+Minor tweaks to copper requirements of certain blocks
+Made turrets payload-loadable
+Payload blocks now draw and update on conveyors; this allows for functional moving turrets
+Added saved games search & improved map search filters (Contributed by @TranquillyUnpleasant)
+New unloader implementation; more reliable & better at balancing items across blocks (Contributed by @hortiSquash)
+
+[acid]解读
+抽水机|大修复现在需要铜
+蜂群射程：235-->240
+炮台可以在载荷传送带上使用
+装卸器：速度不再和接触面有关，锁11。但能识别缺少的物品并装卸，即不再浪费装卸尝试(例如工厂-空选装卸器-工厂或核心-空选装卸器-核心)
+增加保存游戏的搜索&增加地图筛选
+
+[cyan]------------------------[v133 10/10]---------------------------
+[acid]官方更新日志
+While this version is technically network-compatible with 132, it has significant behavioral differences that warrant a new release. I would rather not see massive desyncs on outdated servers.
+
+Fixed logic being able to control dead/removed units (e.g. into payload blocks)
+Fixed deconstructors not checking unit payload size/etc (direct deconstruction was added hours before release and not tested properly)
+Fixed deconstructors sometimes refunding slightly less than 100% of resources
+Fixed constructor being able to create banned/invalid blocks
+Fixed player units not disappearing when ctrl-clicked into payloads
+Made payload loader only move out containers when >= 1 item is at full capacity
+Added liquid container to tech tree
+
+[cyan]------------------------[v132 10/19]---------------------------
+[acid]官方更新日志
+Fixed tapping items in block inventories always requesting the whole stack
+Added Constructor & Large Constructor for block creation; may be useful for item/liquid transport via payload mass drivers
+Added 2x2 tank
+Added payload loader & unloader
+Added Deconstructor; converts a unit/block back into items at 100% efficiency
+Added cryofluid tiles (Contributed by @TranquillyUnpleasant)
+Added editor map search (Contributed by @TranquillyUnpleasant)
+Added system for displaying backgrounds in map rules; currently can't be changed without mods/plugins
+Added system for custom chat formatting in servers (see NetServer#chatFormatter)
+Changed Retusa weapon to a naval torpedo
+Made legged units able to drown when all legs are in deep water; buffed speed/damage to compensate
+Made all large mechs able to drown (slowly) when surrounded by deep water
+Made crawler explosions deal damage on death
+Made certain shoot effects track unit rotation (Contributed by @MEEPofFaith)
+Made sorter/gate output flips direction-dependent
+Major changes to planet API; will break mods with planets
+Increased surge alloy damage when exploded
+Converted game soundtrack to ogg (-> smaller filesize)
+Improved planet renderer water/ice reflections
+Added clouds to Serpulo
+Added naval waves to Serpulo
+Improved Serpulo sector generation, especially when water is involved
+Increased Desolate Rift difficulty slightly
+Older generated maps made in the two new preset sectors are now auto-deleted
+Logic: Made @tick/@time be synced; @tick no longer resets; @time is now @tick in ms instead of local client unix time
+Logic: Synced random number generator state (note that this will still not fully fix RNG desyncs)
+Logic: Added line numbers and jump line indicators
+Logic: Added variable display dialog
+Logic: Added unit command to enter payload blocks
+Logic: Many various bugfixes
+
+[cyan]------------------------[v131 9/13]---------------------------
+[acid]官方更新日志
+Fixed Omura bullet trail length not being cut off by impact
+Fixed BE server not auto-updating
+Fixed sectors having decreased production/export when loaded for a short time
+Fixed overdrive visuals displaying for liquid routers/conduits
+Fixed overdrive projectors not affecting passive sector damage calculations
+Fixed alpha bleeding not applying properly to mods
+Made Stained Mountains guardian easier
+Made pebbles look less like ore
+Made most configurable blocks show their inventory when tapped
+Made campaign bases slightly denser
+Made Base AI walls correspond to tier
+Many various improvements to wave editor (Contributed by @JrTRinny, @TranquillyUnpleasant)
+Made drills no longer show items under solid walls
+Unit rebalancing
+Added unit icon selection for sectors
+Added 'target' field to river noise filter
+Added repair turrets to Vela
+Added Deep Tainted Water, made standard tainted water shallow
+Added rivers to Serpulo generation
+Added cliff button to map editor
+Added subtle shadow to ships
+Added 2 new (untested!) campaign naval maps
+Improved compatibility with v6 mods

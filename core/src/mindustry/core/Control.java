@@ -38,6 +38,8 @@ import java.util.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
+import static mindustry.arcModule.ARCVars.arcui;
+import static mindustry.arcModule.DrawUtilities.arcBuildEffect;
 
 /**
  * Control module.
@@ -260,6 +262,7 @@ public class Control implements ApplicationListener, Loadable{
                                     //when already hosting, instantly build everything. this looks bad but it's better than a desync
                                     Fx.coreBuildBlock.at(build.x, build.y, 0f, build.block);
                                     build.block.placeEffect.at(build.x, build.y, build.block.size);
+                                    arcBuildEffect(build).at(build.x,build.y);
                                 }
                             }
                         }
@@ -298,6 +301,7 @@ public class Control implements ApplicationListener, Loadable{
 
         Fx.coreBuildBlock.at(build.x, build.y, 0f, build.block);
         build.block.placeEffect.at(build.x, build.y, build.block.size);
+        arcBuildEffect(build).at(build.x,build.y);
     }
 
     @Override
@@ -573,7 +577,7 @@ public class Control implements ApplicationListener, Loadable{
                 BaseDialog dialog = new BaseDialog("@confirm");
                 dialog.setFillParent(true);
 
-                float[] countdown = {60 * 11};
+                float[] countdown = {60 * 31};
                 Runnable exit = () -> {
                     Core.settings.put("uiscale", 100);
                     Core.settings.put("uiscalechanged", false);

@@ -8,6 +8,7 @@ import arc.math.geom.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.NumberFormat;
 import mindustry.content.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
@@ -133,6 +134,6 @@ public class ShieldArcAbility extends Ability{
 
     @Override
     public void displayBars(Unit unit, Table bars){
-        bars.add(new Bar("stat.shieldhealth", Pal.accent, () -> data / max)).row();
+        bars.add(new Bar(() -> NumberFormat.formatPercent((data < 0? "[red]":"") + "\uE84D", data, max), () -> Pal.accent, () -> data / max)).row();
     }
 }

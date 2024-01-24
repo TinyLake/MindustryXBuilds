@@ -10,7 +10,7 @@ public class Items{
     phaseFabric, surgeAlloy, sporePod, sand, blastCompound, pyratite, metaglass,
     beryllium, tungsten, oxide, carbide, fissileMatter, dormantCyst;
 
-    public static final Seq<Item> serpuloItems = new Seq<>(), erekirItems = new Seq<>(), erekirOnlyItems = new Seq<>();
+    public static final Seq<Item> serpuloItems = new Seq<>(), erekirItems = new Seq<>(), serpuloOnlyItems = new Seq<>(), erekirOnlyItems = new Seq<>();
 
     public static void load(){
         copper = new Item("copper", Color.valueOf("d99d73")){{
@@ -144,6 +144,8 @@ public class Items{
         graphite, thorium, silicon, phaseFabric, surgeAlloy, sand,
         beryllium, tungsten, oxide, carbide, fissileMatter, dormantCyst
         );
+
+        serpuloOnlyItems.addAll(serpuloItems).removeAll(erekirItems);
 
         erekirOnlyItems.addAll(erekirItems).removeAll(serpuloItems);
 

@@ -3,14 +3,22 @@ package mindustry.ui;
 import arc.*;
 import arc.graphics.g2d.*;
 import arc.input.*;
+import arc.math.Mathf;
+import arc.math.geom.Vec2;
 import arc.scene.*;
 import arc.scene.event.*;
 import arc.scene.ui.layout.*;
+import arc.util.Tmp;
+import mindustry.arcModule.ARCVars;
 import mindustry.gen.*;
+import mindustry.input.DesktopInput;
 
 import static mindustry.Vars.*;
 
 public class Minimap extends Table{
+
+    private float size;
+    private Element map;
 
     public Minimap(){
         background(Tex.pane);
@@ -38,7 +46,7 @@ public class Minimap extends Table{
 
                 if(renderer.minimap.getTexture() != null){
                     Draw.alpha(parentAlpha);
-                    renderer.minimap.drawEntities(x, y, width, height, 0.75f, false);
+                    renderer.minimap.drawEntities(x, y, width, height, renderer.minimap.getZoom(), false);
                 }
 
                 clipEnd();
@@ -87,11 +95,28 @@ public class Minimap extends Table{
 
             @Override
             public void clicked(InputEvent event, float x, float y){
-                ui.minimapfrag.toggle();
+                float sz = 16 * renderer.minimap.getZoom();
+                float dx = Mathf.clamp(Core.camera.position.x / 8, sz, world.width() - sz);
+                float dy = Mathf.clamp(Core.camera.position.y / 8, sz, world.height() - sz);
+
+                float ptilex = sz * 2 / width, ptiley = sz * 2 / height;
+                Vec2 pos = Tmp.v1.set(dx, dy).sub(sz, sz).add(x * ptilex, y * ptiley).scl(8);
+
+                if(control.input instanceof DesktopInput input){
+                    input.panning = true;
+                }
+
+                Core.camera.position.set(pos);
             }
         });
 
         update(() -> {
+
+            if ((float) ARCVars.getMinimapSize() != size) {
+                size = (float) ARCVars.getMinimapSize();
+                clearChildren();
+                buildMap();
+            }
 
             Element e = Core.scene.hit(Core.input.mouseX(), Core.input.mouseY(), true);
             if(e != null && e.isDescendantOf(this)){
@@ -100,5 +125,38 @@ public class Minimap extends Table{
                 Core.scene.setScrollFocus(null);
             }
         });
+
+    }
+
+    private void buildMap() {
+        float margin = 5f;
+        map = new Element(){
+            {
+                setSize(Scl.scl(size));
+            }
+
+            @Override
+            public void act(float delta){
+                setPosition(Scl.scl(margin), Scl.scl(margin));
+
+                super.act(delta);
+            }
+
+            @Override
+            public void draw(){
+                if(renderer.minimap.getRegion() == null) return;
+                if(!clipBegin()) return;
+
+                Draw.rect(renderer.minimap.getRegion(), x + width / 2f, y + height / 2f, width, height);
+
+                if(renderer.minimap.getTexture() != null){
+                    Draw.alpha(parentAlpha);
+                    renderer.minimap.drawEntities(x, y, width, height, 3f / renderer.minimap.getZoom(), false);
+                }
+
+                clipEnd();
+            }
+        };
+        add(map).size(size);
     }
 }

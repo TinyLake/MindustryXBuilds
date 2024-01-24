@@ -38,6 +38,8 @@ public enum Binding implements KeyBind{
     schematic_flip_y(KeyCode.x),
     schematic_menu(KeyCode.t),
 
+    bossKey(KeyCode.f12),
+
     category_prev(KeyCode.comma, "blocks"),
     category_next(KeyCode.period),
 
@@ -66,6 +68,9 @@ public enum Binding implements KeyBind{
     block_info(KeyCode.f1),
     toggle_menus(KeyCode.c),
     screenshot(KeyCode.p),
+    superUnitEffect(KeyCode.o),
+    toggle_block_render(KeyCode.unknown),
+    toggle_unit(KeyCode.unknown),
     toggle_power_lines(KeyCode.f5),
     toggle_block_status(KeyCode.f6),
     player_list(KeyCode.tab, "multiplayer"),
@@ -74,7 +79,13 @@ public enum Binding implements KeyBind{
     chat_history_next(KeyCode.down),
     chat_scroll(new Axis(KeyCode.scroll)),
     chat_mode(KeyCode.tab),
+    point(KeyCode.j),
+    showRTSAi(KeyCode.l),
     console(KeyCode.f8),
+    lockonLastMark(KeyCode.unknown),
+    arcDetail(KeyCode.unknown),
+    arcScanMode(KeyCode.unknown),
+    oreAdsorption(KeyCode.unknown),
     ;
 
     private final KeybindValue defaultValue;
