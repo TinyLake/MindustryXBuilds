@@ -3,6 +3,8 @@ package mindustryX;
 import arc.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.*;
+import mindustry.arcModule.toolpack.*;
 import mindustry.gen.*;
 import mindustry.input.*;
 import mindustryX.features.Settings;
@@ -55,6 +57,14 @@ public class Hooks implements ApplicationListener{
         if(message == null) return null;
         if(Vars.ui != null){
             if(MarkerType.resolveMessage(message)) return message;
+            try{
+                ARCVars.arcui.MessageDialog.resolveMsg(message, sender);
+                if(sender != null){
+                    message = (sender.unit().isNull() ? Iconc.alphaaaa : sender.unit().type.emoji()) + " " + message;
+                }
+            }catch(Exception e){
+                Log.err(e);
+            }
         }
         return message;
     }
@@ -77,6 +87,9 @@ public class Hooks implements ApplicationListener{
         }
         if(input.keyTap(Binding.toggle_block_render)){
             settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
+        }
+        if(input.keyTap(Binding.arcScanMode)){
+            ArcScanMode.enabled = !ArcScanMode.enabled;
         }
     }
 }

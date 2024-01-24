@@ -5,6 +5,7 @@ import arc.graphics.g2d.*;
 import arc.math.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.arcModule.draw.*;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.gen.*;
@@ -76,6 +77,8 @@ public class BaseTurret extends Block{
         if(fogRadiusMultiplier < 0.99f && state.rules.fog){
             Drawf.dashCircle(x * tilesize + offset, y * tilesize + offset, range * fogRadiusMultiplier, Pal.lightishGray);
         }
+        if(Core.settings.getBool("arcTurretPlacementItem"))
+            ARCBuilds.turretPlaceDraw(x * tilesize + offset, y * tilesize + offset, this);
     }
 
     @Override
@@ -95,7 +98,7 @@ public class BaseTurret extends Block{
 
         @Override
         public void drawSelect(){
-            Drawf.dashCircle(x, y, range(), team.color);
+            drawPlace(tileX(), tileY(), 0, true);
         }
 
         public float estimateDps(){

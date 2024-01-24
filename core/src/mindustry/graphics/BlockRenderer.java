@@ -10,6 +10,7 @@ import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.ARCVars;
 import mindustry.content.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
@@ -418,7 +419,7 @@ public class BlockRenderer{
 
             //comment wasVisible part for hiding?
             if(block != Blocks.air && (visible || build.wasVisible)){
-                if(RenderExt.blockRenderLevel > 1) block.drawBase(tile);
+                RenderExt.onBlockDraw(tile, block, build);
                 Draw.reset();
                 Draw.z(Layer.block);
 
@@ -446,11 +447,23 @@ public class BlockRenderer{
 
                     if(build.team != pteam){
                         if(build.block.drawTeamOverlay){
+                            Draw.z(Layer.block + 0.01f);
                             build.drawTeam();
-                            Draw.z(Layer.block);
                         }
-                    }else if(renderer.drawStatus && block.hasConsumers){
+                    }
+                    if(renderer.drawStatus && block.hasConsumers && ARCVars.arcInfoControl(build.team)){
+//                        Draw.z(Layer.power + 1);
                         build.drawStatus();
+                    }
+
+                    if(RenderExt.drawBlockDisabled && ARCVars.arcInfoControl(build.team) && !build.enabled()){
+                        Draw.z(Layer.power + 1);
+                        build.drawDisabled();
+                    }
+
+                    if(renderer.drawBars){
+                        Draw.z(Layer.turret + 4f);
+                        build.drawBars();
                     }
                 }
                 Draw.reset();

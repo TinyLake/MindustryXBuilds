@@ -10,6 +10,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.pooling.*;
+import mindustryX.features.MarkerType;
 import mindustry.content.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
@@ -32,6 +33,8 @@ public class MinimapRenderer{
 
     private float lastX, lastY, lastW, lastH, lastScl;
     private boolean worldSpace;
+    public boolean forceShowPlayer = true;
+    public boolean unitDetailsIcon = false;
     private IntSet updates = new IntSet();
     private float updateCounter = 0f;
 
@@ -147,11 +150,40 @@ public class MinimapRenderer{
 
         rect.set((dx - sz) * tilesize, (dy - sz) * tilesize, sz * 2 * tilesize, sz * 2 * tilesize);
 
+        float Rwidth = !fullView ? Core.camera.width / rect.width * w : Core.camera.width / (world.width() * tilesize) * w;
+        float Rheight = !fullView ? Core.camera.height / rect.width * h : Core.camera.height / (world.height() * tilesize) * h;
+        Lines.rect(x + transfromX(fullView,w,Core.camera.position.x) - Rwidth/2,y + transfromY(fullView,h,Core.camera.position.y) - Rheight/2,Rwidth, Rheight );
+
+        MarkerType.eachActive(a -> {
+            Draw.color(a.color);
+            Lines.stroke(Scl.scl(3f) * (1 - (Time.time % 180 + 30) / 210));
+
+            float rx = transfromX(fullView, w, a.x);
+            float ry = transfromY(fullView, h, a.y);
+
+            Lines.circle(x + rx, y + ry, scale(100f) * (Time.time % 180) / 180);
+            Lines.stroke(Scl.scl(3f));
+            Lines.circle(x + rx, y + ry, scale(20f));
+            Lines.arc(x + rx, y + ry, scale(18f), 1 - (Time.time - a.time) / MarkerType.retainTime);
+            Draw.reset();
+        });
+
         for(Unit unit : units){
             if(unit.inFogTo(player.team()) || !unit.type.drawMinimap) continue;
 
             float rx = !fullView ? (unit.x - rect.x) / rect.width * w : unit.x / (world.width() * tilesize) * w;
             float ry = !fullView ? (unit.y - rect.y) / rect.width * h : unit.y / (world.height() * tilesize) * h;
+
+            if(unitDetailsIcon){
+                float scale = Scl.scl(1f) / 2f * scaling * 32f * unit.hitSize / tilesize / 2;
+                var region = unit.icon();
+                Draw.rect(region, x + rx, y + ry, scale, scale * (float)region.height / region.width, unit.rotation() - 90);
+                Draw.reset();
+                Draw.mixcol(unit.team.color, 0.3f);
+                Draw.rect(region, x + rx, y + ry, scale, scale * (float)region.height / region.width, unit.rotation() - 90);
+                Draw.reset();
+                continue;
+            }
 
             Draw.mixcol(unit.team.color, 1f);
             float scale = Scl.scl(1f) / 2f * scaling * 32f;
@@ -160,11 +192,11 @@ public class MinimapRenderer{
             Draw.reset();
         }
 
-        if(fullView && net.active()){
+        if(net.active() && (fullView || forceShowPlayer)){
             for(Player player : Groups.player){
                 if(!player.dead()){
-                    float rx = player.x / (world.width() * tilesize) * w;
-                    float ry = player.y / (world.height() * tilesize) * h;
+                    float rx = !fullView ? (player.x - rect.x) / rect.width * w : player.x / (world.width() * tilesize) * w;
+                    float ry = !fullView ? (player.y - rect.y) / rect.width * h : player.y / (world.height() * tilesize) * h;
 
                     drawLabel(x + rx, y + ry, player.name, player.color);
                 }
@@ -261,8 +293,15 @@ public class MinimapRenderer{
         });
     }
 
+    private float transfromX(boolean withLabels,float w,float x){
+        return !withLabels ? (x - rect.x) / rect.width * w : x / (world.width() * tilesize) * w;
+    }
+    private float transfromY(boolean withLabels,float h,float y){
+        return !withLabels ? (y - rect.y) / rect.width * h : y / (world.height() * tilesize) * h;
+    }
+
     public void drawSpawns(float x, float y, float w, float h, float scaling){
-        if(!state.rules.showSpawns || !state.hasSpawns() || !state.rules.waves) return;
+        if(!(state.rules.showSpawns || Core.settings.getBool("alwaysshowdropzone")) || !state.hasSpawns() || !state.rules.waves) return;
 
         TextureRegion icon = Icon.units.getRegion();
 
