@@ -1,6 +1,13 @@
 package mindustry.world.blocks.defense.turrets;
 
+import arc.Core;
 import arc.math.*;
+import arc.struct.*;
+import arc.util.*;
+import arc.scene.ui.layout.Table;
+import mindustry.type.*;
+import mindustry.graphics.Pal;
+import mindustry.ui.Bar;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 
@@ -19,7 +26,22 @@ public class ReloadTurret extends BaseTurret{
 
         if(coolant != null){
             stats.remove(Stat.booster);
-            stats.add(Stat.booster, StatValues.boosters(reload, coolant.amount, coolantMultiplier, true, l -> l.coolant && consumesLiquid(l)));
+
+            //TODO this is very hacky, there is no current way to check if a ConsumeLiquidBase accepts something individually. fix later
+            ObjectSet<Liquid> notBooster = content.liquids().select(l -> {
+                for(Consume c : consumers){
+                    if(!c.booster && c != coolant &&
+                        ((c instanceof ConsumeLiquid cl && cl.liquid == l) ||
+                        (c instanceof ConsumeLiquids cl2 && Structs.contains(cl2.liquids, s -> s.liquid == l)) ||
+                        (c instanceof ConsumeLiquidFilter clf && clf.filter.get(l)))){
+
+                        return true;
+                    }
+                }
+                return false;
+            }).asSet();
+
+            stats.add(Stat.booster, StatValues.boosters(reload, coolant.amount, coolantMultiplier, true, l -> l.coolant && consumesLiquid(l) && !notBooster.contains(l)));
         }
     }
 
@@ -42,5 +64,14 @@ public class ReloadTurret extends BaseTurret{
         protected float baseReloadSpeed(){
             return efficiency;
         }
+
+        @Override
+        public void displayBars(Table bars){
+            super.displayBars(bars);
+            //bar for shoot cd
+            bars.add(new Bar(() -> Core.bundle.format("bar.reloadDetail", (int)(reloadCounter * 100 / reload)), () -> Pal.ammo, () -> (float)(reloadCounter / reload)));
+            bars.row();
+        }
+
     }
 }
