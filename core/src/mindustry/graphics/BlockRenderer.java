@@ -10,6 +10,7 @@ import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.arcModule.ARCVars;
 import mindustry.content.*;
 import mindustry.game.EventType.*;
 import mindustry.game.*;
@@ -444,14 +445,25 @@ public class BlockRenderer{
                         Draw.z(Layer.block);
                     }
 
+                    if(renderer.drawBars){
+                        build.drawBars();
+                        Draw.z(Layer.block);
+                    }
+
                     if(build.team != pteam){
                         if(build.block.drawTeamOverlay){
                             build.drawTeam();
                             Draw.z(Layer.block);
                         }
-                    }else if(renderer.drawStatus && block.hasConsumers){
+                    }
+                    if(renderer.drawStatus && block.hasConsumers && ARCVars.arcInfoControl(build.team)){
                         build.drawStatus();
                     }
+
+                    if(Core.settings.getBool("blockdisabled") && ARCVars.arcInfoControl(build.team) && !build.enabled()){
+                        build.drawDisabled();
+                    }
+
                 }
                 Draw.reset();
             }else if(!visible){

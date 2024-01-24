@@ -5,6 +5,7 @@ import arc.math.geom.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
+import mindustry.arcModule.ui.*;
 import mindustryX.features.ui.*;
 
 import static mindustry.Vars.*;
@@ -13,6 +14,9 @@ import static mindustry.content.UnitTypes.gamma;
 public class UIExt{
     public static AdvanceToolTable advanceToolTable;
     public static TeamSelectDialog teamSelect;
+    public static OtherCoreItemDisplay otherCoreItemDisplay;
+    public static HudSettingsTable hudSettingsTable = new HudSettingsTable();
+    public static AdvanceBuildTool advanceBuildTool = new AdvanceBuildTool();
 
     public static void init(){
         teamSelect = new TeamSelectDialog();
@@ -21,6 +25,22 @@ public class UIExt{
         advanceToolTable.name = "advanceToolTable";
         advanceToolTable.right().bottom();
         advanceToolTable.visible(() -> Core.settings.getBool("showAdvanceToolTable"));
+
+        otherCoreItemDisplay = new OtherCoreItemDisplay();
+        ui.hudGroup.fill(t -> {
+            t.name = "otherCore";
+            t.left().add(otherCoreItemDisplay);
+            t.visible(() -> ui.hudfrag.shown && Core.settings.getBool("showOtherTeamResource"));
+        });
+
+        hudSettingsTable = new HudSettingsTable();
+        advanceBuildTool = new AdvanceBuildTool();
+        ui.hudGroup.fill(t -> {
+            t.name = "quickTool";
+            t.right().add(hudSettingsTable).growX();
+            t.row().add(advanceToolTable).growX();
+            t.visible(() -> ui.hudfrag.shown && Core.settings.getBool("showQuickToolTable"));
+        });
     }
 
     public static void buildPositionRow(Table tt, Vec2 vec){

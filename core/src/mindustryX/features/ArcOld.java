@@ -208,7 +208,6 @@ public class ArcOld{
             c.addCategory("arcStrongCheat");
             c.checkPref("showOtherTeamResource", false);
             c.checkPref("showOtherTeamState", false);
-            c.checkPref("selectTeam", false);
             c.checkPref("playerNeedShooting", false);
             c.checkPref("otherCheat", false);
         });

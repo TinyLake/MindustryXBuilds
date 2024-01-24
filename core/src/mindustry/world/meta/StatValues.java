@@ -413,22 +413,21 @@ public class StatValues{
     public static StatValue abilities(UnitType unit, Seq<Ability> abilities){
         return table -> {
             table.row();
-            table.table(t -> {
-                t.background(Styles.grayPanel);
-                for(Ability a : abilities){
-                    if(!a.display) continue;
-                    String description = StatExt.description(a, unit);
-                    if(description != null){
-                        t.table(tt -> {
-                            tt.add(a.localized()).width(100f);
-                            tt.add(description).minWidth(350f).padRight(12f).padBottom(5f);
-                        });
-                    }else{
-                        t.add(a.localized()).minWidth(350f).padRight(12f).padBottom(5f);
-                    }
+            table.table(t -> abilities.each(ability -> {
+                if(ability.display){
                     t.row();
+                    t.table(Styles.grayPanel, a -> {
+                        a.left().top().defaults().left();
+                        a.add("[accent]" + ability.localized()).minWidth(100).padBottom(4);
+                        var customDescription = StatExt.description(ability, unit);
+                        if(customDescription != null){
+                            a.add(customDescription).row();
+                        }
+                        a.defaults().colspan(2);
+                        ability.addStats(a);
+                    }).pad(5).margin(10).growX();
                 }
-            }).padLeft(12f);
+            }));
         };
     }
 

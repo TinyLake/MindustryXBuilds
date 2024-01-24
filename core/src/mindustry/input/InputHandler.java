@@ -17,6 +17,7 @@ import mindustry.*;
 import mindustry.ai.*;
 import mindustry.ai.types.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.*;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.entities.*;
@@ -35,6 +36,7 @@ import mindustry.world.*;
 import mindustry.world.blocks.ConstructBlock.*;
 import mindustry.world.blocks.*;
 import mindustry.world.blocks.distribution.*;
+import mindustry.world.blocks.logic.*;
 import mindustry.world.blocks.payloads.*;
 import mindustry.world.blocks.storage.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
@@ -54,6 +56,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     final static int maxLength = 100;
     final static Rect r1 = new Rect(), r2 = new Rect();
     final static Seq<Unit> tmpUnits = new Seq<>(false);
+    public static Player follow;
+    public static int followIndex = 0;
     final static Binding[] controlGroupBindings = {
     Binding.block_select_01,
     Binding.block_select_02,
@@ -103,6 +107,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     /** Groups of units saved to different hotkeys */
     public IntSeq[] controlGroups = new IntSeq[controlGroupBindings.length];
 
+    public Rect lastSelection = new Rect();
+    public boolean arcScanMode = false;
     private Seq<BuildPlan> plansOut = new Seq<>(BuildPlan.class);
     private QuadTree<BuildPlan> playerPlanTree = new QuadTree<>(new Rect());
 
@@ -262,7 +268,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                 }
 
                 unit.lastCommanded = player.coloredName();
-                
+
                 //remove when other player command
                 if(!headless && player != Vars.player){
                     control.input.selectedUnits.remove(unit);
@@ -495,7 +501,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         if(build == null) return;
 
         if(net.server() && (!Units.canInteract(player, build) ||
-            !netServer.admins.allowAction(player, ActionType.rotate, build.tile(), action -> action.rotation = Mathf.mod(build.rotation + Mathf.sign(direction), 4)))){
+        !netServer.admins.allowAction(player, ActionType.rotate, build.tile(), action -> action.rotation = Mathf.mod(build.rotation + Mathf.sign(direction), 4)))){
             throw new ValidateException(player, "Player cannot rotate a block.");
         }
 
@@ -514,7 +520,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         if(build == null) return;
 
         if(net.server() && (!Units.canInteract(player, build) ||
-            !netServer.admins.allowAction(player, ActionType.configure, build.tile, action -> action.config = value))){
+        !netServer.admins.allowAction(player, ActionType.configure, build.tile, action -> action.config = value))){
 
             if(player.con != null){
                 var packet = new TileConfigCallPacket(); //undo the config on the client
@@ -524,7 +530,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                 player.con.send(packet, true);
             }
 
-            throw new ValidateException(player, "Player cannot configure a tile.");
+            if(headless) throw new ValidateException(player, "Player cannot configure a tile.");
         }
         build.configured(player == null || player.dead() ? null : player.unit(), value);
         Events.fire(new ConfigEvent(build, player, value));
@@ -548,9 +554,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             throw new ValidateException(player, "Player cannot control a building.");
         }
 
-        if(player.team() == build.team && build.canControlSelect(player.unit())){
+        if((player.team() == build.team || (build instanceof CoreBuild && state.rules.editor)) && build.canControlSelect(player.unit())){
             var before = player.unit();
-
             build.onControlSelect(player.unit());
 
             if(!before.dead && before.spawnedByCore && !before.isPlayer()){
@@ -747,6 +752,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                 }
             }
         }
+
+        if(follow != null && !follow.dead()){
+            Core.camera.position.lerpDelta(follow, 0.08f);
+        }
     }
 
     public void checkUnit(){
@@ -896,6 +905,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                     attack = selectedEnemyUnit(target.x, target.y);
                 }
 
+                if(input.keyDown(KeyCode.altLeft)) attack = null;
+
                 int[] ids = new int[selectedUnits.size];
                 for(int i = 0; i < ids.length; i++){
                     ids[i] = selectedUnits.get(i).id;
@@ -1019,10 +1030,10 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
                 Drawf.selected(blocker, Pal.remove);
                 Tmp.v1.set(cursorX, cursorY).scl(tilesize).add(block.offset, block.offset).sub(blocker).scl(-1f).nor();
                 Drawf.dashLineDst(Pal.remove,
-                cursorX * tilesize + block.offset + Tmp.v1.x * block.size * tilesize/2f,
-                cursorY * tilesize + block.offset + Tmp.v1.y * block.size * tilesize/2f,
-                blocker.x + Tmp.v1.x * -blocker.block.size * tilesize/2f,
-                blocker.y + Tmp.v1.y * -blocker.block.size * tilesize/2f
+                cursorX * tilesize + block.offset + Tmp.v1.x * block.size * tilesize / 2f,
+                cursorY * tilesize + block.offset + Tmp.v1.y * block.size * tilesize / 2f,
+                blocker.x + Tmp.v1.x * -blocker.block.size * tilesize / 2f,
+                blocker.y + Tmp.v1.y * -blocker.block.size * tilesize / 2f
                 );
             }
         }
@@ -1069,6 +1080,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         });
     }
 
+    protected void showSchematicPreview(){
+        if(lastSchematic == null) return;
+        ui.schematics.showInfo(lastSchematic);
+    }
+
     public void rotatePlans(Seq<BuildPlan> plans, int direction){
         int ox = schemOriginX(), oy = schemOriginY();
 
@@ -1102,6 +1118,19 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             plan.x = World.toTile(wx - plan.block.offset) + ox;
             plan.y = World.toTile(wy - plan.block.offset) + oy;
             plan.rotation = plan.block.planRotation(Mathf.mod(plan.rotation + direction, 4));
+
+            if(Core.settings.getBool("rotateCanvas") && plan.block instanceof CanvasBlock cb){
+                CanvasBlock.CanvasBuild temp = cb.new CanvasBuild();
+                Pixmap pix = cb.makePixmap((byte[])plan.config), pix2 = new Pixmap(cb.canvasSize, cb.canvasSize);
+                pix.each((px, py) -> pix2.setRaw(
+                direction >= 0 ? py : cb.canvasSize - py - 1,
+                direction >= 0 ? cb.canvasSize - px - 1 : px,
+                pix.getRaw(px, py)));
+                plan.config = temp.packPixmap(pix2);
+                temp.remove();
+                pix.dispose();
+                pix2.dispose();
+            }
         });
     }
 
@@ -1120,7 +1149,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             }
 
             plan.pointConfig(p -> {
-                int corigin = x ? plan.originalWidth/2 : plan.originalHeight/2;
+                int corigin = x ? plan.originalWidth / 2 : plan.originalHeight / 2;
                 int nvalue = -(x ? p.x : p.y);
                 if(x){
                     plan.originalX = -(plan.originalX - corigin) + corigin;
@@ -1133,6 +1162,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
             //flip rotation
             plan.block.flipRotation(plan, x);
+
+            if(Core.settings.getBool("rotateCanvas") && plan.block instanceof CanvasBlock cb){
+                CanvasBlock.CanvasBuild temp = cb.new CanvasBuild();
+                Pixmap pix = cb.makePixmap((byte[])plan.config);
+                plan.config = temp.packPixmap(x ? pix.flipX() : pix.flipY());
+                temp.remove();
+                pix.dispose();
+            }
         });
     }
 
@@ -1257,12 +1294,19 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     protected void drawSelection(int x1, int y1, int x2, int y2, int maxLength, Color col1, Color col2){
         NormalizeDrawResult result = Placement.normalizeDrawArea(Blocks.air, x1, y1, x2, y2, false, maxLength, 1f);
 
+        String arcSelectionSize = "";
+        arcSelectionSize = Math.abs(x2 - x1) + 1 + "×" + (Math.abs(y1 - y2) + 1);
+
+        DrawUtilities.drawText(arcSelectionSize, 1f / 3f / Scl.scl(), (x1 + x2) / 2, Math.max(y1, y2) + 1, Pal.accent, Align.top);
         Lines.stroke(2f);
 
         Draw.color(col1);
         Lines.rect(result.x, result.y - 1, result.x2 - result.x, result.y2 - result.y);
         Draw.color(col2);
         Lines.rect(result.x, result.y, result.x2 - result.x, result.y2 - result.y);
+
+        lastSelection.set(x1, y1, x2 - x1, y2 - y1);
+        lastSelection.normalize();
     }
 
     protected void flushSelectPlans(Seq<BuildPlan> plans){
@@ -1448,7 +1492,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         if(build.block.commandable && commandMode){
             //TODO handled in tap.
             consumed = true;
-        }else if(build.block.configurable && build.interactable(player.team())){ //check if tapped block is configurable
+        }else if(build.block.configurable && ARCVars.arcInfoControl(build.team)){ //check if tapped block is configurable
             consumed = true;
             if((!config.isShown() && build.shouldShowConfigure(player)) //if the config fragment is hidden, show
             //alternatively, the current selected block can 'agree' to switch config tiles
@@ -1477,7 +1521,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         //consume tap event if necessary
         if(build.interactable(player.team()) && build.block.consumesTap){
             consumed = true;
-        }else if(build.interactable(player.team()) && build.block.synthetic() && (!consumed || build.block.allowConfigInventory)){
+        }else if(build.interactable(player.team()) && build.block.synthetic() && (!consumed || build.block.allowConfigInventory || settings.getBool("forceConfigInventory"))){
             if(build.block.hasItems && build.items.total() > 0){
                 inv.showFor(build);
                 consumed = true;
@@ -1494,7 +1538,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     /** Tries to select the player to drop off items, returns true if successful. */
     boolean tryTapPlayer(float x, float y){
-        if(canTapPlayer(x, y)){
+        if(canTapPlayer(x, y) && !settings.getBool("blockDrop", false)){
             droppingItem = true;
             return true;
         }
@@ -1533,9 +1577,9 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     boolean canMine(Tile tile){
         return !Core.scene.hasMouse()
-            && player.unit().validMine(tile)
-            && player.unit().acceptsItem(player.unit().getMineResult(tile))
-            && !((!Core.settings.getBool("doubletapmine") && tile.floor().playerUnmineable) && tile.overlay().itemDrop == null);
+        && player.unit().validMine(tile)
+        && player.unit().acceptsItem(player.unit().getMineResult(tile))
+        && !((!Core.settings.getBool("doubletapmine") && tile.floor().playerUnmineable) && tile.overlay().itemDrop == null);
     }
 
     /** Returns the tile at the specified MOUSE coordinates. */
@@ -1615,7 +1659,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
 
     public @Nullable Building selectedControlBuild(){
         Building build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
-        if(build != null && !player.dead() && build.canControlSelect(player.unit()) && build.team == player.team()){
+        if(build != null && !player.dead() && build.canControlSelect(player.unit()) && (build.team == player.team() || (build instanceof CoreBuild && state.rules.editor))){
             return build;
         }
         return null;
@@ -1625,8 +1669,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         var tree = player.team().data().tree();
         tmpUnits.clear();
         float rad = 4f;
-        tree.intersect(x - rad/2f, y - rad/2f, rad, rad, tmpUnits);
-        return tmpUnits.min(u -> u.isCommandable(), u -> u.dst(x, y) - u.hitSize/2f);
+        tree.intersect(x - rad / 2f, y - rad / 2f, rad, rad, tmpUnits);
+        return tmpUnits.min(u -> u.isCommandable(), u -> u.dst(x, y) - u.hitSize / 2f);
     }
 
     public @Nullable Unit selectedEnemyUnit(float x, float y){
@@ -1640,14 +1684,14 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
             }
         }
 
-        return tmpUnits.min(u -> !u.inFogTo(player.team()), u -> u.dst(x, y) - u.hitSize/2f);
+        return tmpUnits.min(u -> !u.inFogTo(player.team()), u -> u.dst(x, y) - u.hitSize / 2f);
     }
 
     public Seq<Unit> selectedCommandUnits(float x, float y, float w, float h, Boolf<Unit> predicate){
         var tree = player.team().data().tree();
         tmpUnits.clear();
         float rad = 4f;
-        tree.intersect(Tmp.r1.set(x - rad/2f, y - rad/2f, rad*2f + w, rad*2f + h).normalize(), tmpUnits);
+        tree.intersect(Tmp.r1.set(x - rad / 2f, y - rad / 2f, rad * 2f + w, rad * 2f + h).normalize(), tmpUnits);
         tmpUnits.removeAll(u -> !u.isCommandable() || !predicate.get(u));
         return tmpUnits;
     }
@@ -1701,8 +1745,11 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     }
 
     public boolean canShoot(){
+        if(Core.settings.getBool("playerNeedShooting")){
+            return block == null && !onConfigurable() && !isDroppingItem() && !commandMode;
+        }
         return block == null && !onConfigurable() && !isDroppingItem() && !player.unit().activelyBuilding() &&
-            !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining() && !commandMode;
+        !(player.unit() instanceof Mechc && player.unit().isFlying()) && !player.unit().mining() && !commandMode;
     }
 
     public boolean onConfigurable(){
@@ -1718,7 +1765,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     }
 
     public void tryDropItems(@Nullable Building build, float x, float y){
-        if(!droppingItem || player.unit().stack.amount <= 0 || canTapPlayer(x, y) || state.isPaused() ){
+        if(!droppingItem || player.unit().stack.amount <= 0 || canTapPlayer(x, y) || state.isPaused() || settings.getBool("blockDrop", false)){
             droppingItem = false;
             return;
         }
@@ -1728,7 +1775,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         ItemStack stack = player.unit().stack;
 
         if(build != null && build.acceptStack(stack.item, stack.amount, player.unit()) > 0 && build.interactable(player.team()) &&
-                build.block.hasItems && player.unit().stack().amount > 0 && build.interactable(player.team())){
+        build.block.hasItems && player.unit().stack().amount > 0 && build.interactable(player.team())){
             if(!(state.rules.onlyDepositCore && !(build instanceof CoreBuild))){
                 Call.transferInventory(player, build);
             }
@@ -1798,8 +1845,8 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     public void drawArrow(Block block, int x, int y, int rotation, boolean valid){
         float trns = (block.size / 2) * tilesize;
         int dx = Geometry.d4(rotation).x, dy = Geometry.d4(rotation).y;
-        float offsetx = x * tilesize + block.offset + dx*trns;
-        float offsety = y * tilesize + block.offset + dy*trns;
+        float offsetx = x * tilesize + block.offset + dx * trns;
+        float offsety = y * tilesize + block.offset + dy * trns;
 
         Draw.color(!valid ? Pal.removeBack : Pal.accentBack);
         TextureRegion regionArrow = Core.atlas.find("place-arrow");
@@ -1837,7 +1884,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         var end = world.build(endX, endY);
         if(diagonal && (block == null || block.allowDiagonal)){
             if(block != null && start instanceof ChainedBuilding && end instanceof ChainedBuilding
-                    && block.canReplace(end.block) && block.canReplace(start.block)){
+            && block.canReplace(end.block) && block.canReplace(start.block)){
                 points = Placement.upgradeLine(startX, startY, endX, endY);
             }else{
                 points = Placement.pathfindLine(block != null && block.conveyorPlacement, startX, startY, endX, endY);

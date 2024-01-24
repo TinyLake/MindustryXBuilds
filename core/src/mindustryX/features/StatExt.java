@@ -43,7 +43,7 @@ public class StatExt{
     ammoType = new Stat("ammo_type", StatCat.combat),
     ammoCapacity = new Stat("ammo_capacity", StatCat.combat);
 
-    public static String abilityFormat(String format, Object... values){
+    private static String abilityFormat(String format, Object... values){
         for(int i = 0; i < values.length; i++){
             if(values[i] instanceof Number n)
                 values[i] = "[stat]" + Strings.autoFixed(n.floatValue(), 1) + "[]";
