@@ -37,6 +37,7 @@ import mindustry.world.blocks.payloads.*;
 import mindustry.world.blocks.units.*;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
+import mindustryX.features.*;
 
 import static arc.graphics.g2d.Draw.*;
 import static mindustry.Vars.*;
@@ -598,27 +599,48 @@ public class UnitType extends UnlockableContent implements Senseable{
         stats.add(Stat.health, health);
         stats.add(Stat.armor, armor);
         stats.add(Stat.speed, speed * 60f / tilesize, StatUnit.tilesSecond);
+        stats.add(StatExt.rotateSpeed,rotateSpeed);
         stats.add(Stat.size, StatValues.squared(hitSize / tilesize, StatUnit.blocks));
-        stats.add(Stat.itemCapacity, itemCapacity);
-        stats.add(Stat.range, (int)(maxRange / tilesize), StatUnit.blocks);
+        stats.add(StatExt.unitItemCapacity, itemCapacity);
+        stats.add(StatExt.aiController,aiController.get().getClass().getSimpleName());
 
         if(abilities.any()){
-            stats.add(Stat.abilities, StatValues.abilities(abilities));
+            stats.add(Stat.abilities, StatValues.abilities(this, abilities));
+        }
+
+        stats.add(StatExt.unitrange, (int)(maxRange / tilesize), StatUnit.blocks);
+        if(weapons.any()){
+            stats.add(Stat.weapons, StatValues.weapons(this, weapons));
+        }
+        stats.add(StatExt.estimateDPS,estimateDps());
+        stats.add(StatExt.ammoType, ammoType.icon());
+        stats.add(StatExt.ammoCapacity, ammoCapacity);
+        if (crushDamage > 0) {
+            stats.add(StatExt.crushDamage, crushDamage * 60f, StatUnit.perSecond);
         }
 
         stats.add(Stat.flying, flying);
 
         if(!flying){
             stats.add(Stat.canBoost, canBoost);
+            if(canBoost){
+                stats.add(StatExt.boostMultiplier, boostMultiplier);
+            }
+        }
+        if(drownTimeMultiplier != 1){
+            stats.add(StatExt.drownTimeMultiplier, drownTimeMultiplier);
         }
 
         if(mineTier >= 1){
+            stats.add(StatExt.mineLevel, "@级", mineTier);
             stats.addPercent(Stat.mineSpeed, mineSpeed);
-            stats.add(Stat.mineTier, StatValues.drillables(mineSpeed, 1f, 1, null, b ->
-                b.itemDrop != null &&
-                (b instanceof Floor f && (((f.wallOre && mineWalls) || (!f.wallOre && mineFloor))) ||
-                (!(b instanceof Floor) && mineWalls)) &&
-                b.itemDrop.hardness <= mineTier && (!b.playerUnmineable || Core.settings.getBool("doubletapmine"))));
+            Boolf<Block> filter = b ->
+                                  b.itemDrop != null &&
+                                  (b instanceof Floor f && (((f.wallOre && mineWalls) || (!f.wallOre && mineFloor))) ||
+                                  (!(b instanceof Floor) && mineWalls)) &&
+                                  b.itemDrop.hardness <= mineTier && (!b.playerUnmineable || Core.settings.getBool("doubletapmine"));
+            if (mineHardnessScaling) stats.add(Stat.mineTier, StatValues.drillables(50f,  15f, mineSpeed, null, filter));
+            else stats.add(Stat.mineTier, StatValues.drillables(50f + 15f,  0f, mineSpeed, null, filter));
         }
         if(buildSpeed > 0){
             stats.addPercent(Stat.buildSpeed, buildSpeed);
@@ -633,8 +655,8 @@ public class UnitType extends UnlockableContent implements Senseable{
             stats.add(Stat.buildCost, StatValues.items(reqs));
         }
 
-        if(weapons.any()){
-            stats.add(Stat.weapons, StatValues.weapons(this, weapons));
+        if(targetFlags.length > 0 && targetFlags[0] != null){
+            stats.add(StatExt.targets, StatValues.targets(this, targetFlags));
         }
 
         if(immunities.size > 0){
@@ -665,6 +687,8 @@ public class UnitType extends UnlockableContent implements Senseable{
         Unit example = constructor.get();
 
         allowLegStep = example instanceof Legsc;
+
+        stats.useCategories = true;
 
         //water preset
         if(example instanceof WaterMovec){
