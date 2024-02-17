@@ -14,6 +14,7 @@ import mindustry.world.blocks.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
 import mindustry.world.blocks.storage.StorageBlock.*;
 import mindustry.world.meta.*;
+import mindustryX.*;
 
 import static mindustry.Vars.*;
 
@@ -122,6 +123,7 @@ public class DirectionalUnloader extends Block{
                 Draw.color(unloadItem.color);
                 Draw.rect(centerRegion, x, y);
                 Draw.color();
+                if(VarsX.arcChoiceUiIcon) Draw.rect(unloadItem.uiIcon, x, y,4f,4f);
             }else{
                 Draw.rect(arrowRegion, x, y, rotdeg());
             }

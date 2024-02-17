@@ -9,6 +9,11 @@ public class Hooks implements ApplicationListener{
         Log.infoTag("MindustryX", "Hooks.init");
     }
 
+    @Override
+    public void update(){
+        VarsX.update();
+    }
+
     @SuppressWarnings("unused")//call before arc.util.Http$HttpRequest.block
     public static void onHttp(Http.HttpRequest req){
         if(Core.settings.getBool("githubMirror")){
