@@ -361,7 +361,12 @@ public class Renderer implements ApplicationListener{
             //TODO would be nice if there were a way to detect if any shields or build beams actually *exist* before beginning/ending buffers, otherwise you're just blitting and swapping shaders for nothing
             Draw.drawRange(Layer.shields, 1f, () -> effectBuffer.begin(Color.clear), () -> {
                 effectBuffer.end();
-                effectBuffer.blit(Shaders.shield);
+                effectBuffer.blit(Core.settings.getBool("staticShieldsBorder") ? Shaders.staticShield : Shaders.shield);
+            });
+
+            Draw.drawRange(Layer.overdrive, 1f, () -> effectBuffer.begin(Color.clear), () -> {
+                effectBuffer.end();
+                effectBuffer.blit(Core.settings.getBool("staticShieldsBorder") ? Shaders.staticShield : Shaders.shield);
             });
 
             Draw.drawRange(Layer.buildBeam, 1f, () -> effectBuffer.begin(Color.clear), () -> {

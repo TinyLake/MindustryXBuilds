@@ -10,6 +10,7 @@ import mindustry.world.blocks.logic.MessageBlock.*;
 public class RenderExt{
     public static boolean bulletShow, showMineBeam, displayAllMessage;
     public static int hiddenItemTransparency;
+    public static float overdriveZoneTransparency;
 
     public static void init(){
         Events.run(Trigger.update, () ->{
@@ -17,6 +18,7 @@ public class RenderExt{
             showMineBeam = Core.settings.getBool("showminebeam");
             displayAllMessage = Core.settings.getBool("displayallmessage");
             hiddenItemTransparency = Core.settings.getInt("HiddleItemTransparency");
+            overdriveZoneTransparency = Core.settings.getInt("overdrive_zone") / 100f;
         });
         Events.run(Trigger.draw, RenderExt::draw);
     }

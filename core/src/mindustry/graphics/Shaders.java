@@ -19,6 +19,7 @@ import static mindustry.Vars.*;
 public class Shaders{
     public static BlockBuildShader blockbuild;
     public static @Nullable ShieldShader shield;
+    public static @Nullable StaticShieldShader staticShield;
     public static BuildBeamShader buildBeam;
     public static UnitBuildShader build;
     public static UnitArmorShader armor;
@@ -43,6 +44,13 @@ public class Shaders{
         }catch(Throwable t){
             //don't load shield shader
             shield = null;
+            t.printStackTrace();
+        }
+        try{
+            staticShield = new StaticShieldShader();
+        }catch(Throwable t){
+            //don't load shield shader
+            staticShield = null;
             t.printStackTrace();
         }
         fog = new FogShader();
@@ -253,6 +261,23 @@ public class Shaders{
 
         public ShieldShader(){
             super("shield", "screenspace");
+        }
+
+        @Override
+        public void apply(){
+            setUniformf("u_dp", Scl.scl(1f));
+            setUniformf("u_time", Time.time / Scl.scl(1f));
+            setUniformf("u_offset",
+                Core.camera.position.x - Core.camera.width / 2,
+                Core.camera.position.y - Core.camera.height / 2);
+            setUniformf("u_texsize", Core.camera.width, Core.camera.height);
+            setUniformf("u_invsize", 1f/Core.camera.width, 1f/Core.camera.height);
+        }
+    }
+    public static class StaticShieldShader extends LoadShader{
+
+        public StaticShieldShader(){
+            super("staticshield", "screenspace");
         }
 
         @Override
