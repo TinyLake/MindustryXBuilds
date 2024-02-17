@@ -10,6 +10,7 @@ public class Hooks implements ApplicationListener{
     public void init(){
         Log.infoTag("MindustryX", "Hooks.init");
         RenderExt.init();
+        ArcOld.addSettings();
     }
 
     @Override
