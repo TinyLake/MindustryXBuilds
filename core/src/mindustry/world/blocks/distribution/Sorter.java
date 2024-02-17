@@ -13,6 +13,7 @@ import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.*;
 import mindustry.world.meta.*;
+import mindustryX.*;
 
 import static mindustry.Vars.*;
 
@@ -78,6 +79,7 @@ public class Sorter extends Block{
                 Draw.color(sortItem.color);
                 Fill.square(x, y, tilesize/2f - 0.00001f);
                 Draw.color();
+                if(VarsX.arcChoiceUiIcon) Draw.rect(sortItem.uiIcon, x, y,4f,4f);
             }
 
             super.draw();
