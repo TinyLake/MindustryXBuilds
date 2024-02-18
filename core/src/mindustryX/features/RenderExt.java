@@ -9,12 +9,14 @@ import mindustry.world.blocks.logic.MessageBlock.*;
 
 public class RenderExt{
     public static boolean bulletShow, showMineBeam, displayAllMessage;
+    public static int hiddenItemTransparency;
 
     public static void init(){
-        Events.run(Trigger.update, () -> {
+        Events.run(Trigger.update, () ->{
             bulletShow = Core.settings.getBool("bulletShow");
             showMineBeam = Core.settings.getBool("showminebeam");
             displayAllMessage = Core.settings.getBool("displayallmessage");
+            hiddenItemTransparency = Core.settings.getInt("HiddleItemTransparency");
         });
         Events.run(Trigger.draw, RenderExt::draw);
     }
