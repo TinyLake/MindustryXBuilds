@@ -1,12 +1,19 @@
 package mindustry.world.blocks.distribution;
 
+import arc.*;
+import arc.graphics.g2d.Draw;
+import arc.math.*;
 import arc.util.*;
 import arc.util.io.*;
+import arc.math.geom.*;
 import mindustry.gen.*;
+import mindustry.ui.*;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.meta.*;
 import mindustryX.features.*;
+
+import static mindustry.Vars.*;
 
 public class BufferedItemBridge extends ItemBridge{
     public final int timerAccept = timers++;
@@ -50,6 +57,45 @@ public class BufferedItemBridge extends ItemBridge{
         public void doDump(){
             dump();
         }
+
+        @Override
+        public void draw(){
+            super.draw();
+
+            if(RenderExt.hiddenItemTransparency > 0){
+                Tile other = world.tile(link);
+
+                float begx, begy, endx, endy;
+                if(!linkValid(tile, other)){
+                    begx = x - tilesize / 2f;
+                    begy = y - tilesize / 2f;
+                    endx = x + tilesize / 2f;
+                    endy = y - tilesize / 2f;
+                }else{
+                    int i = tile.absoluteRelativeTo(other.x, other.y);
+                    float ex = other.worldx() - x - Geometry.d4(i).x * tilesize / 2f,
+                    ey = other.worldy() - y - Geometry.d4(i).y * tilesize / 2f;
+                    float warmup = state.isEditor() ? 1f : this.warmup;
+                    ex *= warmup;
+                    ey *= warmup;
+
+                    begx = x + Geometry.d4(i).x * tilesize / 2f;
+                    begy = y + Geometry.d4(i).y * tilesize / 2f;
+                    endx = x + ex;
+                    endy = y + ey;
+                }
+                Item item;
+                for(int i = 0; (item = buffer.getItem(i)) != null; i++){
+                    float time = buffer.getTime(i);
+
+                    Draw.alpha(RenderExt.hiddenItemTransparency / 100f);
+                    Draw.rect(item.uiIcon,
+                    begx + ((endx - begx) * Math.min(((Time.time - time) * timeScale / speed), bufferCapacity - i)),
+                    begy + ((endy - begy) * Math.min(((Time.time - time) * timeScale / speed), bufferCapacity - i)), 4f, 4f);
+                }
+            }
+        }
+
 
         @Override
         public void write(Writes write){
