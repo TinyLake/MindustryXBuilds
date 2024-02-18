@@ -12,6 +12,7 @@ import mindustry.graphics.*;
 import mindustry.input.*;
 import mindustry.type.*;
 import mindustry.world.*;
+import mindustryX.features.*;
 
 import static mindustry.Vars.*;
 
@@ -126,6 +127,7 @@ abstract class MinerComp implements Itemsc, Posc, Teamc, Rotc, Drawc{
 
     @Override
     public void draw(){
+        if(!RenderExt.showMineBeam) return;
         if(!mining()) return;
         float focusLen = hitSize / 2f + Mathf.absin(Time.time, 1.1f, 0.5f);
         float swingScl = 12f, swingMag = tilesize / 8f;
