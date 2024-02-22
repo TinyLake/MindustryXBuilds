@@ -3,6 +3,7 @@ package mindustryX;
 import arc.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.gen.*;
 import mindustryX.features.*;
 
 import java.net.*;
@@ -30,5 +31,10 @@ public class Hooks implements ApplicationListener{
                 //ignore
             }
         }
+    }
+
+    public static @Nullable String onHandleSendMessage(String message, @Nullable Player sender){
+        if(message == null) return null;
+        return message;
     }
 }
