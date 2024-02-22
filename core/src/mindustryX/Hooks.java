@@ -2,6 +2,7 @@ package mindustryX;
 
 import arc.*;
 import arc.util.*;
+import mindustry.gen.*;
 import mindustryX.features.*;
 
 public class Hooks implements ApplicationListener{
@@ -25,5 +26,10 @@ public class Hooks implements ApplicationListener{
                 req.url = url;
             }
         }
+    }
+
+    public static @Nullable String onHandleSendMessage(String message, @Nullable Player sender){
+        if(message == null) return null;
+        return message;
     }
 }
