@@ -420,7 +420,6 @@ public class MenuFragment{
             exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit()),
             cn_arc = new MobileButton(Icon.info,"@aboutcn_arc.button",  arcui.aboutcn_arc::show),
             //mindustrywiki = new MobileButton(Icon.book, "@mindustrywiki.button", ui.mindustrywiki::show),
-            updatedialog = new MobileButton(Icon.info,"@updatedialog.button",  arcui.updatedialog::show),
             database = new MobileButton(Icon.book, "@database",  ui.database::show),
             achievements = new MobileButton(Icon.star, "@achievements",  arcui.achievements::show);
 
@@ -432,7 +431,6 @@ public class MenuFragment{
         tools.clicked(this::randomLabel);
         mods.clicked(this::randomLabel);
         cn_arc.clicked(this::randomLabel);
-        updatedialog.clicked(this::randomLabel);
         database.clicked(this::randomLabel);
         achievements.clicked(this::randomLabel);
 
@@ -462,7 +460,6 @@ public class MenuFragment{
             }
             container.row();
             container.add(cn_arc);
-            container.add(updatedialog);
             container.add(database);
             if(!ios) container.add(exit);
         }else{
@@ -489,7 +486,6 @@ public class MenuFragment{
             container.add(database);
             container.row();
             container.add(achievements);
-            container.add(updatedialog);
         }
     }
 
@@ -548,8 +544,7 @@ public class MenuFragment{
                 new MenuButton("@database.button", Icon.menu,
                     new MenuButton("@schematics", Icon.paste, ui.schematics::show),
                     new MenuButton("@database", Icon.book, ui.database::show),
-                    new MenuButton("@about.button", Icon.info, ui.about::show),
-                    new MenuButton("@updatedialog.button", Icon.distribution, arcui.updatedialog::show)
+                    new MenuButton("@about.button", Icon.info, ui.about::show)
                 ),
 
                 new MenuButton("@achievements", Icon.star, arcui.achievements::show),

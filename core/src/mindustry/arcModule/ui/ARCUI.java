@@ -1,32 +1,25 @@
 package mindustry.arcModule.ui;
 
 import arc.Core;
-import arc.Graphics;
 import arc.math.Interp;
 import arc.scene.Group;
 import arc.scene.actions.Actions;
 import arc.scene.event.Touchable;
 import arc.scene.ui.layout.Table;
 import arc.util.Align;
-import arc.util.Log;
-import mindustry.ClientLauncher;
-import mindustry.arcModule.RFuncs;
 import mindustry.arcModule.ui.dialogs.AboutCN_ARCDialog;
 import mindustry.arcModule.ui.dialogs.AchievementsDialog;
 import mindustry.arcModule.ui.dialogs.MessageDialog;
 import mindustry.arcModule.ui.dialogs.MusicDialog;
 import mindustry.arcModule.ui.window.WindowManager;
-import mindustry.ui.Fonts;
 import mindustry.ui.Styles;
 import mindustry.ui.dialogs.CustomRulesDialog;
-import mindustry.ui.dialogs.UpdateDialog;
 import mindustry.ui.fragments.FadeInFragment;
 
 import static mindustry.arcModule.toolpack.arcWaveSpawner.initArcWave;
 
 public class ARCUI {
     public AboutCN_ARCDialog aboutcn_arc;
-    public UpdateDialog updatedialog;
     public CustomRulesDialog customrules;
     public AchievementsDialog achievements;
     //public MindustryWikiDialog mindustrywiki;
@@ -54,7 +47,6 @@ public class ARCUI {
 
     public void init(Group group) {
         aboutcn_arc = new AboutCN_ARCDialog();
-        updatedialog = new UpdateDialog();
         customrules = new CustomRulesDialog();
         achievements = new AchievementsDialog();
         //mindustrywiki = new MindustryWikiDialog();
