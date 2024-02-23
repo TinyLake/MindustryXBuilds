@@ -26,28 +26,24 @@ import mindustry.world.blocks.storage.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
-import static mindustry.arcModule.DrawUtilities.arcDrawText;
 import static mindustry.arcModule.ElementUtils.*;
 import static mindustry.arcModule.RFuncs.arcSetCamera;
 
 public class AdvanceBuildTool extends ElementUtils.ToolTable{
+    public static boolean buildPlansConstrain = true;
     BuildRange placement = BuildRange.player;
     Rect selection = new Rect();
-
     private Block original = Blocks.conveyor, newBlock = Blocks.titaniumConveyor;
     private Block autoBuild = Blocks.turbineCondenser;
-
     private Block searchBlock = Blocks.itemSource;
     private Building searchBuild = null;
-    public Seq<Building> buildingSeq = new Seq<>();
     private int searchBlockIndex = -1;
+    private boolean shadowBuild = false;
 
+    public Seq<Building> buildingSeq = new Seq<>();
     public BuildTiles buildTiles = new BuildTiles();
     private final ObjectFloatMap<Tile> buildEff = new ObjectFloatMap<>();//default 0f
 
-    private boolean shadowBuild = false;
-
-    public static boolean buildPlansConstrain = true;
 
     public AdvanceBuildTool(){
         icon = Blocks.buildTower.emoji();
@@ -90,7 +86,7 @@ public class AdvanceBuildTool extends ElementUtils.ToolTable{
                 }).tooltip("[cyan]玩家建造区").size(30f);
                 tt.update(() -> {
                     if(placement != BuildRange.zone) return;
-                    arcDrawText("建造区域", 0.2f, selection.x * tilesize + selection.width * tilesize * 0.5f, selection.y * tilesize + selection.height * tilesize, 1);
+                    DrawUtilities.drawText("建造区域", 0.2f, selection.x * tilesize + selection.width * tilesize * 0.5f, selection.y * tilesize + selection.height * tilesize, Align.bottom);
                     Draw.color(Pal.stat, 0.7f);
                     Draw.z(Layer.effect - 1f);
                     Lines.stroke(Math.min(Math.abs(width), Math.abs(height)) / tilesize / 10f);
@@ -335,16 +331,12 @@ public class AdvanceBuildTool extends ElementUtils.ToolTable{
     }
 
     class BuildTiles{
+        public int minx, miny, maxx, maxy, width, height;
         Seq<Tile> validTile = new Seq<>();
         Seq<Float> eff = new Seq<>();
-
         float efficiency = 0;
-
         Block block;
-
         boolean canBuild = true;
-
-        public int minx, miny, maxx, maxy, width, height;
 
         public BuildTiles(){
         }

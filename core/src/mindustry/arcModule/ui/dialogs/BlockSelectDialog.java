@@ -27,7 +27,7 @@ public class BlockSelectDialog extends BaseDialog{
         rebuild(condition, cons, checked, autoHide);
         cont.pane(td -> {
             td.field("", t -> {
-                searchBlock = t.length() > 0 ? t.toLowerCase() : "";
+                searchBlock = !t.isEmpty() ? t.toLowerCase() : "";
                 rebuild(condition, cons, checked, autoHide);
             }).maxTextLength(50).growX().get().setMessageText("搜索...");
             td.row();

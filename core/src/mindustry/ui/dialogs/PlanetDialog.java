@@ -18,7 +18,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
-import mindustry.arcModule.ARCVars;
+import mindustry.arcModule.*;
 import mindustry.content.*;
 import mindustry.content.TechTree.*;
 import mindustry.core.*;
@@ -40,7 +40,6 @@ import mindustry.world.blocks.storage.*;
 import static arc.Core.*;
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
-import static mindustry.arcModule.DrawUtilities.arcDrawText;
 import static mindustry.graphics.g3d.PlanetRenderer.*;
 import static mindustry.ui.dialogs.PlanetDialog.Mode.*;
 
@@ -65,7 +64,8 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
     public @Nullable Sector selected, hovered, launchSector;
     public Mode mode = look;
     public boolean launching;
-    public Cons<Sector> listener = s -> {};
+    public Cons<Sector> listener = s -> {
+    };
 
     public Seq<Sector> newPresets = new Seq<>();
     public float presetShow = 0f;
@@ -83,7 +83,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
     public PlanetDialog(){
         super("", Styles.fullDialog);
-        
+
         state.renderer = this;
         state.drawUi = true;
 
@@ -192,7 +192,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                         b.row();
                         b.image(new TextureRegionDrawable(tex)).grow().scaling(Scaling.fit);
                     }, Styles.togglet, () -> selected[0] = planet).size(mobile ? 220f : 320f).group(group);
-                    i ++;
+                    i++;
                 }
 
                 diag.cont.row();
@@ -256,7 +256,8 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
         launchSector = Vars.state.getSector();
         presetShow = 0f;
         showed = false;
-        listener = s -> {};
+        listener = s -> {
+        };
 
         newPresets.clear();
 
@@ -297,9 +298,9 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             buttons.add().growX();
             buttons.add(sectorTop).minWidth(230f);
             buttons.add().growX();
-            buttons.button("显示周期",Icon.settings,()->{
-                if(viewInt==1) viewInt = 60;
-                else if (viewInt==60) viewInt = 120;
+            buttons.button("显示周期", Icon.settings, () -> {
+                if(viewInt == 1) viewInt = 60;
+                else if(viewInt == 60) viewInt = 120;
                 else viewInt = 1;
                 arcui.arcInfo("调整资源输入|输出显示周期为 [orange]" + viewInterval(viewInt));
             }).size(100f, 54f).pad(2).bottom();
@@ -405,9 +406,9 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
         }
 
         return sector.planet.generator != null ?
-            //use planet impl when possible
-            sector.planet.generator.allowLanding(sector) :
-            sector.hasBase() || sector.near().contains(Sector::hasBase); //near an occupied sector
+        //use planet impl when possible
+        sector.planet.generator.allowLanding(sector) :
+        sector.hasBase() || sector.near().contains(Sector::hasBase); //near an occupied sector
     }
 
     Sector findLauncher(Sector to){
@@ -444,8 +445,8 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                     Color color =
                     sec.hasBase() ? Tmp.c2.set(Team.sharded.color).lerp(Team.crux.color, sec.hasEnemyBase() ? 0.5f : 0f) :
                     sec.preset != null ?
-                        sec.preset.unlocked() ? Tmp.c2.set(Team.derelict.color).lerp(Color.white, Mathf.absin(Time.time, 10f, 1f)) :
-                        Color.gray :
+                    sec.preset.unlocked() ? Tmp.c2.set(Team.derelict.color).lerp(Color.white, Mathf.absin(Time.time, 10f, 1f)) :
+                    Color.gray :
                     sec.hasEnemyBase() ? Team.crux.color :
                     null;
 
@@ -514,17 +515,17 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
     @Override
     public void renderProjections(Planet planet){
-        float iw = 48f/4f;
+        float iw = 48f / 4f;
 
         for(Sector sec : planet.sectors){
             if(sec != hovered){
                 var preficon = sec.icon();
                 var icon =
-                    sec.isAttacked() ? Fonts.getLargeIcon("warning") :
-                    !sec.hasBase() && sec.preset != null && sec.preset.unlocked() && preficon == null ?
-                    Fonts.getLargeIcon("terrain") :
-                    sec.preset != null && sec.preset.locked() && sec.preset.techNode != null && !sec.preset.techNode.parent.content.locked() ? Fonts.getLargeIcon("lock") :
-                    preficon;
+                sec.isAttacked() ? Fonts.getLargeIcon("warning") :
+                !sec.hasBase() && sec.preset != null && sec.preset.unlocked() && preficon == null ?
+                Fonts.getLargeIcon("terrain") :
+                sec.preset != null && sec.preset.locked() && sec.preset.techNode != null && !sec.preset.techNode.parent.content.locked() ? Fonts.getLargeIcon("lock") :
+                preficon;
                 var color = sec.preset != null && !sec.hasBase() ? Team.derelict.color : Team.sharded.color;
 
                 if(icon != null){
@@ -534,8 +535,10 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                         Draw.rect(icon, 0, 0, iw, iw * icon.height / icon.width);
                     });
                 }
-                planets.drawPlane(sec,()->{
-                    if((canSelect(sec) || sec.hasBase()) && alwaysShowName) arcDrawText((sec.preset !=null ? "" : "[gray]") +  sec.name(),0.5f,0,0,0);
+                planets.drawPlane(sec, () -> {
+                    if((canSelect(sec) || sec.hasBase()) && alwaysShowName){
+                        DrawUtilities.drawText((sec.preset != null ? "" : "[gray]") + sec.name(), 0.5f, 0, 0, 0);
+                    }
                 });
             }
         }
@@ -793,7 +796,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             buffer.end();
 
             Draw.color(color);
-            Draw.rect(Draw.wrap(buffer.getTexture()), width/2f, height/2f, width, -height);
+            Draw.rect(Draw.wrap(buffer.getTexture()), width / 2f, height / 2f, width, -height);
             Draw.color();
         }
     }
@@ -895,7 +898,8 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
     }
 
     void displayItems(Table c, float scl, ObjectMap<Item, ExportStat> stats, String name){
-        displayItems(c, scl, stats, name, t -> {});
+        displayItems(c, scl, stats, name, t -> {
+        });
     }
 
     void displayItems(Table c, float scl, ObjectMap<Item, ExportStat> stats, String name, Cons<Table> builder){
@@ -910,7 +914,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             if(total != 0){
                 t.image(item.uiIcon).padRight(3);
                 t.add(UI.formatAmount(total)).color(Color.lightGray).padRight(3);
-                if( ++i % rowSet == 0){
+                if(++i % rowSet == 0){
                     t.row();
                 }
             }
@@ -918,7 +922,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
         if(t.getChildren().any()){
             c.defaults().left();
-            c.add(name + "  ("+ viewInterval(viewInt) + ")").color(ARCVars.getThemeColor()).center().row();
+            c.add(name + "  (" + viewInterval(viewInt) + ")").color(ARCVars.getThemeColor()).center().row();
             c.image().color(ARCVars.getThemeColor()).fillX().row();
             builder.get(c);
             c.add(t).padLeft(10f).row();
@@ -1073,17 +1077,17 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
                 title.add().growX();
 
                 title.button(Icon.pencilSmall, Styles.clearNonei, () -> {
-                   ui.showTextInput("@sectors.rename", "@name", 20, sector.name(), v -> {
-                       sector.setName(v);
-                       updateSelected();
-                       rebuildList();
-                   });
+                    ui.showTextInput("@sectors.rename", "@name", 20, sector.name(), v -> {
+                        sector.setName(v);
+                        updateSelected();
+                        rebuildList();
+                    });
                 }).size(40f).padLeft(4);
             }
 
             var icon = sector.info.contentIcon != null ?
-                new TextureRegionDrawable(sector.info.contentIcon.uiIcon) :
-                Icon.icons.get(sector.info.icon + "Small");
+            new TextureRegionDrawable(sector.info.contentIcon.uiIcon) :
+            Icon.icons.get(sector.info.icon + "Small");
 
             title.button(icon == null ? Icon.noneSmall : icon, Styles.clearNonei, iconSmall, () -> {
                 new Dialog(""){{
@@ -1198,11 +1202,11 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
         if((sector.hasBase() && mode == look) || canSelect(sector) || (sector.preset != null && sector.preset.alwaysUnlocked) || debugSelect){
             stable.button(
-                mode == select ? "@sectors.select" :
-                sector.isBeingPlayed() ? "@sectors.resume" :
-                sector.hasBase() ? "@sectors.go" :
-                locked ? "@locked" : "@sectors.launch",
-                locked ? Icon.lock : Icon.play, this::playSelected).growX().height(54f).minWidth(170f).padTop(4).disabled(locked);
+            mode == select ? "@sectors.select" :
+            sector.isBeingPlayed() ? "@sectors.resume" :
+            sector.hasBase() ? "@sectors.go" :
+            locked ? "@locked" : "@sectors.launch",
+            locked ? Icon.lock : Icon.play, this::playSelected).growX().height(54f).minWidth(170f).padTop(4).disabled(locked);
         }
 
         stable.pack();
@@ -1231,7 +1235,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
             if(!planet.allowWaveSimulation && !debugSelect && planet.allowWaveSimulation == sector.planet.allowWaveSimulation){
                 //if there are two or more attacked sectors... something went wrong, don't show the dialog to prevent softlock
                 Sector attacked = planet.sectors.find(s -> s.isAttacked() && s != sector);
-                if(attacked != null &&  planet.sectors.count(s -> s.isAttacked()) < 2 && !settings.getBool("forceIgnoreAttack") ){
+                if(attacked != null && planet.sectors.count(s -> s.isAttacked()) < 2 && !settings.getBool("forceIgnoreAttack")){
                     BaseDialog dialog = new BaseDialog("@sector.noswitch.title");
                     dialog.cont.add(bundle.format("sector.noswitch", attacked.name(), attacked.planet.localizedName)).width(400f).labelAlign(Align.center).center().wrap();
                     dialog.addCloseButton();
@@ -1244,7 +1248,7 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
 
                     return;
                 }
-                if (attacked!=sector && settings.getBool("forceIgnoreAttack")) ui.showInfo("[red]警告：你的一个区块正在遭受攻击。[white]\n但你使用了学术端的作弊功能来强行切换区块，这可能导致未知问题！");
+                if(attacked != sector && settings.getBool("forceIgnoreAttack")) ui.showInfo("[red]警告：你的一个区块正在遭受攻击。[white]\n但你使用了学术端的作弊功能来强行切换区块，这可能导致未知问题！");
             }
         }
 
@@ -1327,6 +1331,13 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
         if(shouldHide) hide();
     }
 
+    private String viewInterval(int viewInt){
+        if(viewInt == 60) return "每分";
+        else if(viewInt == 120) return "每周期";
+        else if(viewInt == 1) return "每秒";
+        else return "每" + viewInt + "秒";
+    }
+
     public enum Mode{
         /** Look around for existing sectors. Can only deploy. */
         look,
@@ -1334,13 +1345,6 @@ public class PlanetDialog extends BaseDialog implements PlanetInterfaceRenderer{
         select,
         /** Launch between planets. */
         planetLaunch
-    }
-
-    private String viewInterval(int viewInt){
-        if (viewInt == 60) return "每分";
-        else if(viewInt == 120) return "每周期";
-        else if(viewInt == 1) return "每秒";
-        else return "每" + viewInt + "秒";
     }
 
 }

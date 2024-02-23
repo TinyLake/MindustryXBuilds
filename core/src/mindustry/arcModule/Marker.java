@@ -17,7 +17,7 @@ import mindustry.graphics.*;
 import mindustry.input.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.DrawUtilities.arcDrawText;
+import static mindustry.arcModule.DrawUtilities.drawText;
 import static mindustry.arcModule.RFuncs.getPrefix;
 
 public class Marker{
@@ -29,9 +29,8 @@ public class Marker{
      * 滞留时间
      */
     public static final float retainTime = 1800f;
-
+    public static final Seq<MarkElement> markList = new Seq<>();
     public static MarkType mark, gatherMark, attackMark, defenseMark, quesMark;
-
     public static Seq<MarkType> markTypes = Seq.with(
     mark = new MarkType("Mark", ArcFx.marker, Color.valueOf("eab678")),
     gatherMark = new MarkType("Gather", ArcFx.markerGather, Color.cyan),
@@ -39,10 +38,7 @@ public class Marker{
     defenseMark = new MarkType("Defend", ArcFx.markerDefense, Color.acid),
     quesMark = new MarkType("What", ArcFx.markerQuestion, Color.pink)
     );
-
     public static boolean isLocal;
-
-    public static final Seq<MarkElement> markList = new Seq<>();
 
     static{
         Events.run(WorldLoadEvent.class, markList::clear);
@@ -165,13 +161,11 @@ public class Marker{
     }
 
     public static class MarkType{
+        public final Color color;
         private final String name;
-
+        private final Effect effect;
         public String localizedName;
         public String describe;
-
-        private final Effect effect;
-        public final Color color;
 
         public MarkType(String name, Effect effect){
             this(name, effect, Color.white);
@@ -210,10 +204,10 @@ public class Marker{
             Drawf.arrow(player.x, player.y, pos.x, pos.y, 5f * tilesize, 4f, color);
             float dst = Mathf.dst(player.x, player.y, pos.x, pos.y) / 8;
             Tmp.v1.set(pos.x, pos.y).sub(player.x, player.y).limit(4.5f * tilesize);
-            arcDrawText((int)dst + "", 0.2f,
+            drawText((int)dst + "", 0.2f,
             Tmp.v1.x + player.x,
             Tmp.v1.y + player.y,
-            color, 1);
+            color, Align.center);
         }
     }
 

@@ -5,15 +5,15 @@ import arc.Graphics.*;
 import arc.Graphics.Cursor.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
-import arc.scene.ui.layout.Scl;
+import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.*;
-import mindustry.Vars;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.*;
 import mindustry.content.*;
-import mindustry.core.UI;
+import mindustry.core.*;
 import mindustry.entities.*;
 import mindustry.entities.units.*;
 import mindustry.game.EventType.*;
@@ -30,7 +30,6 @@ import mindustry.world.modules.*;
 import java.util.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.DrawUtilities.arcDrawText;
 
 /** A block in the process of construction. */
 public class ConstructBlock extends Block{
@@ -131,7 +130,7 @@ public class ConstructBlock extends Block{
     static float calcPitch(boolean up){
         if(Time.timeSinceMillis(lastTime) < 16 * 30){
             lastTime = Time.millis();
-            pitchSeq ++;
+            pitchSeq++;
             if(pitchSeq > 30){
                 pitchSeq = 0;
             }
@@ -175,31 +174,38 @@ public class ConstructBlock extends Block{
 
         @Override
         public void drawSelect(){
-            /**移植 minerTool, 显示建造中的建筑花费，略作修改*/
-            if(team.core() != null){
-                // BlockUnit之上
-                Draw.z(Layer.flyingUnit + 0.1f);
+            if(team.core() == null){
+                return;
+            }
 
-                float scl = block.size / 8f / 2f / Scl.scl(1f);
+            // BlockUnit之上
+            Draw.z(Layer.flyingUnit + 0.1f);
 
-                arcDrawText(String.format("%.2f", progress * 100) + "%", scl, x, y + block.size * Vars.tilesize / 2f, Pal.accent, Align.center);
+            float scl = block.size / 8f / 2f / Scl.scl(1f);
+            float buildHitSize = hitSize();
 
-                float nextPad = 0f;
-                for(int i = 0; i < current.requirements.length; i++){
-                    ItemStack stack = current.requirements[i];
+            // 显示建造进度
+            DrawUtilities.drawText(String.format("%.2f", progress * 100) + "%", scl, x, y + buildHitSize / 2f, Pal.accent, Align.bottom);
 
-                    float dx = x - (block.size * Vars.tilesize) / 2f, dy = y - (block.size * Vars.tilesize) / 2f + nextPad;
-                    boolean hasItem = (1.0f - progress) * Vars.state.rules.buildCostMultiplier * stack.amount <= team.core().items.get(stack.item);
-                    int investItem = (int) (progress * Vars.state.rules.buildCostMultiplier * stack.amount);
-                    int needItem = (int)(Vars.state.rules.buildCostMultiplier * stack.amount) - investItem;
+            // 显示物品需求
+            float textOffset = 0f;
+            for(int i = 0; i < current.requirements.length; i++){
+                ItemStack stack = current.requirements[i];
 
-                    nextPad += arcDrawText(
-                            stack.item.emoji() + (hasItem?"[#ffd37f]":"[#e55454]") + investItem + "/" +
-                                    needItem + "/" +
-                                    UI.formatAmount(team.core().items.get(stack.item)),
-                            scl, dx, dy, Align.left);
-                    nextPad ++;
-                }
+                float dx = x - buildHitSize / 2f, dy = y - buildHitSize / 2f + textOffset;
+
+                float consumeAmount = state.rules.buildCostMultiplier * stack.amount;
+                int coreAmount = team.core().items.get(stack.item);
+
+                int investItem = (int)(progress * consumeAmount);
+                int needItem = (int)(consumeAmount) - investItem;
+                boolean hasItem = coreAmount >= needItem;
+
+                textOffset += DrawUtilities.drawText(
+                stack.item.emoji() + (hasItem ? "[#ffd37f]" : "[#e55454]") + investItem + "/" +
+                needItem + "/" +
+                UI.formatAmount(coreAmount),
+                scl, dx, dy, Align.bottomLeft) + 1;
             }
         }
 
@@ -281,7 +287,7 @@ public class ConstructBlock extends Block{
 
                     Draw.rect(region, x, y, current.rotate && (noOverrides || current.regionRotated2 == i || current.regionRotated1 == i) ? rotdeg() : 0);
                     Draw.flush();
-                    i ++;
+                    i++;
                 }
 
                 Draw.color();

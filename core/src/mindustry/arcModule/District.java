@@ -20,7 +20,6 @@ import mindustry.ui.dialogs.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
-import static mindustry.arcModule.DrawUtilities.arcFillTextHead;
 import static mindustry.arcModule.RFuncs.getPrefix;
 
 public class District{
@@ -327,7 +326,9 @@ public class District{
                 Draw.rect(districtType.districtType.fullIcon, districtA.x * tilesize, districtA.y * tilesize, width, height);
             }
             if(districtType.districtName != null){
-                arcFillTextHead(districtType.getName(), districtA.x, districtB.x, Math.max(districtA.y, districtB.y), 0.2f);
+                float textX = (districtA.x + districtB.x) / 2;
+                float textY = Math.max(districtA.y, districtB.y);
+                DrawUtilities.drawText(districtType.getName(), 1f / 3f / Scl.scl(), textX, textY, Align.top);
             }
 
             Draw.color(Pal.stat, 0.7f);

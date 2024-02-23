@@ -16,7 +16,7 @@ import mindustry.world.*;
 import mindustry.world.blocks.storage.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.DrawUtilities.arcDrawText;
+import static mindustry.arcModule.DrawUtilities.drawText;
 
 public class arcScanner{
 
@@ -24,33 +24,26 @@ public class arcScanner{
     private static final float ratio = 10f;
     private static final float unitSize = 0.1f;
     private static final float markerSize = 15f * tilesize;
+    /** 范围倍率 */
+    private static final int basicRadarCir = 25;
+    private static final Table t = new Table(Styles.black3);
+    public static boolean mobileRadar = false;
     /** 整体缩放倍率，最重要的可调参数 */
     private static float sizeRate = 1f;
     /** 真实大小 */
     private static float rRatio, rUnitSize, rMarkerSize;
     /** 每多少范围一个雷达圈 */
     private static float radarCir = 25f;
-    /** 范围倍率 */
-    private static final int basicRadarCir = 25;
     /** 默认扫描时间，仅用于特效 */
     private static float scanTime = 5;
-
-
     /** 当前扫描的百分比 */
     private static float scanRate = 0;
-
     /** 扫描线旋转倍率 */
     private static final float scanSpeed = -0.02f;
-
     /** 实际扫描范围，不是参数 */
     private static float curScanRange = 0;
-
-    private static final Table t = new Table(Styles.black3);
     private static float expandRate = 1f;
     private static float time = 0;
-
-    public static boolean mobileRadar = false;
-
 
     static{
         t.touchable = Touchable.disabled;
@@ -129,9 +122,9 @@ public class arcScanner{
             Lines.stroke(expandRate * 0.75f);
             Lines.circle(player.x, player.y, (radarCir * i * tilesize) / rRatio);
             float cirRatio = (radarCir * i * tilesize) / rRatio + 2f;
-            arcDrawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x, player.y + cirRatio, ARCVars.getThemeColor(), 1);
-            arcDrawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 7 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 7 / 6), ARCVars.getThemeColor(), 1);
-            arcDrawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 11 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 11 / 6), ARCVars.getThemeColor(), 1);
+            drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x, player.y + cirRatio, ARCVars.getThemeColor(), Align.center);
+            drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 7 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 7 / 6), ARCVars.getThemeColor(), Align.center);
+            drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 11 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 11 / 6), ARCVars.getThemeColor(), Align.center);
         }
 
         if(scanRate < 1f){
@@ -246,7 +239,7 @@ public class arcScanner{
         float ny = player.y + Mathf.sin(rot) * range / rRatio;
         if(rotate) Draw.rect(region, nx, ny, size, size, (float)Math.toDegrees(rot));
         else Draw.rect(region, nx, ny, size, size);
-        arcDrawText((int)(range / 8f) + "", 0.2f / Scl.scl(1f) * expandRate, nx, ny + size / 2, color, 1);
+        drawText((int)(range / 8f) + "", 0.2f / Scl.scl(1f) * expandRate, nx, ny + size / 2, color, Align.center);
     }
 
     public static void arcDrawNearby(TextureRegion region, Tile tile, float size, Color color){
