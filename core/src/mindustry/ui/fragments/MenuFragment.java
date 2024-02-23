@@ -11,24 +11,15 @@ import arc.scene.event.*;
 import arc.scene.style.*;
 import arc.scene.ui.*;
 import arc.scene.ui.ImageButton.*;
-import arc.scene.ui.TextButton.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
-import arc.util.serialization.*;
-import mindustry.arcModule.*;
-import mindustry.arcModule.ui.*;
-import mindustry.arcModule.ui.window.*;
 import mindustry.core.*;
-import mindustry.game.*;
 import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.service.*;
 import mindustry.ui.*;
-
-import java.util.concurrent.*;
-import java.util.zip.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
@@ -42,12 +33,10 @@ public class MenuFragment{
     private Seq<MenuButton> customButtons = new Seq<>();
     Label textLabel;
     float tx, ty, base;
-    String[] labels = { "[yellow]学术端!" };
+    String[] labels = {"[yellow]学术端!"};
     float period = 75f;
     float varSize = 0.8f;
     String text = labels[0];
-    static long arcNewsLastUpdate = 0;
-    static boolean haveNewerNews = false;
 
     Fi arcBackground;
     String arcBackgroundPath = Core.settings.getString("arcBackgroundPath");
@@ -60,7 +49,7 @@ public class MenuFragment{
     public void build(Group parent){
         renderer = new MenuRenderer();
 
-        if (!Core.settings.getBool("arcDisableModWarning")){
+        if(!Core.settings.getBool("arcDisableModWarning")){
             arcui.aboutcn_arc.show();
         }
         Group group = new WidgetGroup();
@@ -73,16 +62,16 @@ public class MenuFragment{
 
         parent = group;
 
-        if (arcBackgroundPath != null && Core.files.absolute(arcBackgroundPath).exists() && Core.files.absolute(arcBackgroundPath).list().length >=1){
-            arcBackgroundIndex = (int) (Math.random() * Core.files.absolute(arcBackgroundPath).list().length);
+        if(arcBackgroundPath != null && Core.files.absolute(arcBackgroundPath).exists() && Core.files.absolute(arcBackgroundPath).list().length >= 1){
+            arcBackgroundIndex = (int)(Math.random() * Core.files.absolute(arcBackgroundPath).list().length);
             nextBackGroundImg();
-            if (arcBGList.size == 0) {
+            if(arcBGList.size == 0){
                 parent.fill((x, y, w, h) -> renderer.render());
-            } else {
+            }else{
                 group.addChild(img);
                 img.setFillParent(true);
             }
-        } else {
+        }else{
             parent.fill((x, y, w, h) -> renderer.render());
         }
 
@@ -158,66 +147,13 @@ public class MenuFragment{
             textLabel.setFontScale((base == 0 ? 1f : base) * Math.abs(Time.time % period / period - 0.5f) * varSize + 1);
             textLabel.setText(text);
         });
-        Events.on(EventType.ClientLoadEvent.class, event -> {
-            Http.get("https://cn-arc.github.io/labels?t=" + Time.millis())
-            .timeout(5000)
-            .error(e -> {
-                Log.err("获取最新主页标语失败!加载本地标语", e);
-                labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
-                Core.app.post(this::randomLabel);
-            })
-            .submit(result -> {
-                labels = result.getResultAsString().replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
-                Core.app.post(this::randomLabel);
-            });
-        });
-
-        arcNewsLastUpdate = Core.settings.getLong("arcNewsLastUpdate", 0);
-        Events.on(EventType.ClientLoadEvent.class, event -> Timer.schedule(MenuFragment::fetchArcNews, 0, 300));
-
-        parent.fill(c -> c.top().left().table(t -> {
-            t.background(Tex.buttonEdge4);
-            t.button("学术日报", cleart, MenuFragment::showArcNews).left().update(b -> b.setColor(haveNewerNews ? Tmp.c1.set(Color.white).lerp(Color.cyan, Mathf.absin(5f, 1f)) : Color.white)).growX();
-        }).left().width(100));
-
-        Core.app.post(() -> Http.get("https://cn-arc.github.io/classes.json?t=" + Time.millis()).timeout(10000).error(Log::err).submit(r -> {
-            try {
-                JsonValue j = new JsonReader().parse(r.getResultAsString());
-                if (j.getLong("lastUpdate", 0) > Core.settings.getLong("archotfixtime", 0)) {
-                    Http.get("https://cn-arc.github.io/classes.zip").timeout(20000).error(Log::err).submit(r2 -> {
-                        try {
-                            ZipInputStream zip = new ZipInputStream(r2.getResultAsStream());
-                            ZipEntry file;
-                            Fi root = dataDirectory.child("arcvars");
-                            root.emptyDirectory();
-                            byte[] buffer = new byte[1024];
-                            while ((file = zip.getNextEntry()) != null) {
-                                Fi f = root.child(file.getName());
-                                if (file.isDirectory()) {
-                                    f.mkdirs();
-                                } else {
-                                    f.parent().mkdirs();
-                                    int len;
-                                    while ((len = zip.read(buffer)) > 0) {
-                                        f.writeBytes(buffer, 0, len, true);
-                                    }
-                                }
-                            }
-                            Core.settings.put("archotfixtime", j.getLong("lastUpdate", 0));
-                        } catch (Exception e) {
-                            Log.err(e);
-                        }
-                    });
-                }
-            } catch (Exception e) {
-                Log.err(e);
-            }
-        }));
+        labels = Core.files.internal("labels").readString("UTF-8").replace("\r", "").replace("\\n", "\n").replace("/n", "\n").split("\n");
+        randomLabel();
     }
 
     private void nextBackGroundImg(){
         arcBGList = Core.files.absolute(arcBackgroundPath).findAll(f -> !f.isDirectory() && (f.extEquals("png") || f.extEquals("jpg") || f.extEquals("jpeg")));
-        if (arcBGList.size == 0) return;
+        if(arcBGList.size == 0) return;
         arcBackgroundPath = Core.settings.getString("arcBackgroundPath");
         arcBackgroundIndex += 1;
         arcBackgroundIndex = arcBackgroundIndex % arcBGList.size;
@@ -225,174 +161,10 @@ public class MenuFragment{
             try{
                 arcBackground = arcBGList.get(arcBackgroundIndex);
                 Core.app.post(() -> img.setDrawable(new TextureRegion(new Texture(arcBackground))));
-            } catch (Exception e) {
+            }catch(Exception e){
                 Core.app.post(() -> ui.showException("背景图片无效:" + arcBGList.get(arcBackgroundIndex).path(), e));
             }
         }).start();
-    }
-
-    public static void fetchArcNews() {
-        Http.get("https://cn-arc.github.io/news?t=" + Time.millis())
-                .timeout(5000)
-                .error(e -> {})
-                .submit(result -> {
-                    try {
-                        String s = result.getResultAsString();
-                        long last = Long.parseLong(s.substring(0, s.indexOf('\n')));
-                        if (arcNewsLastUpdate < last) {
-                            arcNewsLastUpdate = last;
-                            haveNewerNews = true;
-                            if (Core.settings.getBool("autoArcNews", false)) Core.app.post(MenuFragment::showArcNews);
-                        }
-                    } catch (Exception ignored) {
-                    }
-                });
-    }
-
-    public static void showArcNews() {
-        Core.settings.put("arcNewsLastUpdate", arcNewsLastUpdate);
-        haveNewerNews = false;
-        Http.get("https://cn-arc.github.io/news?t=" + Time.millis(), result -> {
-            String s = result.getResultAsString();
-            Core.app.post(() -> {
-                try {
-                    String[] news = s.replace("\r", "").split("\n");
-                    boolean haveNews = false;
-                    Table t = new Table();
-                    ScrollPane p = new ScrollPane(t);
-                    t.table(t2 -> t2.check("有更新时自动显示", b -> Core.settings.put("autoArcNews", b)).checked(Core.settings.getBool("autoArcNews", false))).growX().row();
-                    for (int i = 0; i < news.length; i += 3) {
-                        haveNews = true;
-                        int idx = news[i + 1].indexOf(' ');
-                        int id = i;
-                        t.button(b -> {
-                            b.clearChildren();
-                            b.add(idx == -1 ? news[id + 1].substring(0, 10) + "..." : news[id + 1].substring(0, idx)).padLeft(5);
-                            b.add().grow();
-                            b.add(formatTimeElapsed(Time.millis() - Long.parseLong(news[id]))).padRight(5);
-                        }, RStyles.flatt, () -> {
-                            Window w = new Window(idx == -1 ? news[id + 1] : news[id + 1].substring(0, idx), 600, 400, Icon.book, arcui.WindowManager);
-                            Table content = new Table();
-                            ScrollPane pane = new ScrollPane(content);
-                            content.table(t2 -> {
-                                t2.image().color(ARCVars.getThemeColor()).height(3).growX().row();
-                                t2.add(formatTimeElapsed(Time.millis() - Long.parseLong(news[id]))).align(Align.left).row();
-                                t2.table(t3 -> {
-                                    String n = (idx == -1 ? news[id + 1] : news[id + 1].substring(idx + 1)).replace("\\n", "\n");
-                                    StringBuilder sb = new StringBuilder();
-                                    Table there = new Table();
-                                    for (int ptr = 0, l = n.length(); ptr < l; ptr++) {
-                                        char c = n.charAt(ptr);
-                                        Table finalThere = there;
-                                        switch (c) {
-                                            case '\\' -> {
-                                                if (ptr + 1 < l) {
-                                                    sb.append(n.charAt(ptr + 1));
-                                                    ptr++;
-                                                }
-                                            }
-                                            case '{' -> {
-                                                int left = 0, right = 0;
-                                                for (int ptr2 = ptr; ptr2 < l; ptr2++) {
-                                                    switch (n.charAt(ptr2)) {
-                                                        case '{' -> left++;
-                                                        case '}' -> right++;
-                                                    }
-                                                    if (left == right) {
-                                                        String sub = n.substring(ptr + 1, ptr2);
-                                                        int index = sub.indexOf(':');
-                                                        if (index == -1) {
-                                                            sb.append(n, ptr, ptr2 + 1);
-                                                            ptr = ptr2;
-                                                            break;
-                                                        }
-                                                        String cont = sub.substring(index + 1);
-                                                        boolean found = true;
-                                                        String out = "";
-                                                        switch (sub.substring(0, index)) {
-                                                            case "image" -> {
-                                                                if (sb.length() != 0) there.add(sb.toString());
-                                                                Image img = there.image(Icon.refresh.getRegion()).size(64).get();
-                                                                img.setScaling(Scaling.fit);
-                                                                Http.get(cont, r -> {
-                                                                    byte[] b = r.getResult();
-                                                                    Core.app.post(() -> {
-                                                                        Pixmap pix = new Pixmap(b);
-                                                                        finalThere.getCell(img).size(0).grow();
-                                                                        img.setDrawable(new TextureRegion(new Texture(pix)));
-                                                                        pix.dispose();
-                                                                    });
-                                                                });
-                                                            }
-                                                            case "eval" -> {
-                                                                sb.append(mods.getScripts().runConsole(cont));
-                                                                there.add(sb.toString());
-                                                            }
-                                                            default -> {
-                                                                found = false;
-                                                                sb.append(n, ptr, ptr2 + 1);
-                                                            }
-                                                        }
-                                                        if (found) {
-                                                            sb.setLength(0);
-                                                            System.out.println(out);
-                                                            ptr = ptr2;
-                                                        }
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                            case '\n' -> {
-                                                if (sb.length() != 0) there.add(sb.toString());
-                                                sb.setLength(0);
-                                                t3.add(there).row();
-                                                there = new Table();
-                                            }
-                                            default -> sb.append(c);
-                                        }
-                                    }
-                                    if (sb.length() != 0) there.add(sb.toString());
-                                    t3.add(there);
-                                }).growX().row();
-                                t2.add(news[id + 2]).align(Align.right);
-                            }).pad(5).growX().row();
-                            w.setBody(new Table(t2 -> {
-                                t2.setBackground(Styles.black3);
-                                t2.add(pane).grow();
-                            }));
-                            w.add();
-                        }).minHeight(40).growX().row();
-                    }
-                    if (!haveNews) {
-                        t.add("这里什么都没有");
-                    }
-                    Window w = new Window("学术日报", 600, 400, Icon.book.getRegion(), arcui.WindowManager);
-                    w.setBody(new Table(t2 -> t2.add(p).grow()) {{
-                        setBackground(Styles.black3);
-                    }});
-                    w.add();
-                } catch (Exception e) {
-                    Log.err(e);
-                }
-            });
-        });
-    }
-
-    public static String formatTimeElapsed(long milliseconds) {
-        long seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds);
-        long minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds);
-        long hours = TimeUnit.MILLISECONDS.toHours(milliseconds);
-        long days = TimeUnit.MILLISECONDS.toDays(milliseconds);
-
-        if (days > 0) {
-            return days + "天前";
-        } else if (hours > 0) {
-            return hours + "小时前";
-        } else if (minutes > 0) {
-            return minutes + "分钟前";
-        } else {
-            return seconds + "秒前";
-        }
     }
 
     private void randomLabel(){
@@ -418,10 +190,10 @@ public class MenuFragment{
             tools = new MobileButton(Icon.settings, "@settings", ui.settings::show),
             mods = new MobileButton(Icon.book, "@mods", ui.mods::show),
             exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit()),
-            cn_arc = new MobileButton(Icon.info,"@aboutcn_arc.button",  arcui.aboutcn_arc::show),
+            cn_arc = new MobileButton(Icon.info, "@aboutcn_arc.button", arcui.aboutcn_arc::show),
             //mindustrywiki = new MobileButton(Icon.book, "@mindustrywiki.button", ui.mindustrywiki::show),
-            database = new MobileButton(Icon.book, "@database",  ui.database::show),
-            achievements = new MobileButton(Icon.star, "@achievements",  arcui.achievements::show);
+            database = new MobileButton(Icon.book, "@database", ui.database::show),
+            achievements = new MobileButton(Icon.star, "@achievements", arcui.achievements::show);
 
         play.clicked(this::randomLabel);
         custom.clicked(this::randomLabel);
@@ -490,15 +262,18 @@ public class MenuFragment{
     }
 
     void initAchievement(){
+        if(service.enabled()) return;
         service = new GameService(){
             @Override
-            public boolean enabled(){ return true; }
+            public boolean enabled(){
+                return true;
+            }
 
             @Override
             public void completeAchievement(String name){
                 Core.settings.put("achievement." + name, true);
                 //TODO draw the sprite of the achievement
-                ui.hudfrag.showToast(Core.atlas.getDrawable("error"), Core.bundle.get("achievement.unlocked") +"\n"+ Core.bundle.get("achievement."+name+".name"));
+                ui.hudfrag.showToast(Core.atlas.getDrawable("error"), Core.bundle.get("achievement.unlocked") + "\n" + Core.bundle.get("achievement." + name + ".name"));
             }
 
             @Override
@@ -507,12 +282,12 @@ public class MenuFragment{
             }
 
             @Override
-            public int getStat(String name, int def) {
+            public int getStat(String name, int def){
                 return Core.settings.getInt("achievementstat." + name, def);
             }
 
             @Override
-            public void setStat(String name, int amount) {
+            public void setStat(String name, int amount){
                 Core.settings.put("achievementstat." + name, amount);
             }
         };
@@ -528,29 +303,29 @@ public class MenuFragment{
         Drawable background = Styles.black6;
 
         container.left();
-        container.add().width(Core.graphics.getWidth()/10f);
+        container.add().width(Core.graphics.getWidth() / 10f);
         container.table(background, t -> {
             t.defaults().width(width).height(70f);
             t.name = "buttons";
 
             buttons(t,
-                new MenuButton("@play", Icon.play,
-                    new MenuButton("@campaign", Icon.play, () -> checkPlay(ui.planet::show)),
-                    new MenuButton("@joingame", Icon.add, () -> checkPlay(ui.join::show)),
-                    new MenuButton("@customgame", Icon.terrain, () -> checkPlay(ui.custom::show)),
-                    new MenuButton("@loadgame", Icon.download, () -> checkPlay(ui.load::show)),
-                    new MenuButton("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)), steam ? new MenuButton("@workshop", Icon.steam, platform::openWorkshop) : null
-                ),
-                new MenuButton("@database.button", Icon.menu,
-                    new MenuButton("@schematics", Icon.paste, ui.schematics::show),
-                    new MenuButton("@database", Icon.book, ui.database::show),
-                    new MenuButton("@about.button", Icon.info, ui.about::show)
-                ),
+            new MenuButton("@play", Icon.play,
+            new MenuButton("@campaign", Icon.play, () -> checkPlay(ui.planet::show)),
+            new MenuButton("@joingame", Icon.add, () -> checkPlay(ui.join::show)),
+            new MenuButton("@customgame", Icon.terrain, () -> checkPlay(ui.custom::show)),
+            new MenuButton("@loadgame", Icon.download, () -> checkPlay(ui.load::show)),
+            new MenuButton("@editor", Icon.terrain, () -> checkPlay(ui.maps::show)), steam ? new MenuButton("@workshop", Icon.steam, platform::openWorkshop) : null
+            ),
+            new MenuButton("@database.button", Icon.menu,
+            new MenuButton("@schematics", Icon.paste, ui.schematics::show),
+            new MenuButton("@database", Icon.book, ui.database::show),
+            new MenuButton("@about.button", Icon.info, ui.about::show)
+            ),
 
-                new MenuButton("@achievements", Icon.star, arcui.achievements::show),
-                new MenuButton("@mods", Icon.book, ui.mods::show),
-                new MenuButton("@settings", Icon.settings, ui.settings::show),
-                new MenuButton("@aboutcn_arc.button", Icon.info, arcui.aboutcn_arc::show)
+            new MenuButton("@achievements", Icon.star, arcui.achievements::show),
+            new MenuButton("@mods", Icon.book, ui.mods::show),
+            new MenuButton("@settings", Icon.settings, ui.settings::show),
+            new MenuButton("@aboutcn_arc.button", Icon.info, arcui.aboutcn_arc::show)
             );
             buttons(t, customButtons.toArray(MenuButton.class));
             buttons(t, new MenuButton("@quit", Icon.exit, Core.app::exit));
@@ -668,7 +443,8 @@ public class MenuFragment{
         MenuButton(String text, Drawable icon, MenuButton... submenu){
             this.icon = icon;
             this.text = text;
-            this.runnable = () -> {};
+            this.runnable = () -> {
+            };
             this.submenu = submenu;
         }
     }
