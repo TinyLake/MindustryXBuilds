@@ -30,7 +30,6 @@ import mindustry.world.modules.*;
 import java.util.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.DrawUtilities.arcBuildEffect;
 import static mindustry.arcModule.DrawUtilities.arcDrawText;
 
 /** A block in the process of construction. */
@@ -114,7 +113,6 @@ public class ConstructBlock extends Block{
 
         if(fogControl.isVisibleTile(team, tile.x, tile.y)){
             block.placeEffect.at(tile.drawx(), tile.drawy(), block.size);
-            arcBuildEffect(tile.build).at(tile.drawx(), tile.drawy());
             if(shouldPlay()) block.placeSound.at(tile, block.placePitchChange ? calcPitch(true) : 1f);
         }
 
