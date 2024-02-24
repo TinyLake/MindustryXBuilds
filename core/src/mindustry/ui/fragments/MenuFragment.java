@@ -97,6 +97,7 @@ public class MenuFragment{
             up = discordBanner;
         }}, ui.discord::show).marginTop(9f).marginLeft(10f).tooltip("@discord").size(84, 45).name("discord"));
 
+        /*
         parent.fill(c -> c.bottom().right().button("检查更新", Icon.refresh, () -> {
             ui.loadfrag.show();
             becontrol.checkUpdate(result -> {
@@ -106,6 +107,7 @@ public class MenuFragment{
         }).size(200, 60).name("检查更新").update(t -> {
             t.getLabel().setColor(becontrol.isUpdateAvailable() ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
         }));
+        */
 
         parent.fill(c -> c.bottom().left().table(t -> {
             t.background(Tex.buttonEdge3);
