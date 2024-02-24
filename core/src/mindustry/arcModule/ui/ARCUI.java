@@ -19,7 +19,6 @@ import static mindustry.arcModule.toolpack.arcWaveSpawner.initArcWave;
 public class ARCUI{
     public static Color attackMark = Color.valueOf("#DC143C");
 
-    public AboutCN_ARCDialog aboutcn_arc;
     public CustomRulesDialog customrules;
     public AchievementsDialog achievements;
     //public MindustryWikiDialog mindustrywiki;
@@ -46,7 +45,6 @@ public class ARCUI{
     }
 
     public void init(Group group){
-        aboutcn_arc = new AboutCN_ARCDialog();
         customrules = new CustomRulesDialog();
         achievements = new AchievementsDialog();
         //mindustrywiki = new MindustryWikiDialog();

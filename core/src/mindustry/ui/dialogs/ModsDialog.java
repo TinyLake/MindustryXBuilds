@@ -48,6 +48,9 @@ public class ModsDialog extends BaseDialog{
 
     public ModsDialog(){
         super("@mods");
+
+        buttons.add().width(60f);
+        buttons.add().growX().width(-1);
         addCloseButton();
 
         browser = new BaseDialog("@mods.browser");
@@ -80,6 +83,9 @@ public class ModsDialog extends BaseDialog{
         if(!mobile){
             buttons.button("@mods.openfolder", Icon.link, () -> Core.app.openFolder(modDirectory.absolutePath()));
         }
+
+        buttons.add().growX().width(-1);
+        buttons.button("?", () -> ui.showInfo("@mods.info")).size(60f, 64f);
 
         shown(this::setup);
         onResize(this::setup);

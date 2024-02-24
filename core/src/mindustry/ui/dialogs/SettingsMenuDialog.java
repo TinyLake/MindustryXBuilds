@@ -45,7 +45,13 @@ public class SettingsMenuDialog extends BaseDialog{
 
     public SettingsMenuDialog(){
         super(bundle.get("settings", "Settings"));
+
+
+        buttons.add().width(60f);
+        buttons.add().growX().width(-1);
         addCloseButton();
+        buttons.add().growX().width(-1);
+        buttons.button("?", () -> ui.showInfo("@settings.info")).size(60f, 64f);
 
         cont.add(main = new SettingsTable());
         shouldPause = true;

@@ -49,9 +49,6 @@ public class MenuFragment{
     public void build(Group parent){
         renderer = new MenuRenderer();
 
-        if(!Core.settings.getBool("arcDisableModWarning")){
-            arcui.aboutcn_arc.show();
-        }
         Group group = new WidgetGroup();
         group.setFillParent(true);
         group.visible(() -> !ui.editor.isShown());
@@ -192,7 +189,6 @@ public class MenuFragment{
             tools = new MobileButton(Icon.settings, "@settings", ui.settings::show),
             mods = new MobileButton(Icon.book, "@mods", ui.mods::show),
             exit = new MobileButton(Icon.exit, "@quit", () -> Core.app.exit()),
-            cn_arc = new MobileButton(Icon.info, "@aboutcn_arc.button", arcui.aboutcn_arc::show),
             //mindustrywiki = new MobileButton(Icon.book, "@mindustrywiki.button", ui.mindustrywiki::show),
             database = new MobileButton(Icon.book, "@database", ui.database::show),
             achievements = new MobileButton(Icon.star, "@achievements", arcui.achievements::show);
@@ -204,7 +200,6 @@ public class MenuFragment{
         editor.clicked(this::randomLabel);
         tools.clicked(this::randomLabel);
         mods.clicked(this::randomLabel);
-        cn_arc.clicked(this::randomLabel);
         database.clicked(this::randomLabel);
         achievements.clicked(this::randomLabel);
 
@@ -233,7 +228,6 @@ public class MenuFragment{
                 container.add(customs.get(i));
             }
             container.row();
-            container.add(cn_arc);
             container.add(database);
             if(!ios) container.add(exit);
         }else{
@@ -256,7 +250,6 @@ public class MenuFragment{
             }
             if(!ios) container.add(exit);
             container.row();
-            container.add(cn_arc);
             container.add(database);
             container.row();
             container.add(achievements);
@@ -326,8 +319,7 @@ public class MenuFragment{
 
             new MenuButton("@achievements", Icon.star, arcui.achievements::show),
             new MenuButton("@mods", Icon.book, ui.mods::show),
-            new MenuButton("@settings", Icon.settings, ui.settings::show),
-            new MenuButton("@aboutcn_arc.button", Icon.info, arcui.aboutcn_arc::show)
+            new MenuButton("@settings", Icon.settings, ui.settings::show)
             );
             buttons(t, customButtons.toArray(MenuButton.class));
             buttons(t, new MenuButton("@quit", Icon.exit, Core.app::exit));
