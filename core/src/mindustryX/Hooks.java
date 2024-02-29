@@ -14,6 +14,7 @@ public class Hooks implements ApplicationListener{
         Log.infoTag("MindustryX", "Hooks.init");
         if(!Vars.headless){
             RenderExt.init();
+            TimeControl.init();
         }
     }
 
