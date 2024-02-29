@@ -2,6 +2,7 @@ package mindustryX;
 
 import arc.*;
 import arc.util.*;
+import mindustry.*;
 import mindustry.gen.*;
 import mindustryX.features.*;
 
@@ -10,6 +11,9 @@ public class Hooks implements ApplicationListener{
     public void init(){
         Log.infoTag("MindustryX", "Hooks.init");
         RenderExt.init();
+        if(!Vars.headless){
+            TimeControl.init();
+        }
     }
 
     @Override
