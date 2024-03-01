@@ -4,6 +4,7 @@ import arc.Core;
 import arc.scene.ui.*;
 import arc.struct.*;
 import mindustry.*;
+import mindustry.arcModule.ui.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.io.*;
@@ -14,14 +15,14 @@ import mindustry.ui.dialogs.*;
 import static mindustry.Vars.*;
 
 public class MapInfoDialog extends BaseDialog{
-    private final arcWaveInfoDialog waveInfo;
+    private final ArcWaveInfoDialog waveInfo;
     private final MapGenerateDialog generate;
     private final CustomRulesDialog ruleInfo = new CustomRulesDialog();
     private final MapObjectivesDialog objectives = new MapObjectivesDialog();
 
     public MapInfoDialog(){
         super("@editor.mapinfo");
-        this.waveInfo = new arcWaveInfoDialog();
+        this.waveInfo = new ArcWaveInfoDialog();
         this.generate = new MapGenerateDialog(false);
 
         addCloseButton();

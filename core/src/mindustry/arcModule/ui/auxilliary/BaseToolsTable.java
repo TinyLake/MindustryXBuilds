@@ -8,7 +8,7 @@ import static mindustry.arcModule.ui.RStyles.clearAccentNoneTogglei;
 
 public abstract class BaseToolsTable extends Table{
     private boolean shown;
-    private final Drawable icon;
+    protected Drawable icon;
 
     public BaseToolsTable(TextureRegion region){
         this(new TextureRegionDrawable(region));
@@ -19,7 +19,7 @@ public abstract class BaseToolsTable extends Table{
     }
 
     public void addButton(Table buttons){
-        buttons.button(icon(), clearAccentNoneTogglei, 30, this::toggle)
+        buttons.button(icon, clearAccentNoneTogglei, 30, this::toggle)
         .size(40).checked(b -> shown);
     }
 
@@ -31,10 +31,6 @@ public abstract class BaseToolsTable extends Table{
 
     public boolean toggle(){
         return shown = !shown;
-    }
-
-    public Drawable icon(){
-        return icon;
     }
 
 }

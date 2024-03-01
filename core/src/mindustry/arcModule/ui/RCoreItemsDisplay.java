@@ -19,8 +19,7 @@ import mindustry.world.blocks.storage.CoreBlock.*;
 import static mindustry.Vars.*;
 
 public class RCoreItemsDisplay extends CoreItemsDisplay{
-    private final Interval timer = new Interval();
-    private final Interval timer2 = new Interval();
+    private final Interval timer = new Interval(), timer2 = new Interval();
     private final ObjectSet<Item> usedItems = new ObjectSet<>();
     private final ObjectSet<UnitType> usedUnits = new ObjectSet<>();
     private final int[] updateItems = new int[content.items().size];

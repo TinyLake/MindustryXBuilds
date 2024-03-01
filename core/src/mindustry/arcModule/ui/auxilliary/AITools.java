@@ -24,10 +24,10 @@ import static mindustry.arcModule.ui.RStyles.clearLineNoneTogglei;
 import static mindustry.content.UnitTypes.*;
 import static mindustry.ui.Styles.flatToggleMenut;
 
-public class AIToolsTable extends BaseToolsTable{
+public class AITools extends BaseToolsTable{
     private AIController selectAI;
 
-    public AIToolsTable(){
+    public AITools(){
         super(Icon.android);
 
         Events.run(EventType.Trigger.update, () -> {
@@ -40,29 +40,30 @@ public class AIToolsTable extends BaseToolsTable{
 
     @Override
     public void setup(){
-        clear();
-        button(Icon.settingsSmall, clearLineNoneTogglei, 30, this::arcAISettingDialog).checked(t -> false);
+        button(Icon.settingsSmall, clearLineNoneTogglei, 30, this::showSettingDialog);
+
         if(false) aiButton(new ATRIAI(), Blocks.worldProcessor.region, "ATRI AI");
         aiButton(new ArcMinerAI(), mono.region, "矿机AI");
         aiButton(new ArcBuilderAI(), poly.region, "重建AI");
         aiButton(new ArcRepairAI(), mega.region, "修复AI");
         aiButton(new DefenderAI(), oct.region, "保护AI");
+
         if(Core.settings.getBool("vipMode"))    //测试赞助者功能，暂不开放。未经授权请不要分享破解方式
-            button(Icon.spray1Small, clearLineNoneTogglei, arcPlayerEffect::arcPlayerEffectSetting).checked(t -> false);
+            button(Icon.spray1Small, clearLineNoneTogglei, arcPlayerEffect::arcPlayerEffectSetting);
     }
 
     private void aiButton(AIController ai, TextureRegion textureRegion, String describe){
-        var button = button(new TextureRegionDrawable(textureRegion), clearLineNoneTogglei, 30, () -> selectAI(ai))
-        .checked(b -> selectAI == ai).size(40).get();
-
-        ElementUtils.tooltip(button, describe);
+        button(new TextureRegionDrawable(textureRegion), clearLineNoneTogglei, 30, () -> selectAI(ai))
+        .checked(b -> selectAI == ai).size(40).with(b -> {
+            ElementUtils.tooltip(b, describe);
+        });
     }
 
     private void selectAI(AIController ai){
         selectAI = selectAI == ai ? null : ai;
     }
 
-    private void arcAISettingDialog(){
+    private void showSettingDialog(){
         int cols = (int)Math.max(Core.graphics.getWidth() / Scl.scl(480), 1);
 
         BaseDialog dialog = new BaseDialog("ARC-AI设定器");
@@ -116,7 +117,6 @@ public class AIToolsTable extends BaseToolsTable{
 
                 TextField sField = tt.field(ArcBuilderAI.rebuildTime + "", text -> {
                     ArcBuilderAI.rebuildTime = Math.max(5f, Float.parseFloat(text));
-                    setup();
                 }).valid(Strings::canParsePositiveFloat).width(200f).get();
 
                 tt.slider(5, 200, 5, i -> {

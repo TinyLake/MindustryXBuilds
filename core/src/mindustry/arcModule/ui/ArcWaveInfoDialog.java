@@ -1,8 +1,7 @@
-package mindustry.editor;
+package mindustry.arcModule.ui;
 
 import arc.*;
-import arc.func.Intc;
-import arc.func.Intp;
+import arc.func.*;
 import arc.math.*;
 import arc.math.geom.*;
 import arc.scene.event.*;
@@ -12,20 +11,18 @@ import arc.scene.ui.TextField.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
-import mindustry.ai.types.BuilderAI;
-import mindustry.ai.types.MinerAI;
-import mindustry.ai.types.RepairAI;
-import mindustry.arcModule.ARCVars;
-import mindustry.arcModule.toolpack.arcWaveSpawner;
+import mindustry.ai.types.*;
+import mindustry.arcModule.*;
+import mindustry.arcModule.toolpack.*;
 import mindustry.content.*;
-import mindustry.core.UI;
+import mindustry.core.*;
+import mindustry.editor.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.io.*;
 import mindustry.type.*;
-import mindustry.type.unit.ErekirUnitType;
-import mindustry.type.unit.MissileUnitType;
+import mindustry.type.unit.*;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.*;
 
@@ -35,10 +32,10 @@ import static mindustry.Vars.*;
 import static mindustry.arcModule.RFuncs.*;
 import static mindustry.arcModule.toolpack.arcWaveSpawner.*;
 import static mindustry.content.UnitTypes.*;
-import static mindustry.game.SpawnGroup.*;
+import static mindustry.game.SpawnGroup.never;
 import static mindustry.ui.Styles.*;
 
-public class arcWaveInfoDialog extends BaseDialog {
+public class ArcWaveInfoDialog extends BaseDialog {
     private int start = 0, displayed = 20, graphSpeed = 1, maxGraphSpeed = 16;
     Seq<SpawnGroup> groups = new Seq<>();
     private SpawnGroup expandedGroup;
@@ -64,6 +61,8 @@ public class arcWaveInfoDialog extends BaseDialog {
     private boolean waveInfo = true;
     private float waveMulti = 1f;
 
+    private int winWave;
+
     //波次生成
     Float difficult = 1f;
     Seq<UnitType> spawnUnit = content.units().copy().retainAll(unitType -> !(unitType instanceof MissileUnitType || unitType.controller instanceof BuilderAI || unitType.controller instanceof MinerAI || unitType.controller instanceof RepairAI));
@@ -72,11 +71,13 @@ public class arcWaveInfoDialog extends BaseDialog {
     boolean showUnitSelect = true;
     boolean flyingUnit = true, navalUnit = true, supportUnit = true;
 
-    public arcWaveInfoDialog() {
+    public ArcWaveInfoDialog() {
         super("ARC-波次编辑器");
 
         shown(() -> {
             checkedSpawns = false;
+            winWave = calWinWave();
+
             setup();
         });
         hidden(() -> state.rules.spawns = groups);
@@ -253,7 +254,7 @@ public class arcWaveInfoDialog extends BaseDialog {
                             setup();
                         }).size(handerSize);
 
-                        buttons.slider(0, calWinWave(), 1, res -> {
+                        buttons.slider(0, winWave, 1, res -> {
                             arcWaveIndex = (int) res;
                             sField.setText((arcWaveIndex + 1) + "");
                         });
@@ -316,12 +317,12 @@ public class arcWaveInfoDialog extends BaseDialog {
                 }).growX();
             } else {
                 tb.pane(p -> {
-                    initArcWave((int) (calWinWave() * waveMulti + 1));
+                    initArcWave((int) (winWave * waveMulti + 1));
                     p.table(Tex.button, t -> {
                         p.margin(0).defaults().pad(5).growX();
                         t.add("\uE86D 为单位数量；\uE813 为单位血+盾；\uE810 为计算buff的血+盾；\uE86E 为预估DPS。在游戏中时会考虑地图出怪点数目").color(ARCVars.getThemeColor());
                     }).scrollX(false).growX().row();
-                    for (int wave = 0; wave < calWinWave() * waveMulti; wave++) {
+                    for (int wave = 0; wave < winWave * waveMulti; wave++) {
                         arcWaveSpawner.waveInfo thisWave = arcWave.get(wave);
                         thisWave.specLoc(-1,group -> true);
                         int finalWave = wave;
@@ -334,11 +335,11 @@ public class arcWaveInfoDialog extends BaseDialog {
                                 tt.add(fixedTime(thisTime, false)).row();
                                 Label waveTime = tt.add("").get();
                                 tt.update(()->{
-                                   if (!state.isGame()) waveTime.setText("");
-                                   else {
-                                       int deltaTime = thisTime - (int) (state.wave <= 1 ? (firstWaveTime - state.wavetime) : (firstWaveTime + state.rules.waveSpacing * (state.wave - 1) - state.wavetime));
-                                       waveTime.setText(arcColorTime(deltaTime,false));
-                                   }
+                                    if (!state.isGame()) waveTime.setText("");
+                                    else {
+                                        int deltaTime = thisTime - (int) (state.wave <= 1 ? (firstWaveTime - state.wavetime) : (firstWaveTime + state.rules.waveSpacing * (state.wave - 1) - state.wavetime));
+                                        waveTime.setText(arcColorTime(deltaTime,false));
+                                    }
                                 });
                             }).width(120f).left();
                             if (thisWave.amount == 0) t.add("该波次没有敌人");
@@ -351,13 +352,13 @@ public class arcWaveInfoDialog extends BaseDialog {
                     }
                 }).scrollX(false).growX().row();
                 tb.table(tbb -> {
-                    tbb.button("刷新波次显示", () -> setup()).width(200f);
-                    TextField sField = tbb.field(calWinWave() * (int) waveMulti + "", text -> {
-                        waveMulti = (Float.parseFloat(text) / calWinWave());
+                    tbb.button("刷新波次显示", this::setup).width(200f);
+                    TextField sField = tbb.field(winWave * (int) waveMulti + "", text -> {
+                        waveMulti = (Float.parseFloat(text) / winWave);
                     }).valid(Strings::canParsePositiveFloat).width(200f).get();
                     tbb.slider(0.25f, 10f, 0.25f, 1f, t -> {
                         waveMulti = t;
-                        sField.setText(calWinWave() * (int) waveMulti + "");
+                        sField.setText(winWave * (int) waveMulti + "");
                     }).width(300f);
                 });
             }
@@ -378,11 +379,11 @@ public class arcWaveInfoDialog extends BaseDialog {
 
             for (SpawnGroup group : groups) {
                 if ((search >= 0 && group.getSpawned(search) <= 0)
-                        || (filterHealth != 0 && !(filterHealthMode ? group.type.health * (search >= 0 ? group.getSpawned(search) : 1) > filterHealth : group.type.health * (search >= 0 ? group.getSpawned(search) : 1) < filterHealth))
-                        || (filterBegin >= 0 && !(filterStrict ? group.begin == filterBegin : group.begin - 2 <= filterBegin && group.begin + 2 >= filterBegin))
-                        || (filterEnd >= 0 && !(filterStrict ? group.end == filterEnd : group.end - 2 <= filterEnd && group.end + 2 >= filterEnd))
-                        || (filterAmount != 0 && !(filterStrict ? group.getSpawned(filterAmountWave) == filterAmount : filterAmount - 5 <= group.getSpawned(filterAmountWave) && filterAmount + 5 >= group.getSpawned(filterAmountWave)))
-                        || (filterEffect != StatusEffects.none && group.effect != filterEffect)) continue;
+                || (filterHealth != 0 && !(filterHealthMode ? group.type.health * (search >= 0 ? group.getSpawned(search) : 1) > filterHealth : group.type.health * (search >= 0 ? group.getSpawned(search) : 1) < filterHealth))
+                || (filterBegin >= 0 && !(filterStrict ? group.begin == filterBegin : group.begin - 2 <= filterBegin && group.begin + 2 >= filterBegin))
+                || (filterEnd >= 0 && !(filterStrict ? group.end == filterEnd : group.end - 2 <= filterEnd && group.end + 2 >= filterEnd))
+                || (filterAmount != 0 && !(filterStrict ? group.getSpawned(filterAmountWave) == filterAmount : filterAmount - 5 <= group.getSpawned(filterAmountWave) && filterAmount + 5 >= group.getSpawned(filterAmountWave)))
+                || (filterEffect != StatusEffects.none && group.effect != filterEffect)) continue;
 
                 table.table(Tex.button, t -> {
                     t.margin(0).defaults().pad(3).padLeft(5f).growX().left();
@@ -942,8 +943,8 @@ public class arcWaveInfoDialog extends BaseDialog {
             eTable.clear();
             eTable.add(Core.bundle.get("waves.filter.effect") + ":");
             eTable.button(filterEffect != null && filterEffect != StatusEffects.none ?
-                    new TextureRegionDrawable(filterEffect.uiIcon) :
-                    Icon.logic, () -> showEffect(null)).padLeft(30f).size(60f);
+            new TextureRegionDrawable(filterEffect.uiIcon) :
+            Icon.logic, () -> showEffect(null)).padLeft(30f).size(60f);
         }
 
         if (uTable != null && group != null && group.payloads != null) {
@@ -1122,16 +1123,16 @@ public class arcWaveInfoDialog extends BaseDialog {
     public Seq<SpawnGroup> arcGenerate(float difficulty) {
         Rand rand = new Rand();
         UnitType[][] species = {
-                {dagger, mace, fortress, scepter, reign},
-                {nova, pulsar, quasar, vela, corvus},
-                {crawler, atrax, spiroct, arkyid, toxopid},
-                {risso, minke, bryde, sei, omura},
-                {retusa, oxynoe, cyerce, aegires, navanax}, //retusa intentionally left out as it cannot damage the core properly
-                {flare, horizon, zenith, antumbra, eclipse},
-                {mono, poly, mega, quad, oct},
-                {stell, locus, precept, vanquish, conquer},
-                {merui, cleroi, anthicus, tecta, collaris},
-                {elude, avert, obviate, quell, disrupt}
+        {dagger, mace, fortress, scepter, reign},
+        {nova, pulsar, quasar, vela, corvus},
+        {crawler, atrax, spiroct, arkyid, toxopid},
+        {risso, minke, bryde, sei, omura},
+        {retusa, oxynoe, cyerce, aegires, navanax}, //retusa intentionally left out as it cannot damage the core properly
+        {flare, horizon, zenith, antumbra, eclipse},
+        {mono, poly, mega, quad, oct},
+        {stell, locus, precept, vanquish, conquer},
+        {merui, cleroi, anthicus, tecta, collaris},
+        {elude, avert, obviate, quell, disrupt}
         };
 
 
@@ -1288,17 +1289,5 @@ public class arcWaveInfoDialog extends BaseDialog {
         }
 
         return out;
-    }
-
-    public int calWinWave() {
-        if (state.rules.winWave >= 1) return state.rules.winWave;
-        int maxwave = 0;
-        for (SpawnGroup group : state.rules.spawns) {
-            if (group.end > 99999) continue;
-            maxwave = Math.max(maxwave, group.end);
-        }
-        if (maxwave > 5000) return 200;
-        if (maxwave < 2 && state.rules.waveSpacing > 30f) return (int) (1800000 / state.rules.waveSpacing);
-        return maxwave + 1;
     }
 }
