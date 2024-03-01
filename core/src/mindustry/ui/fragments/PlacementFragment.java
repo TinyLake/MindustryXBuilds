@@ -25,6 +25,7 @@ import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
 import mindustry.world.blocks.ConstructBlock.*;
+import mindustryX.features.*;
 
 import static mindustry.Vars.*;
 
@@ -242,6 +243,7 @@ public class PlacementFragment{
             toggler = full;
             full.bottom().right().visible(() -> ui.hudfrag.shown);
 
+            full.add(UIExt.advanceToolTable).bottom().right();
             full.table(frame -> {
 
                 //rebuilds the category table with the correct recipes
