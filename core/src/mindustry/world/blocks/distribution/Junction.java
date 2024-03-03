@@ -1,12 +1,9 @@
 package mindustry.world.blocks.distribution;
 
-import arc.*;
+import arc.graphics.*;
 import arc.graphics.g2d.*;
-import arc.math.geom.*;
 import arc.util.*;
 import arc.util.io.*;
-
-import mindustry.ui.*;
 import mindustry.gen.*;
 import mindustry.type.*;
 import mindustry.world.*;
@@ -98,24 +95,16 @@ public class Junction extends Block{
         @Override
         public void draw(){
             super.draw();
-            if(RenderExt.hiddenItemTransparency > 0){
-                float begx, begy, endx, endy;
-                for(int dir = 0; dir < 4; dir++){
-                    endx = x + Geometry.d4(dir).x * tilesize / 2f + Geometry.d4(Math.floorMod(dir + 1, 4)).x * tilesize / 4f;
-                    endy = y + Geometry.d4(dir).y * tilesize / 2f + Geometry.d4(Math.floorMod(dir + 1, 4)).y * tilesize / 4f;
-                    begx = x - Geometry.d4(dir).x * tilesize / 4f + Geometry.d4(Math.floorMod(dir + 1, 4)).x * tilesize / 4f;
-                    begy = y - Geometry.d4(dir).y * tilesize / 4f + Geometry.d4(Math.floorMod(dir + 1, 4)).y * tilesize / 4f;
 
-                    Item item;
-                    for(int i = 0; (item = buffer.getItem(dir, i)) != null; i++){
-                        float time = buffer.getTime(dir, i);
-                        Draw.alpha(RenderExt.hiddenItemTransparency / 100f);
-                        Draw.rect(item.uiIcon,
-                        begx + ((endx - begx) / capacity * Math.min(((Time.time - time) * timeScale / speed) * capacity, capacity - i)),
-                        begy + ((endy - begy) / capacity * Math.min(((Time.time - time) * timeScale / speed) * capacity, capacity - i)),
-                        4f, 4f);
+            if(RenderExt.hiddenItemTransparency > 0){
+                Draw.color(Color.white, 0.9f);
+                for(int rot = 0; rot < 4; rot++){
+                    for(int i = 0; i < buffer.indexes[rot]; i++){
+                        var pos = Tmp.v1.set(-0.25f + 0.75f * Math.min((Time.time - BufferItem.time(buffer.buffers[rot][i])) * timeScale / speed, 1f - i / (float)capacity), 0.25f).rotate(90 * rot).scl(tilesize).add(this);
+                        Draw.rect(content.item(BufferItem.item(buffer.buffers[rot][i])).fullIcon, pos.x, pos.y, 4f, 4f);
                     }
                 }
+                Draw.reset();
             }
         }
 
