@@ -7,6 +7,7 @@ import arc.graphics.g2d.*;
 import arc.scene.*;
 import arc.scene.actions.*;
 import arc.scene.event.*;
+import arc.scene.style.Drawable;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import mindustry.graphics.*;
@@ -19,12 +20,14 @@ public class LoadingFragment{
     private Label nameLabel;
     private float progValue;
 
+    public static Drawable background = Styles.black8;
+
     public void build(Group parent){
         parent.fill(t -> {
             //rect must fill screen completely.
             t.rect((x, y, w, h) -> {
                 Draw.alpha(t.color.a);
-                Styles.black8.draw(0, 0, Core.graphics.getWidth(), Core.graphics.getHeight());
+                background.draw(0, 0, Core.graphics.getWidth(), Core.graphics.getHeight());
             });
             t.visible = false;
             t.touchable = Touchable.enabled;

@@ -28,7 +28,7 @@ public class ChatFragment extends Table{
     private Seq<String> messages = new Seq<>();
     private float fadetime;
     private boolean shown = false;
-    private TextField chatfield;
+    public TextField chatfield;
     private Label fieldlabel = new Label(">");
     public ChatMode mode = ChatMode.normal;
     private Font font;

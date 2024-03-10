@@ -34,7 +34,7 @@ public class JoinDialog extends BaseDialog{
     int totalHosts;
     int refreshes;
     boolean showHidden;
-    TextButtonStyle style;
+    public TextButtonStyle style;
 
     String lastIp;
     int lastPort, lastColumns = -1;

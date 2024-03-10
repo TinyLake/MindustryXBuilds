@@ -34,6 +34,8 @@ public class MenuFragment{
 
     MenuFloatLabel floatLabel;
 
+    public static Drawable background;
+
     Fi arcBackground;
     String arcBackgroundPath = Core.settings.getString("arcBackgroundPath");
     Seq<Fi> arcBGList;
@@ -241,7 +243,6 @@ public class MenuFragment{
         container.setSize(Core.graphics.getWidth(), Core.graphics.getHeight());
 
         float width = 230f;
-        Drawable background = Styles.black6;
 
         container.left();
         container.add().width(Core.graphics.getWidth()/10f);
