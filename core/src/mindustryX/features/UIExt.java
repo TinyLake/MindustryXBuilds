@@ -5,6 +5,7 @@ import arc.math.geom.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
+import mindustryX.features.graphics.NewUI;
 import mindustryX.features.ui.*;
 
 import static mindustry.Vars.*;
@@ -19,6 +20,8 @@ public class UIExt{
     public static AdvanceBuildTool advanceBuildTool = new AdvanceBuildTool();
 
     public static void init(){
+        NewUI.init();
+
         teamSelect = new TeamSelectDialog();
 
         advanceToolTable = new AdvanceToolTable();

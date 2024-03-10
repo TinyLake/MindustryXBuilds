@@ -220,6 +220,11 @@ public class ArcOld{
             });
             c.sliderPref("limitdst", 10, 0, 100, 1, s -> s + "格");
             c.checkPref("developMode", false);
+
+            c.addCategory("newUI");
+            c.checkPref("enableBlur", true);
+            c.sliderPref("blurLevel", 1, 1, 8, 1, i -> i + "");
+            c.sliderPref("backBlurLen", 120, 50, 800, 25, i -> Strings.fixed(i * 0.01f, 1));
         }));
     }
 }
