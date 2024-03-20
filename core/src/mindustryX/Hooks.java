@@ -16,6 +16,7 @@ public class Hooks implements ApplicationListener{
         if(!Vars.headless){
             TimeControl.init();
             UIExt.init();
+            ReplayController.init();
         }
     }
 
