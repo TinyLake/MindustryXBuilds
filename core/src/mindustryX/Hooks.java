@@ -16,6 +16,7 @@ public class Hooks implements ApplicationListener{
             RenderExt.init();
             TimeControl.init();
             UIExt.init();
+            ReplayController.init();
         }
     }
 
