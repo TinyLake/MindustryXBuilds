@@ -247,13 +247,6 @@ task icongen(dependsOn: classes, type: JavaExec){
     workingDir = "../core/assets-raw"
 }
 
-task updateScripts(dependsOn: classes, type: JavaExec){
-    mainClass = "mindustry.tools.ScriptMainGenerator"
-    classpath = sourceSets.main.runtimeClasspath
-    standardInput = System.in
-    workingDir = "../"
-}
-
 task updateBundles{
     doLast{
         def uniEscape = { String string ->
