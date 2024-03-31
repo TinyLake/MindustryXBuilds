@@ -1568,6 +1568,10 @@ public class LExecutor{
             ){
                 //set outSuccess=false to let user retry.
                 exec.setnum(outSuccess, 0);
+                if(exec.var(outSuccess).name.equals("@wait")){
+                    exec.var(varCounter).numval--;
+                    exec.yield = true;
+                }
                 return;
             }
 
