@@ -39,6 +39,7 @@ import mindustry.world.blocks.payloads.*;
 import mindustry.world.blocks.storage.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
 import mindustry.world.meta.*;
+import mindustryX.features.*;
 
 import java.util.*;
 
@@ -1575,6 +1576,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
     }
 
     public @Nullable Unit selectedUnit(){
+        if(RenderExt.unitHide) return null;
         Unit unit = Units.closest(player.team(), Core.input.mouseWorld().x, Core.input.mouseWorld().y, 40f, u -> u.isAI() && u.type.playerControllable);
         if(unit != null){
             unit.hitbox(Tmp.r1);

@@ -90,6 +90,7 @@ public enum Binding implements KeyBind{
     console(KeyCode.f8),
 
     //MDTX
+    toggle_unit(KeyCode.unknown),
     ;
 
     private final KeybindValue defaultValue;
