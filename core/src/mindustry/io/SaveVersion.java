@@ -488,6 +488,7 @@ public abstract class SaveVersion extends SaveFileReader{
         int mappable = 0;
         for(Seq<Content> arr : map){
             if(arr.size > 0 && arr.first() instanceof MappableContent){
+                if(arr.first().getContentType() == ContentType.unitCommand) continue;
                 mappable++;
             }
         }
@@ -495,6 +496,7 @@ public abstract class SaveVersion extends SaveFileReader{
         stream.writeByte(mappable);
         for(Seq<Content> arr : map){
             if(arr.size > 0 && arr.first() instanceof MappableContent){
+                if(arr.first().getContentType() == ContentType.unitCommand) continue;
                 stream.writeByte(arr.first().getContentType().ordinal());
                 stream.writeShort(arr.size);
                 for(Content c : arr){
