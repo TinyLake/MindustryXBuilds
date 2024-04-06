@@ -502,7 +502,7 @@ public class PlacementFragment{
                                                     ids.add(unit.id);
                                                 }
 
-                                                Call.setUnitCommand(Vars.player, ids.toArray(), command);
+                                                Call.setUnitCommand(player, ids.toArray(), command);
                                             }).checked(i -> currentCommand[0] == command).size(50f).tooltip(command.localized());
                                         }
                                     }).fillX().padTop(4f).left();
