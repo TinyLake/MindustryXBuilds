@@ -482,5 +482,21 @@ public class Vars implements Loadable{
                 bundle.debug("router");
             }
         }
+
+        //MDTX: bundle overwrite
+        try{
+            I18NBundle originBundle = bundle;
+            Fi handle = Core.files.internal("bundles/bundle-mdtx");
+            Core.bundle = I18NBundle.createBundle(handle, Locale.getDefault());
+            Reflect.set(bundle, "locale", originBundle.getLocale());
+            Log.info("MDTX: bundle has been loaded.");
+            var rootBundle = bundle;
+            while(rootBundle.getParent()!=null){
+                rootBundle = rootBundle.getParent();
+            }
+            Reflect.set(rootBundle, "parent", originBundle);
+        }catch(Throwable e){
+            e.printStackTrace();
+        }
     }
 }
