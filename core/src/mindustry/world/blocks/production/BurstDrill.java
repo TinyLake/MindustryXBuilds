@@ -11,6 +11,9 @@ import mindustry.entities.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
+import mindustryX.features.*;
+
+import static mindustry.Vars.tilesize;
 
 public class BurstDrill extends Drill{
     public float shake = 2f;
@@ -161,6 +164,20 @@ public class BurstDrill extends Drill{
 
             if(glowRegion.found()){
                 Drawf.additive(glowRegion, Tmp.c2.set(glowColor).a(Mathf.pow(fract, 3f) * glowColor.a), x, y);
+            }
+            if(RenderExt.arcDrillMode && dominantItem != null){
+                float dx = x - size * tilesize / 2f + 5, dy = y - size * tilesize / 2f + 5;
+                float iconSize = 5f;
+                Draw.rect(dominantItem.fullIcon, dx, dy, iconSize, iconSize);
+                Draw.reset();
+
+                float eff = Mathf.lerp(0, 1, Math.min(1f, (float)dominantItems / (size * size)));
+                if(eff < 0.9f){
+                    Draw.alpha(0.5f);
+                    Draw.color(dominantItem.color);
+                    Lines.stroke(1f);
+                    Lines.arc(dx, dy, iconSize * 0.75f, eff);
+                }
             }
         }
     }

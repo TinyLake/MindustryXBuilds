@@ -23,6 +23,7 @@ public class RenderExt{
     public static int hiddenItemTransparency;
     public static int blockBarMinHealth;
     public static float overdriveZoneTransparency;
+    public static boolean logicDisplayNoBorder, arcDrillMode;
 
     public static boolean unitHide = false;
 
@@ -50,6 +51,8 @@ public class RenderExt{
             hiddenItemTransparency = Core.settings.getInt("HiddleItemTransparency");
             blockBarMinHealth = Core.settings.getInt("blockbarminhealth");
             overdriveZoneTransparency = Core.settings.getInt("overdrive_zone") / 100f;
+            logicDisplayNoBorder = Core.settings.getBool("arclogicbordershow");
+            arcDrillMode = Core.settings.getBool("arcdrillmode");
         });
         Events.run(Trigger.draw, RenderExt::draw);
         Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
