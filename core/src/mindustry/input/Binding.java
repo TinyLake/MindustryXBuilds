@@ -88,6 +88,8 @@ public enum Binding implements KeyBind{
     chat_scroll(new Axis(KeyCode.scroll)),
     chat_mode(KeyCode.tab),
     console(KeyCode.f8),
+
+    //MDTX
     ;
 
     private final KeybindValue defaultValue;
