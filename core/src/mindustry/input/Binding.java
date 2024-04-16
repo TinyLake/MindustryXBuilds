@@ -91,6 +91,8 @@ public enum Binding implements KeyBind{
 
     //MDTX
     toggle_unit(KeyCode.unknown),
+    point(KeyCode.j),
+    lockonLastMark(KeyCode.unknown),
     ;
 
     private final KeybindValue defaultValue;
