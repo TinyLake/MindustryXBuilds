@@ -4,8 +4,8 @@ import arc.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.gen.*;
-import mindustryX.features.*;
 import mindustryX.features.Settings;
+import mindustryX.features.*;
 
 import java.net.*;
 
@@ -51,5 +51,14 @@ public class Hooks implements ApplicationListener{
     public static @Nullable String onHandleSendMessage(String message, @Nullable Player sender){
         if(message == null) return null;
         return message;
+    }
+
+    @Override
+    public void update(){
+        pollKeys();
+    }
+
+    public static void pollKeys(){
+        if(Core.scene.hasField()) return;
     }
 }
