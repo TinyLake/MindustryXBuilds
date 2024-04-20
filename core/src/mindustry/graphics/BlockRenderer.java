@@ -18,6 +18,7 @@ import mindustry.gen.*;
 import mindustry.world.*;
 import mindustry.world.blocks.environment.Floor.*;
 import mindustry.world.blocks.power.*;
+import mindustryX.features.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -340,7 +341,7 @@ public class BlockRenderer{
         }
 
 
-        if(avgx == lastCamX && avgy == lastCamY && lastRangeX == rangex && lastRangeY == rangey){
+        if(RenderExt.blockRenderLevel <= 0 || avgx == lastCamX && avgy == lastCamY && lastRangeX == rangex && lastRangeY == rangey){
             return;
         }
 
@@ -417,7 +418,7 @@ public class BlockRenderer{
 
             //comment wasVisible part for hiding?
             if(block != Blocks.air && (visible || build.wasVisible)){
-                block.drawBase(tile);
+                if(RenderExt.blockRenderLevel > 1) block.drawBase(tile);
                 Draw.reset();
                 Draw.z(Layer.block);
 
