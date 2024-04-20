@@ -15,6 +15,7 @@ public class Hooks implements ApplicationListener{
     public static void beforeInit(){
         Log.infoTag("MindustryX", "Hooks.beforeInit");
         Settings.addSettings();
+        DebugUtil.init();//this is safe, and better at beforeInit,
     }
 
     /** invoke after loading, just before `Mod::init` */
