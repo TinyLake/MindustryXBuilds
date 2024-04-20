@@ -16,6 +16,7 @@ import mindustry.type.*;
 import mindustry.type.Weather.*;
 import mindustry.world.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
+import mindustryX.features.*;
 
 import java.util.*;
 
@@ -411,6 +412,7 @@ public class Logic implements ApplicationListener{
 
     @Override
     public void update(){
+        var start = Time.nanos();
         Events.fire(Trigger.update);
         universe.updateGlobal();
 
@@ -494,6 +496,7 @@ public class Logic implements ApplicationListener{
         }else if(netServer.isWaitingForPlayers() && runStateCheck){
             checkGameState();
         }
+        DebugUtil.logicTime = Time.timeSinceNanos(start);
     }
 
     /** @return whether the wave timer is paused due to enemies */
