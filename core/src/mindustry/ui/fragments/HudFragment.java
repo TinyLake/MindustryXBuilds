@@ -27,6 +27,8 @@ import mindustry.input.*;
 import mindustry.net.Packets.*;
 import mindustry.type.*;
 import mindustry.ui.*;
+import mindustryX.features.*;
+import mindustryX.features.ui.*;
 
 import static mindustry.Vars.*;
 import static mindustry.gen.Tex.*;
@@ -38,7 +40,7 @@ public class HudFragment{
     public boolean shown = true;
 
     private ImageButton flip;
-    private CoreItemsDisplay coreItems = new CoreItemsDisplay();
+    public NewCoreItemsDisplay coreItems = new NewCoreItemsDisplay();
 
     private String hudText = "";
     private boolean showHudText;
@@ -72,9 +74,9 @@ public class HudFragment{
 
         Events.on(SectorCaptureEvent.class, e -> {
             if(e.sector.isBeingPlayed()){
-                ui.announce(Core.bundle.format("sector.capture", ""), 5f);
+                ui.announce("@sector.capture.current", 5f);
             }else{
-                showToast(Core.bundle.format("sector.capture", e.sector.name() + " "));
+                showToast(Core.bundle.format("sector.capture", e.sector.name()));
             }
         });
 
@@ -84,11 +86,6 @@ public class HudFragment{
 
         Events.on(SectorInvasionEvent.class, e -> {
             showToast(Icon.warning, Core.bundle.format("sector.attacked", e.sector.name()));
-        });
-
-        Events.on(ResetEvent.class, e -> {
-            coreItems.resetUsed();
-            coreItems.clear();
         });
 
         //paused table
@@ -280,6 +277,11 @@ public class HudFragment{
 
                 info.label(() -> fps.get(Core.graphics.getFramesPerSecond())).left().style(Styles.outlineLabel).name("fps");
                 info.row();
+                info.label(() -> Strings.format("LG/DW/UI(ms) @/@/@", Time.nanosToMillis(DebugUtil.logicTime), Time.nanosToMillis(DebugUtil.rendererTime), Time.nanosToMillis(DebugUtil.uiTime)))
+                .left().style(Styles.outlineLabel).name("cpuTime");
+                info.row();
+                info.label(() -> "Draws: " + DebugUtil.lastDrawRequests).left().style(Styles.outlineLabel).name("draw");
+                info.row();
 
                 if(android){
                     info.label(() -> memnative.get((int)(Core.app.getJavaHeap() / 1024 / 1024), (int)(Core.app.getNativeHeap() / 1024 / 1024))).left().style(Styles.outlineLabel).name("memory2");
@@ -309,8 +311,9 @@ public class HudFragment{
             t.collapser(v -> v.add().height(pauseHeight), () -> state.isPaused() && !netServer.isWaitingForPlayers()).row();
 
             t.table(c -> {
+                c.touchable = Touchable.disabled;
                 //core items
-                c.top().collapser(coreItems, () -> Core.settings.getBool("coreitems") && !mobile && shown).fillX().row();
+                c.top().add(coreItems).fillX().row();
 
                 float notifDuration = 240f;
                 float[] coreAttackTime = {0};
