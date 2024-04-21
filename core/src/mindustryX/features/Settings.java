@@ -8,7 +8,7 @@ import static mindustry.Vars.maxSchematicSize;
 
 public class Settings{
     public static void baseSettings(){
-        int v = Core.settings.getInt("maxSchematicSize");
+        int v = Core.settings.getInt("maxSchematicSize", maxSchematicSize);
         maxSchematicSize = v == 257 ? Integer.MAX_VALUE : v;
     }
     public static void addSettings(){
@@ -23,7 +23,7 @@ public class Settings{
             c.checkPref("showAdvanceToolTable", false);
             c.checkPref("researchViewer", false);
             c.sliderPref("minimapSize", 140, 40, 400, 10, i -> i + "");
-            c.sliderPref("maxSchematicSize", 32, 32, 257, 1, v -> {
+            c.sliderPref("maxSchematicSize", 64, 64, 257, 1, v -> {
                 maxSchematicSize = v == 257 ? Integer.MAX_VALUE : v;
                 return v == 257 ? "无限" : String.valueOf(v);
             });
