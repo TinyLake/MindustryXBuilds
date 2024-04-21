@@ -158,7 +158,7 @@ public class Blur {
         }
         """.replace("%varying%", varyings).replace("%convolution%", convolution);
 
-        Log.info("[DEBUG] [mdtx Graphics] blur shader generate, shader content:" + System.lineSeparator() + "=vertexShader=" + System.lineSeparator() + vertexShader + System.lineSeparator() + "=fragShader=" + System.lineSeparator() + fragmentShader);
+        //Log.info("[DEBUG] [mdtx Graphics] blur shader generate, shader content:" + System.lineSeparator() + "=vertexShader=" + System.lineSeparator() + vertexShader + System.lineSeparator() + "=fragShader=" + System.lineSeparator() + fragmentShader);
 
         return new Shader(vertexShader, fragmentShader);
     }
