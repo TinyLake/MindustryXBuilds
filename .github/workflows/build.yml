@@ -103,6 +103,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v3
+      - name: Set env
+        run: |
+          echo "RELEASE_TAG=${GITHUB_REF_NAME}-build" >> $GITHUB_ENV
+          echo "RELEASE_TAG=${GITHUB_REF_NAME}-build"
+          echo "RELEASE_VERSION=$(date +'%Y.%m.%d').${GITHUB_RUN_NUMBER}-${GITHUB_REF_NAME}" >> $GITHUB_ENV
+
+          echo "${{ secrets.KEYSTORE_BASE64 }}" > keystore.txt
+          openssl enc -d -base64 -in keystore.txt -out ../bekeystore.jks
       - uses: oven-sh/setup-bun@v1
       - name: clearOldAssets
         run: bun run .github/actions/clearOldAssets.ts
