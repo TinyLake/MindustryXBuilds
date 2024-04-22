@@ -2,12 +2,14 @@ package mindustryX.features;
 
 import arc.*;
 import arc.files.*;
+import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.*;
 import mindustry.core.*;
 import mindustry.game.*;
+import mindustry.gen.*;
 import mindustry.net.*;
 import mindustry.net.Packets.*;
 import mindustry.ui.dialogs.*;
@@ -33,13 +35,28 @@ public class ReplayController{
     private static final Writes tmpWr = new Writes(new ByteBufferOutput(tmpBuf));
     private static ReplayData now = null;
 
-    public ReplayController(){
+    public static void init(){
         Events.run(EventType.Trigger.update, () -> {
-            if(state.getState() == GameState.State.menu && !netClient.isConnecting()){
-                replaying = false;
+            if(replaying && state.isMenu() && !netClient.isConnecting()){
                 stopPlay();
             }
         });
+        {
+            Table buttons = Vars.ui.join.buttons;
+            buttons.button("加载回放文件", Icon.file, () -> {
+                FileChooser.setLastDirectory(saveDirectory);
+                platform.showFileChooser(true, "打开回放文件", "mrep", f -> Core.app.post(() -> ReplayController.startPlay(f)));
+            });
+        }
+        {
+            var pausedDialog = Vars.ui.paused;
+            pausedDialog.shown(() -> {
+                if(!replaying) return;
+                pausedDialog.cont.row()
+                .button("查看录制信息", Icon.fileImage, ReplayController::showInfo).name("ReplayInfo")
+                .size(0, 60).colspan(pausedDialog.cont.getColumns()).fill();
+            });
+        }
     }
 
     private static class ReplayData{
@@ -130,7 +147,7 @@ public class ReplayController{
             Date time = new Date(r.l());
             String ip = r.str();
             String name = r.str();
-            Log.info("version: @, time: @, ip: @, name: @", version, time, ip, name);
+            Log.infoTag("Replay", Strings.format("version: @, time: @, ip: @, name: @", version, time, ip, name));
             now = new ReplayData(version, time, ip, name);
             while(true){
                 float l = version > 10 ? r.f() :
@@ -165,9 +182,6 @@ public class ReplayController{
         netClient.beginConnecting();
         Reflect.set(net, "active", true);
         Reflect.set(net, "server", true);
-        Packets.Connect c = new Packets.Connect();
-        c.addressTCP = now.ip;
-        net.handleClientReceived(c);
 
         startTime = Time.time;
         Threads.daemon("Replay Controller", () -> {
@@ -192,6 +206,7 @@ public class ReplayController{
 
     public static void stopPlay(){
         replaying = false;
+        Log.infoTag("Replay", "stop");
     }
 
 
@@ -206,7 +221,7 @@ public class ReplayController{
         dialog.cont.add("回放创建时间:" + replay.time).row();
         dialog.cont.add("服务器ip:" + replay.ip).row();
         dialog.cont.add("玩家名:" + replay.name).row();
-        int secs = (int)(replay.length / 1000000000);
+        int secs = (int)(replay.length / 60);
         dialog.cont.add("回放长度:" + (secs / 3600) + ":" + (secs / 60 % 60) + ":" + (secs % 60)).row();
         dialog.cont.pane(t -> replay.packetCount.keys().toArray().each(b ->
         t.add(Net.newPacket((byte)b).getClass().getSimpleName() + " " + replay.packetCount.get(b)).row())).growX().row();
