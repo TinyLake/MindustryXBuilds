@@ -216,7 +216,7 @@ public class ArcOld{
             c.addCategory("moreContent");
             c.checkPref("override_boss_shown", false);
             c.sliderPref("minimapSize", 140, 40, 400, 10, i -> i + "");
-            c.sliderPref("maxSchematicSize", 32, 32, 257, 1, v -> {
+            c.sliderPref("maxSchematicSize", 64, 64, 257, 1, v -> {
                 maxSchematicSize = v == 257 ? Integer.MAX_VALUE : v;
                 return v == 257 ? "无限" : String.valueOf(v);
             });
