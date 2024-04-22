@@ -18,20 +18,14 @@ public class Claj extends Plugin{
         manageRooms = new ManageRoomsDialog();
 
         Table buttons = Vars.ui.join.buttons;
-        buttons.button("通过claj代码加入游戏", Icon.play, joinViaClaj::show).self(cell -> {
-            Seq<Cell> cells = buttons.getCells();
-            cells.remove(cell);
-            cells.insert(3, cell); // 插入到占位元素前
-        });
+        buttons.button("通过claj代码加入游戏", Icon.play, joinViaClaj::show);
 
         var pausedDialog = Vars.ui.paused;
         pausedDialog.shown(() -> {
-            Table cont = pausedDialog.cont;
-
-            int columns = cont.getColumns();
-
-            cont.row();
-            cont.button("管理claj房间", Icon.planet, () -> manageRooms.show()).size(Float.NEGATIVE_INFINITY, 60).colspan(columns).fill().disabled(b -> !Vars.net.server());
+            if(!Vars.net.server()) return;
+            pausedDialog.cont.row()
+            .button("管理claj房间", Icon.planet, () -> manageRooms.show()).name("ClajInfo")
+            .size(0, 60).colspan(pausedDialog.cont.getColumns()).fill();
         });
     }
 }
