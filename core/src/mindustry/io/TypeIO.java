@@ -50,7 +50,7 @@ public class TypeIO{
         }else if(object instanceof String s){
             write.b((byte)4);
             writeString(write, s);
-        }else if(object instanceof Content map){
+        }else if(object instanceof Content map&&!(object instanceof UnitCommand command)){
             write.b((byte)5);
             write.b((byte)map.getContentType().ordinal());
             write.s(map.id);
