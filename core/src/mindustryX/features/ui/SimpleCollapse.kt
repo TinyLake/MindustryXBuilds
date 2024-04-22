@@ -4,16 +4,22 @@ import arc.scene.event.Touchable
 import arc.scene.ui.layout.Table
 import arc.scene.ui.layout.WidgetGroup
 
-class SimpleCollapser(val table: Table = Table(), var collapsed: Boolean = true) : WidgetGroup(table) {
+class SimpleCollapser(val table: Table = Table(), collapsed: Boolean = true) : WidgetGroup(table) {
+    var collapsed: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            this.touchable = if (collapsed) Touchable.disabled else Touchable.enabled
+            this.visible = !collapsed
+            invalidateHierarchy()
+        }
+
     init {
-        this.touchable = if (collapsed) Touchable.disabled else Touchable.enabled
+        if (collapsed) this.collapsed = true
     }
 
     fun toggle() {
         collapsed = !collapsed
-        this.touchable = if (collapsed) Touchable.disabled else Touchable.enabled
-        this.visible = !collapsed
-        invalidateHierarchy()
     }
 
     override fun draw() {
