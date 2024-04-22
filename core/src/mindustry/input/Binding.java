@@ -95,7 +95,7 @@ public enum Binding implements KeyBind{
     oreAdsorption(KeyCode.unknown),
 
     //MDTX
-    toggle_unit(KeyCode.unknown),
+    toggle_unit(KeyCode.unknown, "mindustryX"),
     point(KeyCode.j),
     lockonLastMark(KeyCode.unknown),
     toggle_block_render(KeyCode.unknown),
