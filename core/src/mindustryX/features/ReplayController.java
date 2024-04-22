@@ -47,7 +47,7 @@ public class ReplayController{
         Date time;
         String ip;
         String name;
-        long length;
+        float length;
         private final IntIntMap packetCount = new IntIntMap();
 
         ReplayData(int version, Date time, String ip, String name){
@@ -133,7 +133,8 @@ public class ReplayController{
             Log.info("version: @, time: @, ip: @, name: @", version, time, ip, name);
             now = new ReplayData(version, time, ip, name);
             while(true){
-                long l = r.l();
+                float l = version > 10 ? r.f() :
+                (r.l() * Time.toSeconds / Time.nanosPerMilli / 1000);
                 byte id = r.b();
                 r.skip(r.us());
                 now.packetCount.put(id, now.packetCount.get(id, 0) + 1);
@@ -172,7 +173,8 @@ public class ReplayController{
         Threads.daemon("Replay Controller", () -> {
             try{
                 while(replaying){
-                    float nextTime = reads.f();
+                    float nextTime = now.version > 10 ? reads.f() :
+                    (reads.l() * Time.toSeconds / Time.nanosPerMilli / 1000);
                     Packet p = Net.newPacket(reads.b());
                     p.read(reads, reads.us());
                     while(Time.time - startTime < nextTime)
