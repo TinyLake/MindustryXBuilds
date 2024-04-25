@@ -1,10 +1,12 @@
 package mindustryX
 
-import org.gradle.jvm.tasks.Jar
 import javassist.ClassPool
 import javassist.CtClass
+import javassist.CtField
 import javassist.bytecode.Bytecode
 import javassist.bytecode.Descriptor
+import org.gradle.jvm.tasks.Jar
+import java.lang.reflect.Modifier
 
 plugins {
     java
@@ -35,6 +37,10 @@ tasks {
                 methodInfo.codeAttribute.iterator().insertEx(code.get())
                 methodInfo.rebuildStackMapIf6(classPool, classFile)
             }
+        }
+        transform["arc.graphics.g2d.DrawRequest"] = clz@{
+            modifiers = modifiers or Modifier.PUBLIC
+//            addField(CtField.make("public int zOffset;", this@clz))
         }
 
         val genDir = layout.buildDirectory.dir("generated/patched")
