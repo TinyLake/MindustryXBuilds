@@ -20,7 +20,6 @@ import mindustry.maps.*;
 import mindustry.mod.*;
 import mindustry.net.*;
 import mindustry.ui.*;
-import mindustryX.features.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
@@ -71,15 +70,7 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
         });
 
         //MDTX: add numRequests count.
-        batch = new SortedSpriteBatch(){
-            @Override
-            protected void flushRequests(){
-                if(!flushing){
-                    DebugUtil.lastDrawRequests += numRequests;
-                }
-                super.flushRequests();
-            }
-        };
+        batch = new MySortedSpriteBatch();
         assets = new AssetManager();
         assets.setLoader(Texture.class, "." + mapExtension, new MapPreviewLoader());
 
