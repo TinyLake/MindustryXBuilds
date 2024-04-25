@@ -17,11 +17,8 @@ import static mindustry.Vars.*;
 public class LightRenderer{
     private static final int scaling = 4;
 
-    private FrameBuffer buffer = new FrameBuffer();
-    private Seq<Runnable> lights = new Seq<>();
-    private Seq<CircleLight> circles = new Seq<>(CircleLight.class);
-    private int circleIndex = 0;
-    private TextureRegion circleRegion;
+    private final FrameBuffer buffer = new FrameBuffer();
+    private final Seq<Runnable> lights = new Seq<>();
 
     public void add(Runnable run){
         if(!enabled()) return;
@@ -33,16 +30,9 @@ public class LightRenderer{
         if(!enabled() || radius <= 0f) return;
 
         float res = Color.toFloatBits(color.r, color.g, color.b, opacity);
-
-        if(circles.size <= circleIndex) circles.add(new CircleLight());
-
-        //pool circles to prevent runaway GC usage from lambda capturing
-        var light = circles.items[circleIndex];
-        light.set(x, y, res, radius);
-
-        circleIndex ++;
+        lights.add(CircleLight.pool.obtain().set(x, y, res, radius));
     }
-    
+
     public void add(float x, float y, TextureRegion region, Color color, float opacity){
         add(x, y, region, 0f, color, opacity);
     }
@@ -52,27 +42,27 @@ public class LightRenderer{
 
         float res = color.toFloatBits();
         float xscl = Draw.xscl, yscl = Draw.yscl;
-        add(Pools.get(RegionData.class, RegionData::new).obtain().set(res, opacity, xscl, yscl, region, x, y, rotation));
+        add(RegionData.pool.obtain().set(res, opacity, xscl, yscl, region, x, y, rotation));
     }
 
     public void line(float x, float y, float x2, float y2, float stroke, Color tint, float alpha){
         if(!enabled()) return;
 
-        add(Pools.get(LineData.class, LineData::new).obtain().set(tint, alpha, x2, x, y2, y, stroke));
+        add(LineData.pool.obtain().set(tint, alpha, x2, x, y2, y, stroke));
     }
 
     public boolean enabled(){
         return state.rules.lighting && state.rules.ambientLight.a > 0.0001f && renderer.drawLight;
     }
 
+    @SuppressWarnings("unchecked")
     public void draw(){
         if(!Vars.enableLight){
+            if(lights.isEmpty())return;
+            Pools.freeAll(lights);
             lights.clear();
-            circleIndex = 0;
             return;
         }
-
-        if(circleRegion == null) circleRegion = Core.atlas.find("circle-shadow");
 
         buffer.resize(Core.graphics.getWidth()/scaling, Core.graphics.getHeight()/scaling);
 
@@ -86,11 +76,6 @@ public class LightRenderer{
         for(Runnable run : lights){
             run.run();
         }
-        for(int i = 0; i < circleIndex; i++){
-            var cir = circles.items[i];
-            Draw.color(cir.color);
-            Draw.rect(circleRegion, cir.x, cir.y, cir.radius * 2, cir.radius * 2);
-        }
         Draw.reset();
         Draw.sort(true);
         buffer.end();
@@ -102,21 +87,34 @@ public class LightRenderer{
 
         Pools.freeAll(lights);
         lights.clear();
-        circleIndex = 0;
     }
 
-    static class CircleLight{
+    static class CircleLight implements Runnable, Pool.Poolable{
+        static Pool<CircleLight> pool = Pools.get(CircleLight.class,CircleLight::new);
+        private static TextureRegion circleRegion;
         float x, y, color, radius;
 
-        public void set(float x, float y, float color, float radius){
+        @Override
+        public void reset(){}
+
+        public CircleLight set(float x, float y, float color, float radius){
+            if(circleRegion == null) circleRegion = Core.atlas.find("circle-shadow");
             this.x = x;
             this.y = y;
             this.color = color;
             this.radius = radius;
+            return this;
+        }
+
+        @Override
+        public void run(){
+            Draw.color(color);
+            Draw.rect(circleRegion, x, y, radius * 2, radius * 2);
         }
     }
 
     private static class RegionData implements Runnable, Pool.Poolable{
+        static Pool<RegionData> pool = Pools.get(RegionData.class,RegionData::new);
         private float res;
         private float opacity;
         private float xscl;
@@ -154,7 +152,9 @@ public class LightRenderer{
     }
 
     private static class LineData implements Runnable, Pool.Poolable{
+        static Pool<LineData> pool = Pools.get(LineData.class,LineData::new);
         private static final float[] vertices = new float[24];
+        private static TextureRegion ledge,lmid;
         private Color tint;
         private float alpha;
         private float x2;
@@ -167,6 +167,10 @@ public class LightRenderer{
         public void reset(){}
 
         public LineData set(Color tint, float alpha, float x2, float x, float y2, float y, float stroke){
+            if(ledge == null){
+                ledge = Core.atlas.find("circle-end");
+                lmid = Core.atlas.find("circle-mid");
+            }
             this.tint = tint;
             this.alpha = alpha;
             this.x2 = x2;
@@ -182,8 +186,6 @@ public class LightRenderer{
             Draw.color(tint, alpha);
 
             float rot = Mathf.angleExact(x2 - x, y2 - y);
-            TextureRegion ledge = Core.atlas.find("circle-end"), lmid = Core.atlas.find("circle-mid");
-
             float color = Draw.getColor().toFloatBits();
             float u = lmid.u;
             float v = lmid.v2;
