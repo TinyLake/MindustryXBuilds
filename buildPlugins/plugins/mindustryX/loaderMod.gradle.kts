@@ -86,6 +86,7 @@ tasks {
     val genLoaderModDex by registering {
         outputs.cacheIf { true }
         dependsOn(genLoaderMod, distTask)
+        inputs.files(files(genLoaderMod))
         val outFile = temporaryDir.resolve("classes.dex")
         outputs.file(outFile)
         doLast {
