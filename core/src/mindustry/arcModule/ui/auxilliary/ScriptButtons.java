@@ -5,7 +5,6 @@ import arc.func.*;
 import arc.graphics.g2d.*;
 import arc.scene.style.*;
 import arc.scene.ui.*;
-import arc.scene.ui.ImageButton.*;
 import arc.scene.ui.layout.*;
 import mindustry.arcModule.*;
 import mindustry.content.*;
@@ -60,7 +59,7 @@ public class ScriptButtons extends BaseToolsTable{
         scriptButton(icon, description, () -> {
             boolean setting = Core.settings.getBool(settingName);
 
-            Core.settings.put("removePan", !setting);
+            Core.settings.put(settingName, !setting);
             arcui.arcInfo("已" + (setting ? "取消" : "开启") + description);
 
             onClick.get(!setting);
@@ -72,11 +71,7 @@ public class ScriptButtons extends BaseToolsTable{
     }
 
     protected Cell<ImageButton> scriptButton(Drawable icon, String description, Runnable runnable){
-        return scriptButton(icon, clearLineNonei, description, runnable);
-    }
-
-    protected Cell<ImageButton> scriptButton(Drawable icon, ImageButtonStyle style, String description, Runnable runnable){
-        Cell<ImageButton> cell = button(icon, style, 30, runnable);
+        Cell<ImageButton> cell = button(icon, clearLineNonei, 30, runnable);
 
         ElementUtils.tooltip(cell.get(), description);
 
