@@ -22,10 +22,9 @@ jobs:
         with:
           gradle-version: 8.6
           cache-read-only: false
-          gradle-home-cache-cleanup: true
           build-scan-publish: true
-          build-scan-terms-of-service-url: "https://gradle.com/terms-of-service"
-          build-scan-terms-of-service-agree: "yes"
+          build-scan-terms-of-use-url: "https://gradle.com/help/legal-terms-of-use"
+          build-scan-terms-of-use-agree: "yes"
       - name: Set env
         run: |
           echo "RELEASE_TAG=${GITHUB_REF_NAME}-build" >> $GITHUB_ENV
