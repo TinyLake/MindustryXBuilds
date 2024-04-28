@@ -21,7 +21,7 @@ public class ShieldArcAbility extends Ability{
     private static Vec2 paramPos = new Vec2();
     private static final Cons<Bullet> shieldConsumer = b -> {
         if(b.team != paramUnit.team && b.type.absorbable && paramField.data > 0 &&
-            !paramPos.within(b, paramField.radius + paramField.width/2f) &&
+            !b.within(paramPos, paramField.radius - paramField.width/2f) &&
             Tmp.v1.set(b).add(b.vel).within(paramPos, paramField.radius + paramField.width/2f) &&
             Angles.within(paramPos.angleTo(b), paramUnit.rotation + paramField.angleOffset, paramField.angle / 2f)){
 
