@@ -17,8 +17,11 @@ public class UIExt{
     public static OtherCoreItemDisplay otherCoreItemDisplay;
     public static HudSettingsTable hudSettingsTable = new HudSettingsTable();
     public static AdvanceBuildTool advanceBuildTool = new AdvanceBuildTool();
+    public static ModsRecommendDialog modsRecommend = new ModsRecommendDialog();
 
     public static void init(){
+        StylesX.load();
+
         teamSelect = new TeamSelectDialog();
 
         advanceToolTable = new AdvanceToolTable();
