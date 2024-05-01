@@ -23,6 +23,7 @@ import static mindustry.Vars.*;
 //moved from mindustry.arcModule.ui.RCoreItemsDisplay
 public class NewCoreItemsDisplay extends Table{
     public static final float MIN_WIDTH = 64f;
+    public static final float ICON_SIZE = 28f;
 
     private Table itemsTable, unitsTable, plansTable;
 
@@ -45,20 +46,27 @@ public class NewCoreItemsDisplay extends Table{
             usedUnits.clear();
             Arrays.fill(itemDelta, 0);
             Arrays.fill(lastItemAmount, 0);
+            itemsTable.clearChildren();
+            unitsTable.clearChildren();
+            plansTable.clearChildren();
         });
 
         setup();
     }
 
     private void setup(){
-        itemsTable = new Table(Styles.black3);
-        unitsTable = new Table(Styles.black3);
-        plansTable = new Table(Styles.black3);
+        background(Styles.black3);
+
+        itemsTable = new Table();
+        unitsTable = new Table();
+        plansTable = new Table();
         plansTable.marginTop(12f);
 
-        var itemCol = add(new SimpleCollapser(itemsTable, true)).growX().get();
-        var unitsCol = row().add(new SimpleCollapser(unitsTable, true)).growX().get();
-        var plansCol = row().add(new SimpleCollapser(plansTable, true)).growX().get();
+        defaults().expandX().left();
+
+        var itemCol = add(new SimpleCollapser(itemsTable, true)).get();
+        var unitsCol = row().add(new SimpleCollapser(unitsTable, true)).get();
+        var plansCol = row().add(new SimpleCollapser(plansTable, true)).get();
         update(() -> {
             var columns = Core.settings.getInt("arcCoreItemsCol");
             int displayType = Core.settings.getInt("arccoreitems");
@@ -116,7 +124,7 @@ public class NewCoreItemsDisplay extends Table{
 
             itemsTable.stack(
             new Table(t ->
-            t.image(item.uiIcon).size(iconMed).scaling(Scaling.fit).padRight(4f)
+            t.image(item.uiIcon).size(ICON_SIZE).scaling(Scaling.fit).padRight(4f)
             .tooltip(tooltip -> tooltip.background(Styles.black6).margin(4f).add(item.localizedName).style(Styles.outlineLabel))
             ),
             new Table(t -> t.label(() -> {
@@ -171,7 +179,7 @@ public class NewCoreItemsDisplay extends Table{
         int i = 0;
         for(UnitType unit : content.units()){
             if(usedUnits.contains(unit)){
-                unitsTable.image(unit.uiIcon).size(iconMed).scaling(Scaling.fit).padRight(4f)
+                unitsTable.image(unit.uiIcon).size(ICON_SIZE).scaling(Scaling.fit).padRight(4f)
                 .tooltip(t -> t.background(Styles.black6).margin(4f).add(unit.localizedName).style(Styles.outlineLabel));
                 unitsTable.label(() -> {
                     int typeCount = player.team().data().countType(unit);
@@ -213,7 +221,7 @@ public class NewCoreItemsDisplay extends Table{
             || block instanceof PowerNode
             || block instanceof BeamNode) continue;
 
-            plansTable.image(block.uiIcon).size(iconMed).scaling(Scaling.fit).padRight(4f);
+            plansTable.image(block.uiIcon).size(ICON_SIZE).scaling(Scaling.fit).padRight(4f);
             plansTable.label(() -> (count > 0 ? "[green]+" : "[red]") + count).padRight(3).minWidth(MIN_WIDTH).left();
 
             if(++i % columns == 0){
