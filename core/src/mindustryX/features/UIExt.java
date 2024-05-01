@@ -14,6 +14,9 @@ public class UIExt{
     public static AdvanceToolTable advanceToolTable;
     public static TeamSelectDialog teamSelect;
     public static ModsRecommendDialog modsRecommend = new ModsRecommendDialog();
+    public static TeamsStatDisplay teamsStatDisplay;
+    public static HudSettingsTable hudSettingsTable = new HudSettingsTable();
+    public static AdvanceBuildTool advanceBuildTool = new AdvanceBuildTool();
 
     public static void init(){
         teamSelect = new TeamSelectDialog();
@@ -22,6 +25,22 @@ public class UIExt{
         advanceToolTable.name = "advanceToolTable";
         advanceToolTable.right().bottom();
         advanceToolTable.visible(() -> Core.settings.getBool("showAdvanceToolTable"));
+
+        teamsStatDisplay = new TeamsStatDisplay();
+        ui.hudGroup.fill(t -> {
+            t.name = "otherCore";
+            t.left().add(teamsStatDisplay);
+            t.visible(() -> ui.hudfrag.shown && Core.settings.getBool("showOtherTeamResource"));
+        });
+
+        hudSettingsTable = new HudSettingsTable();
+        advanceBuildTool = new AdvanceBuildTool();
+        ui.hudGroup.fill(t -> {
+            t.name = "quickTool";
+            t.right().add(hudSettingsTable).growX();
+            t.row().add(advanceBuildTool).growX();
+            t.visible(() -> ui.hudfrag.shown && Core.settings.getBool("showQuickToolTable"));
+        });
     }
 
     public static void buildPositionRow(Table tt, Vec2 vec){
