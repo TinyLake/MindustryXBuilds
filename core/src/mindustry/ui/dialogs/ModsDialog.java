@@ -159,6 +159,18 @@ public class ModsDialog extends BaseDialog{
     void setup(){
         modCardWidth = Math.min(Core.graphics.getWidth() / Scl.scl(1.05f), 520f);
 
+        Seq<LoadedMod> modList = mods.list();
+        internalMods.clear();
+        otherMods.clear();
+
+        for(LoadedMod mod : modList){
+            if(mod.root.type() == FileType.internal){
+                internalMods.add(mod);
+            }else{
+                otherMods.add(mod);
+            }
+        }
+
         cont.clear();
         cont.defaults().width(Math.min(Core.graphics.getWidth() / Scl.scl(1.05f), 556f)).pad(4);
         cont.add("@mod.reloadrequired").visible(mods::requiresReload).center().get().setAlignment(Align.center);
@@ -250,18 +262,6 @@ public class ModsDialog extends BaseDialog{
     private void rebuildModPane(){
         modPane.clearChildren();
 
-        Seq<LoadedMod> modList = mods.list();
-        internalMods.clear();
-        otherMods.clear();
-
-        for(LoadedMod mod : modList){
-            if(mod.root.type() == FileType.internal){
-                internalMods.add(mod);
-            }else{
-                otherMods.add(mod);
-            }
-        }
-
         addModGroup(modPane, "internal", internalMods);
         addModGroup(modPane, "mod", otherMods);
     }
@@ -305,7 +305,7 @@ public class ModsDialog extends BaseDialog{
                     modCont.add("@none.found").color(Color.lightGray).pad(4);
                 }
             }).pad(8f).fillX();
-        }).color(Pal.gray).padTop(16f).fillX();
+        }).color(Pal.gray).padTop(16f).growX();
 
         table.row();
     }
