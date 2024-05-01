@@ -13,6 +13,7 @@ import static mindustry.content.UnitTypes.gamma;
 public class UIExt{
     public static AdvanceToolTable advanceToolTable;
     public static TeamSelectDialog teamSelect;
+    public static ModsRecommendDialog modsRecommend = new ModsRecommendDialog();
 
     public static void init(){
         teamSelect = new TeamSelectDialog();
