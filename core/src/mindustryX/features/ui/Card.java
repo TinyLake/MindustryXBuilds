@@ -13,6 +13,20 @@ import mindustry.graphics.*;
  * Create by 2024/4/13
  */
 public class Card extends Table{
+    public static CardStyle grayOuterDark, accentOutBack;
+
+    public static void load(){
+        grayOuterDark = new CardStyle(){{
+            shadowStyle = CardShadowStyle.outer;
+            shadowDark = Pal.darkerGray;
+        }};
+
+        accentOutBack = new Card.CardStyle(){{
+            shadowStyle = CardShadowStyle.outer;
+            shadowDark = Pal.accentBack;
+        }};
+    }
+
     public CardStyle style;
 
     public Card(CardStyle style, Cons<Table> contCons){

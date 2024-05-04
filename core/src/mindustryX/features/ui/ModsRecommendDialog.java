@@ -1,6 +1,7 @@
 package mindustryX.features.ui;
 
 import arc.*;
+import arc.flabel.*;
 import arc.func.*;
 import arc.graphics.*;
 import arc.graphics.Texture.*;
@@ -31,6 +32,10 @@ import java.util.*;
 public class ModsRecommendDialog extends BaseDialog{
     private static final TextureRegion defaultModIcon = ((TextureRegionDrawable)Tex.nomap).getRegion();
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+    public static Color
+    lightBlue = Color.valueOf("#a5dee5"),
+    pink = Color.valueOf("#ffcfdf");
 
     private ObjectMap<String, TextureRegion> textureCache;
     private RecommendMeta meta;
@@ -63,14 +68,14 @@ public class ModsRecommendDialog extends BaseDialog{
         }
 
         if(!fetchModList){
-            ElementX.setLoading(cont);
+            setLoading(cont);
 
             Reflect.invoke(Vars.ui.mods, "getModList", new Cons[]{listings -> {
                 Seq<ModListing> modListings = (Seq<ModListing>)listings;
 
                 // ???
                 if(modListings == null){
-                    ElementX.setLoadFailed(cont);
+                    setLoadFailed(cont);
                     return;
                 }
 
@@ -94,7 +99,7 @@ public class ModsRecommendDialog extends BaseDialog{
         cont.top().clearChildren();
         cont.defaults();
 
-        cont.add(new Card(Pal.lightishGray, StylesX.grayOuterDark, info -> {
+        cont.add(new Card(Pal.lightishGray, Card.grayOuterDark, info -> {
             info.top();
             info.defaults().expandX().center();
 
@@ -142,15 +147,15 @@ public class ModsRecommendDialog extends BaseDialog{
         ModListing modListing = modMeta.listing;
 
         table.table(title -> {
-            title.add(new Card(Pal.gray, StylesX.grayOuterDark, info -> {
+            title.add(new Card(Pal.gray, Card.grayOuterDark, info -> {
                 info.top();
                 info.defaults().padTop(2f).expandX().left();
 
                 addInfo(info, "name", modListing.name).color(Pal.accent).pad(8f);
-                addInfo(info, "author", modListing.author).color(PalateX.pink).padTop(4f);
-                addInfo(info, "minGameVersion", modListing.minGameVersion).color(PalateX.lightBlue);
-                addInfo(info, "lastUpdated", getLastUpdatedTime(modListing)).color(PalateX.lightBlue);
-                addInfo(info, "stars", modListing.stars).color(PalateX.lightBlue);
+                addInfo(info, "author", modListing.author).color(pink).padTop(4f);
+                addInfo(info, "minGameVersion", modListing.minGameVersion).color(lightBlue);
+                addInfo(info, "lastUpdated", getLastUpdatedTime(modListing)).color(lightBlue);
+                addInfo(info, "stars", modListing.stars).color(lightBlue);
 
                 for(Element child : info.getChildren()){
                     if(child instanceof Label label){
@@ -168,7 +173,7 @@ public class ModsRecommendDialog extends BaseDialog{
 
         table.row();
 
-        table.add(new Card(Pal.gray, StylesX.grayOuterDark, body -> {
+        table.add(new Card(Pal.gray, Card.grayOuterDark, body -> {
             body.add(modMeta.reason).pad(4f).grow().wrap();
 
             body.addChild(new Table(buttons -> {
@@ -184,7 +189,7 @@ public class ModsRecommendDialog extends BaseDialog{
     }
 
     private Cell<?> addInfo(Table table, String bundle, Object value){
-        Cell<?> cell = table.add(Core.bundle.format("mods.recommend.mod." + bundle, value)).color(PalateX.pink);
+        Cell<?> cell = table.add(Core.bundle.format("mods.recommend.mod." + bundle, value)).color(pink);
 
         table.row();
 
@@ -234,6 +239,16 @@ public class ModsRecommendDialog extends BaseDialog{
             textureCache.put(repo, defaultModIcon);
             callback.get(defaultModIcon);
         });
+    }
+
+    private static void setLoading(Table table){
+        table.clearChildren();
+        table.add(new FLabel("@alphaLoading")).style(Styles.outlineLabel).expand().center();
+    }
+
+    private static void setLoadFailed(Table table){
+        table.clearChildren();
+        table.add(new FLabel("@alphaLoadFailed")).style(Styles.outlineLabel).expand().center();
     }
 
     private static class RecommendMeta{

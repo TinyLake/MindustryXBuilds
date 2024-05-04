@@ -1,21 +1,10 @@
 package mindustryX.features.ui;
 
-import arc.flabel.*;
 import arc.graphics.*;
 import arc.scene.ui.layout.*;
 import mindustry.graphics.*;
-import mindustry.ui.*;
 
 public class ElementX{
-    public static void setLoading(Table table){
-        table.clearChildren();
-        table.add(new FLabel("@alphaLoading")).style(Styles.outlineLabel).expand().center();
-    }
-
-    public static void setLoadFailed(Table table){
-        table.clearChildren();
-        table.add(new FLabel("@alphaLoadFailed")).style(Styles.outlineLabel).expand().center();
-    }
 
     public static void cardShadow(Table table){
         cardShadow(table, 8f, Pal.darkerGray);

@@ -20,7 +20,7 @@ public class UIExt{
     public static ModsRecommendDialog modsRecommend = new ModsRecommendDialog();
 
     public static void init(){
-        StylesX.load();
+        Card.load();
 
         teamSelect = new TeamSelectDialog();
 
