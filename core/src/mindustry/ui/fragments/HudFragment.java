@@ -41,6 +41,7 @@ public class HudFragment{
 
     private ImageButton flip;
     public NewCoreItemsDisplay coreItems = new NewCoreItemsDisplay();
+    private AuxiliaryTools auxiliaryTools;
 
     private String hudText = "";
     private boolean showHudText;
@@ -50,6 +51,7 @@ public class HudFragment{
     private long lastToast;
 
     public void build(Group parent){
+        auxiliaryTools = new AuxiliaryTools();
 
         //warn about guardian/boss waves
         Events.on(WaveEvent.class, e -> {
@@ -119,6 +121,13 @@ public class HudFragment{
             .touchable(Touchable.disabled)
             .style(Styles.outlineLabel)
             .name("position");
+            if(Core.settings.getInt("AuxiliaryTable") == 3){
+                t.row();
+                t.table(infoWave -> {
+                    infoWave.left().top();
+                    infoWave.add(auxiliaryTools);
+                }).left().top();
+            }
             t.top().right();
         });
 
@@ -238,6 +247,14 @@ public class HudFragment{
 
             wavesMain.row();
 
+            if(Core.settings.getInt("AuxiliaryTable") == 2){
+                wavesMain.table(t->{
+                    t.name = "AuxiliaryTable";
+                    t.left().top().add(auxiliaryTools);
+                }).left();
+                wavesMain.row();
+            }
+
             addInfoTable(wavesMain.table().width(dsize * 5f + 4f).left().get());
 
             editorMain.name = "editor";
@@ -263,6 +280,15 @@ public class HudFragment{
                 }).left();
             }).width(dsize * 5 + 4f);
             editorMain.visible(() -> shown && state.isEditor());
+
+            //map info/nextwave display
+            if(Core.settings.getInt("AuxiliaryTable") == 1){
+                cont.table(infoWave -> {
+                    infoWave.name = "map/wave";
+                    infoWave.left().top();
+                    infoWave.add(auxiliaryTools);
+                }).left().top();
+            }
 
             //fps display
             cont.table(info -> {
