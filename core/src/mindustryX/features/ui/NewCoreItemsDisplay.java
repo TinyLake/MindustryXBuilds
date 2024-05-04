@@ -13,6 +13,7 @@ import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
+import mindustry.world.blocks.ConstructBlock.*;
 import mindustry.world.blocks.power.*;
 import mindustry.world.blocks.storage.*;
 
@@ -201,6 +202,10 @@ public class NewCoreItemsDisplay extends Table{
             Block block = plan.block;
 
             if(block instanceof CoreBlock) return;
+
+            if(plan.build() instanceof ConstructBuild build){
+                block = build.current;
+            }
 
             planCounter.increment(block, plan.breaking ? -1 : 1);
 
