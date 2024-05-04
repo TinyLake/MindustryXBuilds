@@ -1264,7 +1264,8 @@ public class LExecutor{
                     if(type == null){
                         exec.setnum(result, data.units.size);
                     }else{
-                        exec.setnum(result, data.unitsByType[type.id].size);
+                        var units = data.getUnits(type);
+                        exec.setnum(result, units != null ? units.size : 0);
                     }
                 }
                 case coreCount -> exec.setnum(result, data.cores.size);
