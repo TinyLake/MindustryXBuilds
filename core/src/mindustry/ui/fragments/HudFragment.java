@@ -43,6 +43,7 @@ public class HudFragment{
 
     private ImageButton flip;
     public NewCoreItemsDisplay coreItems = new NewCoreItemsDisplay();
+    private final AuxiliaryTools auxiliaryTools = new AuxiliaryTools();
 
     private String hudText = "";
     private boolean showHudText;
@@ -121,6 +122,9 @@ public class HudFragment{
             .touchable(Touchable.disabled)
             .style(Styles.outlineLabel)
             .name("position");
+            if(Core.settings.getInt("AuxiliaryTable") == 3){
+                t.row().add(auxiliaryTools);
+            }
             t.top().right();
         });
 
@@ -240,6 +244,10 @@ public class HudFragment{
 
             wavesMain.row();
 
+            if(Core.settings.getInt("AuxiliaryTable") == 2){
+                wavesMain.add(auxiliaryTools).left().top().row();
+            }
+
             addInfoTable(wavesMain.table().width(dsize * 5f + 4f).left().get());
 
             editorMain.name = "editor";
@@ -265,6 +273,11 @@ public class HudFragment{
                 }).left();
             }).width(dsize * 5 + 4f);
             editorMain.visible(() -> shown && state.isEditor());
+
+            //map info/nextwave display
+            if(Core.settings.getInt("AuxiliaryTable") == 1){
+                cont.add(auxiliaryTools).left().top();
+            }
 
             //fps display
             cont.table(info -> {
