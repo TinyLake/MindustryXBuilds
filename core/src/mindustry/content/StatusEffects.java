@@ -206,10 +206,10 @@ public class StatusEffects{
             healthMultiplier = Float.POSITIVE_INFINITY;
         }};
 
-        dynamic = new StatusEffect("dynamic"){{
-            show = false;
-            dynamic = true;
-            permanent = true;
-        }};
+//        dynamic = new StatusEffect("dynamic"){{
+//            show = false;
+//            dynamic = true;
+//            permanent = true;
+//        }};
     }
 }
