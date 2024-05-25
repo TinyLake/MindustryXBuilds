@@ -4,6 +4,8 @@ import arc.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
+import arc.math.geom.*;
+import arc.util.*;
 import mindustry.arcModule.draw.*;
 import mindustry.entities.*;
 import mindustry.game.EventType.*;
@@ -14,6 +16,7 @@ import mindustry.world.*;
 import mindustry.world.blocks.defense.*;
 import mindustry.world.blocks.defense.turrets.*;
 import mindustry.world.blocks.defense.turrets.BaseTurret.*;
+import mindustry.world.blocks.distribution.MassDriver.*;
 import mindustry.world.blocks.logic.*;
 import mindustry.world.blocks.logic.MessageBlock.*;
 import mindustry.world.blocks.production.Drill.*;
@@ -33,8 +36,11 @@ public class RenderExt{
     public static int blockRenderLevel;
     public static boolean renderSort;
     public static boolean drawBlockDisabled;
+    public static boolean massDriverLine;
+    public static int massDriverLineInterval;
 
     public static boolean unitHide = false;
+    public static Color massDriverLineColor = Color.clear;
 
     private static Effect placementEffect;
 
@@ -65,6 +71,8 @@ public class RenderExt{
             blockRenderLevel = Core.settings.getInt("blockRenderLevel");
             renderSort = Core.settings.getBool("renderSort");
             drawBlockDisabled = Core.settings.getBool("blockdisabled");
+            massDriverLine = Core.settings.getBool("mass_driver_line");
+            massDriverLineInterval = Core.settings.getInt("mass_driver_line_interval");
         });
         Events.run(Trigger.draw, RenderExt::draw);
         Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
@@ -88,6 +96,8 @@ public class RenderExt{
             arcDrillModeDraw(block, drill);
         if(displayAllMessage && build instanceof MessageBuild)
             Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
+        if(massDriverLine && build instanceof MassDriverBuild b)
+            drawMassDriverLine(b);
     }
 
     private static void placementEffect(float x, float y, float lifetime, float range, Color color){
@@ -129,6 +139,23 @@ public class RenderExt{
             Draw.color(dominantItem.color);
             Lines.stroke(1f);
             Lines.arc(dx, dy, iconSize * 0.75f, eff);
+        }
+    }
+
+    private static void drawMassDriverLine(MassDriverBuild build){
+        if(build.waitingShooters.isEmpty()) return;
+        Draw.z(Layer.effect);
+        float x = build.x, y = build.y, size = build.block.size;
+        float sin = Mathf.absin(Time.time, 6f, 1f);
+        for(var shooter : build.waitingShooters){
+            Lines.stroke(2f, Pal.placing);
+            Drawf.dashLine(RenderExt.massDriverLineColor, shooter.x, shooter.y, x, y);
+            int slice = Mathf.floorPositive(build.dst(shooter) / RenderExt.massDriverLineInterval);
+            Vec2 interval = Tmp.v1.set(build).sub(shooter).setLength(RenderExt.massDriverLineInterval);
+            float dx = interval.x, dy = interval.y;
+            for(int i = 0; i < slice; i++){
+                Drawf.arrow(shooter.x + dx * i, shooter.y + dy * i, x, y, size * tilesize + sin, 4f + sin, RenderExt.massDriverLineColor);
+            }
         }
     }
 }
