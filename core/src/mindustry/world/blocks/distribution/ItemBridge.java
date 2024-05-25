@@ -1,6 +1,5 @@
 package mindustry.world.blocks.distribution;
 
-import arc.*;
 import arc.graphics.*;
 import arc.graphics.g2d.*;
 import arc.math.*;
@@ -356,10 +355,9 @@ public class ItemBridge extends Block{
         public void draw(){
             super.draw();
 
-            Draw.z(Layer.power);
-
             //draw each item this bridge have
             if(items != null && RenderExt.hiddenItemTransparency > 0){
+                Draw.z(Layer.power + 0.1f);
                 Draw.color(Color.white, RenderExt.hiddenItemTransparency / 100f);
                 int loti = 0;
                 for(int iid = 0; iid < items.length(); iid++){
@@ -370,6 +368,8 @@ public class ItemBridge extends Block{
                     }
                 }
             }
+
+            Draw.z(Layer.power);
 
             Tile other = world.tile(link);
             if(!linkValid(tile, other)) return;

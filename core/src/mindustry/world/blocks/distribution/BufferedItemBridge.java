@@ -6,6 +6,7 @@ import arc.math.geom.*;
 import arc.util.*;
 import arc.util.io.*;
 import mindustry.gen.*;
+import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.meta.*;
@@ -61,6 +62,7 @@ public class BufferedItemBridge extends ItemBridge{
             super.draw();
 
             if(RenderExt.hiddenItemTransparency > 0){
+                Draw.z(Layer.power + 0.1f);
                 Tile other = world.tile(link);
 
                 float begx, begy, endx, endy;
