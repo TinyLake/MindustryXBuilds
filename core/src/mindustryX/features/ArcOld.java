@@ -1,5 +1,7 @@
 package mindustryX.features;
 
+import arc.func.*;
+import arc.graphics.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.gen.*;
@@ -65,9 +67,19 @@ public class ArcOld{
             c.checkPref("arclogicbordershow", true);
             c.checkPref("arcPlacementEffect", false);
 
-            c.sliderPref("mass_driver_line_alpha", 100, 0, 100, 1, i -> i > 0 ? i + "%" : "关闭");
+            c.checkPref("mass_driver_line", true);
             c.sliderPref("mass_driver_line_interval", 40, 8, 400, 4, i -> i / 8f + "格");
-            c.textPref("mass_driver_line_color", "ff8c66");
+            {
+                Cons<String> changed = (t) -> {
+                    try{
+                        RenderExt.massDriverLineColor = Color.valueOf(t);
+                    }catch(Exception e){
+                        RenderExt.massDriverLineColor = Color.valueOf("ff8c66");
+                    }
+                };
+                c.textPref("mass_driver_line_color", "ff8c66", changed);
+                changed.get(settings.getString("mass_driver_line_color"));
+            }
 
             c.addCategory("arcAddTurretInfo");
             c.checkPref("showTurretAmmo", false);

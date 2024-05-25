@@ -74,6 +74,7 @@ public class ARCUnits{
     }
 
     private static void drawUnitBar(Unit unit){
+        Draw.z(Draw.z() + 0.1f);
         if(ARCVars.arcInfoControl(unit.team())){
             drawWeaponRange(unit);
             drawRTSAI(unit);
