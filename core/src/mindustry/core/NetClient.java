@@ -111,8 +111,6 @@ public class NetClient implements ApplicationListener{
 
             ReplayController.onConnect(packet.addressTCP);
             net.send(c, true);
-            Call.serverPacketReliable("ARC", Version.mdtXBuild);
-            Call.serverPacketReliable("ARC-build", Version.mdtXBuild);
         });
 
         net.handleClient(Disconnect.class, packet -> {
@@ -145,6 +143,8 @@ public class NetClient implements ApplicationListener{
             NetworkIO.loadWorld(new InflaterInputStream(data.stream));
 
             Call.serverPacketReliable("MDTX", Version.mdtXBuild);
+            Call.serverPacketReliable("ARC", Version.mdtXBuild);
+            Call.serverPacketReliable("ARC-build", Version.mdtXBuild);
             finishConnecting();
         });
     }
