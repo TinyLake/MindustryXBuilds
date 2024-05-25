@@ -326,7 +326,8 @@ public class Renderer implements ApplicationListener{
 
         Draw.draw(Layer.background, this::drawBackground);
         Draw.draw(Layer.floor, blocks.floor::drawFloor);
-        Draw.draw(Layer.block - 1, blocks::drawShadows);
+        if(RenderExt.blockRenderLevel > 0)
+            Draw.draw(Layer.block - 1, blocks::drawShadows);
         Draw.draw(Layer.block - 0.09f, () -> {
             blocks.floor.beginDraw();
             blocks.floor.drawLayer(CacheLayer.walls);
@@ -383,7 +384,8 @@ public class Renderer implements ApplicationListener{
         Draw.draw(Layer.space, this::drawLanding);
 
         Events.fire(Trigger.drawOver);
-        blocks.drawBlocks();
+        if(RenderExt.blockRenderLevel > 0)
+            blocks.drawBlocks();
 
         Groups.draw.draw(RenderExt::onGroupDraw);
 
