@@ -77,9 +77,6 @@ public class RenderExt{
     public static void onGroupDraw(Drawc t){
         if(!bulletShow && t instanceof Bulletc) return;
         t.draw();
-        if(displayAllMessage && t instanceof MessageBuild build){
-            Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
-        }
     }
 
     public static void onBlockDraw(Tile tile, Block block, Building build){
@@ -89,6 +86,8 @@ public class RenderExt{
             ARCBuilds.arcTurret(turretBuild);
         if(arcDrillMode && build instanceof DrillBuild drill)
             arcDrillModeDraw(block, drill);
+        if(displayAllMessage && build instanceof MessageBuild)
+            Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
     }
 
     private static void placementEffect(float x, float y, float lifetime, float range, Color color){
