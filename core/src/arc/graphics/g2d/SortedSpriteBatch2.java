@@ -11,6 +11,8 @@ import java.util.*;
 import java.util.concurrent.*;
 
 //MDTX modified type of requestZ, from float[] to int[]
+//MDTX: sorted requests store in copy(instead write back), reduce one copy and prevent memory fragment
+
 /** Fast sorting implementation written by zxtej. Don't ask me how it works. */
 public class SortedSpriteBatch2 extends SpriteBatch{
     static ForkJoinHolder commonPool;
@@ -147,7 +149,7 @@ public class SortedSpriteBatch2 extends SpriteBatch{
             float preColor = colorPacked, preMixColor = mixColorPacked;
             Blending preBlending = blending;
 
-            DrawRequest[] r = requests;
+            DrawRequest[] r = copy;//MDTX: 'copy' instead requests
             int num = numRequests;
             for(int j = 0; j < num; j++){
                 final DrawRequest req = r[j];
@@ -189,10 +191,7 @@ public class SortedSpriteBatch2 extends SpriteBatch{
 
     protected void sortRequestsThreaded(){
         final int numRequests = this.numRequests;
-        if(copy.length < numRequests) copy = new DrawRequest[numRequests + (numRequests >> 3)];
-        final DrawRequest[] items = requests, itemCopy = copy;
         final int[] itemZ = requestZ;
-        final Future<?> initTask = commonPool.pool.submit(() -> System.arraycopy(items, 0, itemCopy, 0, numRequests));
 
         int[] contiguous = this.contiguous;
         int ci = 0, cl = contiguous.length;
@@ -223,28 +222,21 @@ public class SortedSpriteBatch2 extends SpriteBatch{
         final int[] sorted = CountingSort.countingSortMapMT(contiguous, contiguousCopy, L);
 
         if(locs.length < L + 1) locs = new int[L + L / 10];
+        if(copy.length < numRequests) copy = new DrawRequest[numRequests + (numRequests >> 3)];
         final int[] locs = this.locs;
         for(int i = 0; i < L; i++){
             locs[i + 1] = locs[i] + sorted[i * 3 + 2];
         }
-        try{
-            initTask.get();
-        }catch(Exception ignored){
-            System.arraycopy(items, 0, itemCopy, 0, numRequests);
-        }
         PopulateTask.tasks = sorted;
-        PopulateTask.src = itemCopy;
-        PopulateTask.dest = items;
+        PopulateTask.src = requests;
+        PopulateTask.dest = copy;
         PopulateTask.locs = locs;
         commonPool.pool.invoke(new PopulateTask(0, L));
     }
 
     protected void sortRequestsStandard(){ // Non-threaded implementation for weak devices
         final int numRequests = this.numRequests;
-        if(copy.length < numRequests) copy = new DrawRequest[numRequests + (numRequests >> 3)];
-        final DrawRequest[] items = copy;
         final int[] itemZ = requestZ;
-        System.arraycopy(requests, 0, items, 0, numRequests);
         int[] contiguous = this.contiguous;
         int ci = 0, cl = contiguous.length;
         int z = itemZ[0];
@@ -273,8 +265,9 @@ public class SortedSpriteBatch2 extends SpriteBatch{
 
         final int[] sorted = CountingSort.countingSortMap(contiguous, contiguousCopy, L);
 
+        if(copy.length < numRequests) copy = new DrawRequest[numRequests + (numRequests >> 3)];
         int ptr = 0;
-        final DrawRequest[] dest = requests;
+        final DrawRequest[] items = requests, dest = copy;
         for(int i = 0; i < L * 3; i += 3){
             final int pos = sorted[i + 1], length = sorted[i + 2];
             if(length < 10){

@@ -5,7 +5,6 @@ import arc.math.*;
 import mindustryX.features.*;
 
 import java.util.*;
-import java.util.concurrent.*;
 
 public class MySortedSpriteBatch extends SortedSpriteBatch2{
     private static final boolean DEBUG = false;
@@ -83,10 +82,6 @@ public class MySortedSpriteBatch extends SortedSpriteBatch2{
             return;
         }
         hashZ = DEBUG ? Float.floatToIntBits((float)Math.random()) : 0;
-        Future<?> copyTask = commonPool.pool.submit(() -> {
-            if(copy.length < requests.length) copy = new DrawRequest[requests.length];
-            System.arraycopy(requests, 0, copy, 0, numRequests);
-        });
 
         int numRequests = this.numRequests;
         int[] arr = this.requestZ, extraZ = this.extraZ;
@@ -96,14 +91,11 @@ public class MySortedSpriteBatch extends SortedSpriteBatch2{
             arr[i] = (arr[i] << 16) | extraZ[i];
         }
         countingSortMap(arr, numRequests);//arr is loc now;
-        try{
-            copyTask.get();
-        }catch(Exception var15){
-            throw new RuntimeException(var15);
-        }
-        DrawRequest[] items = requests, copy = this.copy;
+
+        if(copy.length < requests.length) copy = new DrawRequest[requests.length];
+        final DrawRequest[] items = requests, dest = copy;
         for(int i = 0; i < numRequests; i++){
-            items[arr[i]] = copy[i];
+            dest[arr[i]] = items[i];
         }
     }
 
