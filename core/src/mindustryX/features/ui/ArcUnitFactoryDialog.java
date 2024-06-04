@@ -8,12 +8,10 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
-import mindustry.*;
 import mindustry.content.*;
 import mindustry.entities.units.*;
 import mindustry.game.*;
 import mindustry.gen.*;
-import mindustry.input.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.*;
@@ -35,13 +33,15 @@ public class ArcUnitFactoryDialog extends BaseDialog{
     private final float[] statusTime = {10, 30f, 60f, 120f, 180f, 300f, 600f, 900f, 1200f, 1500f, 1800f, 2700f, 3600f, Float.MAX_VALUE};
     private float chatTime = 0;
     private boolean showUnitSelect, showUnitPro, showStatesEffect, showItems, showPayload, showSelectPayload, showPayloadBlock, elevation;
-    private final boolean enableRTSCode = false;
 
     public ArcUnitFactoryDialog(){
         super("单位工厂-ARC");
+        //noinspection unchecked
+        getCell(cont).setElement(new ScrollPane(cont)).growX();
+
         cont.table(t -> {
             t.add("目标单位：");
-            t.image().update(it -> it.setDrawable(spawnUnit.type.uiIcon)).scaling(Scaling.fit).maxWidth(32);
+            t.image().update(it -> it.setDrawable(spawnUnit.type.uiIcon)).scaling(Scaling.fit).size(iconMed);
             t.label(() -> spawnUnit.type.localizedName);
         }).row();
 
@@ -63,9 +63,7 @@ public class ArcUnitFactoryDialog extends BaseDialog{
             UIExt.buildPositionRow(t, unitLoc);
         }).row();
 
-        var unitFabricator = new Collapser(t -> t.pane(this::buildUnitFabricator).minHeight(300), true);
-        cont.button(Blocks.tetrativeReconstructor.emoji() + "[cyan]单位状态重构厂", unitFabricator::toggle).fillX().row();
-        cont.add(unitFabricator).row();
+        cont.table(this::buildUnitFabricator).fillX().row();
 
         cont.button("[orange]生成！", Icon.modeAttack, () -> {
             Vec2 pos = Tmp.v1.set(unitLoc).scl(tilesize);
@@ -80,7 +78,7 @@ public class ArcUnitFactoryDialog extends BaseDialog{
             control.input.panCamera(pos);
         }).fillX().row();
 
-        cont.button("[orange] 生成！(/js)", Icon.modeAttack, () -> {
+        cont.button("[orange]生成(/js)", Icon.modeAttack, () -> {
             if(chatTime > 0f){
                 ui.showInfoFade("为了防止因ddos被服务器ban，请勿太快操作", 5f);
                 return;
@@ -125,19 +123,17 @@ public class ArcUnitFactoryDialog extends BaseDialog{
             control.input.panCamera(Tmp.v1.set(unitLoc).scl(tilesize));
         }).fillX().visible(() -> Core.settings.getBool("easyJS")).row();
 
-        cont.button("RTS价格代码生成", Icon.logic, this::generateRTSCode).fillX().visible(() -> enableRTSCode);
-
         closeOnBack();
         addCloseButton();
     }
 
     void buildUnitFabricator(Table table){
-        table.clear();
+        table.clearChildren();
         table.button((b) -> {
             b.image(showUnitSelect ? Icon.upOpen : Icon.downOpen);
             b.table(t -> {
                 t.add("加工单位：");
-                t.image(spawnUnit.type.uiIcon).scaling(Scaling.fit).maxWidth(32);
+                t.image(spawnUnit.type.uiIcon).scaling(Scaling.fit).size(iconMed);
             }).grow();
         }, Styles.togglet, () -> showUnitSelect = !showUnitSelect).fillX().minWidth(400f).row();
         table.collapser(list -> {
@@ -146,7 +142,6 @@ public class ArcUnitFactoryDialog extends BaseDialog{
                 if(i++ % 8 == 0) list.row();
                 list.button((b) -> {
                     b.image(unit.uiIcon).scaling(Scaling.fit);
-                    if(enableRTSCode) b.add("" + getPrice(unit));
                 }, cleart, () -> {
                     if(spawnUnit.type != unit){
                         changeUnitType(spawnUnit, unit);
@@ -154,7 +149,7 @@ public class ArcUnitFactoryDialog extends BaseDialog{
                     }
                     showUnitSelect = !showUnitSelect;
                     buildUnitFabricator(table);
-                }).tooltip(unit.localizedName).width(enableRTSCode ? 100f : 50f).height(50f);
+                }).tooltip(unit.localizedName).width(50f).height(50f);
             }
         }, () -> showUnitSelect).row();
 
@@ -202,7 +197,7 @@ public class ArcUnitFactoryDialog extends BaseDialog{
                 for(StatusEffect effect : content.statusEffects()){
                     if(effect == StatusEffects.none) continue;
                     if(i++ % 8 == 0) list.row();
-                    list.button((b) -> b.image(effect.uiIcon).scaling(Scaling.fit), squareTogglet, () -> {
+                    list.button((b) -> b.image(effect.uiIcon).scaling(Scaling.fit).size(iconMed), squareTogglet, () -> {
                         unitStatus.add(new StatusEntry().set(effect, unitStatus.isEmpty() ? 600f : unitStatus.orderedItems().peek().time));
                         buildUnitFabricator(table);
                     }).size(50f).color(unitStatus.select(e -> e.effect == effect).isEmpty() ? Color.gray : Color.white).tooltip(effect.localizedName);
@@ -231,7 +226,7 @@ public class ArcUnitFactoryDialog extends BaseDialog{
             }).row();
             t.table(list -> {
                 for(var entry : unitStatus){
-                    list.image(entry.effect.uiIcon).scaling(Scaling.fit);
+                    list.image(entry.effect.uiIcon).scaling(Scaling.fit).size(iconMed);
                     list.add(entry.effect.localizedName).padRight(4f);
 
                     if(entry.effect.permanent){
@@ -269,7 +264,7 @@ public class ArcUnitFactoryDialog extends BaseDialog{
             b.table(t -> {
                 t.add("携带物品");
                 if(spawnUnit.stack.amount > 0){
-                    t.image(spawnUnit.stack.item.uiIcon).scaling(Scaling.fit);
+                    t.image(spawnUnit.stack.item.uiIcon).scaling(Scaling.fit).size(iconMed);
                     t.add("" + spawnUnit.stack.amount).padRight(4f);
                 }
             }).grow();
@@ -278,7 +273,7 @@ public class ArcUnitFactoryDialog extends BaseDialog{
             pt.table(ptt -> {
                 int i = 0;
                 for(Item item : content.items()){
-                    ptt.button(b -> b.image(item.uiIcon).scaling(Scaling.fit), cleart, () -> {
+                    ptt.button(b -> b.image(item.uiIcon).scaling(Scaling.fit).size(iconMed), cleart, () -> {
                         spawnUnit.stack.item = item;
                         if(spawnUnit.stack.amount == 0){
                             spawnUnit.stack.amount = spawnUnit.itemCapacity();
@@ -291,7 +286,7 @@ public class ArcUnitFactoryDialog extends BaseDialog{
             if(spawnUnit.stack.amount > 0){
                 pt.row();
                 pt.table(ptt -> {
-                    ptt.image(spawnUnit.stack.item.uiIcon).scaling(Scaling.fit);
+                    ptt.image(spawnUnit.stack.item.uiIcon).scaling(Scaling.fit).size(iconMed);
                     ptt.add(" 数量：");
                     ptt.field(String.valueOf(spawnUnit.stack.amount), text -> spawnUnit.stack.amount = Integer.parseInt(text)).valid(value -> {
                         if(!Strings.canParsePositiveInt(value)) return false;
@@ -324,12 +319,12 @@ public class ArcUnitFactoryDialog extends BaseDialog{
             table.collapser(p -> {
                 p.table(pt -> pay.payloads().each(payload -> {
                     if(payload instanceof Payloadc payloadUnit){
-                        pt.button(b -> b.image(payload.content().uiIcon).scaling(Scaling.fit).getTable().add("[red]*"), squareTogglet, () -> {
+                        pt.button(b -> b.image(payload.content().uiIcon).scaling(Scaling.fit).size(iconMed).getTable().add("[red]*"), squareTogglet, () -> {
                             pay.payloads().remove(payload);
                             buildUnitFabricator(table);
                         }).color(payloadUnit.team().color).size(50f).left();
                     }else{
-                        pt.button(b -> b.image(payload.content().uiIcon).scaling(Scaling.fit), squareTogglet, () -> {
+                        pt.button(b -> b.image(payload.content().uiIcon).scaling(Scaling.fit).size(iconMed), squareTogglet, () -> {
                             pay.payloads().remove(payload);
                             buildUnitFabricator(table);
                         }).size(50f).left();
@@ -342,7 +337,7 @@ public class ArcUnitFactoryDialog extends BaseDialog{
                     c.table(list -> {
                         int i = 0;
                         for(UnitType units : content.units()){
-                            list.button(b -> b.image(units.uiIcon).scaling(Scaling.fit), () -> {
+                            list.button(b -> b.image(units.uiIcon).scaling(Scaling.fit).size(iconMed), () -> {
                                 pay.addPayload(new UnitPayload(units.create(spawnUnit.team)));
                                 buildUnitFabricator(table);
                             }).size(50f).tooltip(units.localizedName);
@@ -370,7 +365,7 @@ public class ArcUnitFactoryDialog extends BaseDialog{
                     for(Block payBlock : content.blocks()){
                         if(!payBlock.isVisible() || !payBlock.isAccessible() || payBlock.isFloor())
                             continue;
-                        list.button(b -> b.image(payBlock.uiIcon).scaling(Scaling.fit), () -> {
+                        list.button(b -> b.image(payBlock.uiIcon).scaling(Scaling.fit).size(iconMed), () -> {
                             pay.addPayload(new BuildPayload(payBlock, spawnUnit.team));
                             buildUnitFabricator(table);
                         }).size(50f).tooltip(payBlock.localizedName);
@@ -446,33 +441,5 @@ public class ArcUnitFactoryDialog extends BaseDialog{
         }
         Time.run(chatTime, () -> Call.sendChatMessage(Strings.format(format, args)));
         chatTime = chatTime + 10f;
-    }
-
-    private int getPrice(UnitType unitType){
-        return (int)(unitType.health * (1 + unitType.range / 8 / 50) / 20);
-    }
-
-
-    private void generateRTSCode(){
-        StringBuilder code = new StringBuilder();
-        Vars.content.units().each(unitType -> {
-            code.append("set 单位 @").append(unitType.name).append("\n");
-            code.append("set 价格 ").append(getPrice(unitType)).append("\n");
-            code.append("set 工厂 ");
-            if(unitType.flying){
-                if(unitType.health < 400) code.append("空1");
-                else code.append("空2");
-            }else{
-                if(unitType.allowLegStep || unitType.naval) code.append("海爬");
-                else code.append("陆");
-                if(unitType.health < 720) code.append("1");
-                else code.append("2");
-            }
-            code.append("\n");
-            code.append("set 名称 \"").append(unitType.emoji()).append(" ").append(unitType.localizedName).append(" ").append(unitType.name).append("\"\n");
-            code.append("set @counter c返回").append("\n");
-
-        });
-        Core.app.setClipboardText(code.toString());
     }
 }
