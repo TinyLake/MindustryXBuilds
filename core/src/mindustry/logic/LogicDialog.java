@@ -24,6 +24,7 @@ import static mindustry.logic.LCanvas.*;
 public class LogicDialog extends BaseDialog{
     public LCanvas canvas;
     Cons<String> consumer = s -> {};
+    GlobalVarsDialog globalsDialog = new GlobalVarsDialog();
     boolean privileged;
     @Nullable LExecutor executor;
 
@@ -178,6 +179,8 @@ public class LogicDialog extends BaseDialog{
             });
 
             dialog.addCloseButton();
+            dialog.buttons.button("@logic.globals", Icon.list, () -> globalsDialog.show()).size(210f, 64f);
+
             dialog.show();
         }).name("variables").disabled(b -> executor == null || executor.vars.length == 0);
 
