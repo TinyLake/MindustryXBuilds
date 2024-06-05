@@ -97,13 +97,13 @@ public class DamagePopup{
         public Font font = Fonts.outline;
         public float x, y;
         public float lifetime;
-        public float damage;
         public float alpha;
         public float scale;
         public float offset;
         public float rotation; // deg
         public Color color;
 
+        public float damage;
         private float time;
         public int count;
 
@@ -165,6 +165,7 @@ public class DamagePopup{
         @Override
         public void reset(){
             time = 0f;
+            damage = 0f;
             count = 0;
         }
     }
