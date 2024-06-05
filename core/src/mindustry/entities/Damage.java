@@ -491,10 +491,12 @@ public class Damage{
             boolean dead = unit.dead;
 
             float amount = calculateDamage(scaled ? Math.max(0, unit.dst(x, y) - unit.type.hitSize/2) : unit.dst(x, y), radius, damage);
+            float lastHealth = unit.health;
             unit.damage(amount);
+            float realDamage = lastHealth - unit.health;
 
             if(source != null){
-                Events.fire(bulletDamageEvent.set(unit, source));
+                Events.fire(bulletDamageEvent.set(unit, source, realDamage));
                 unit.controller().hit(source);
 
                 if(!dead && unit.dead){

@@ -380,7 +380,10 @@ public class BulletType extends Content implements Cloneable{
     public void hitEntity(Bullet b, Hitboxc entity, float health){
         boolean wasDead = entity instanceof Unit u && u.dead;
 
+        float lastHealth = 0f;
         if(entity instanceof Healthc h){
+            lastHealth = h.health();
+
             if(pierceArmor){
                 h.damagePierce(b.damage);
             }else{
@@ -394,7 +397,8 @@ public class BulletType extends Content implements Cloneable{
             unit.impulse(Tmp.v3);
             unit.apply(status, statusDuration);
 
-            Events.fire(bulletDamageEvent.set(unit, b));
+            float realDamage = lastHealth - unit.health;
+            Events.fire(bulletDamageEvent.set(unit, b, realDamage));
         }
 
         if(!wasDead && entity instanceof Unit unit && unit.dead){

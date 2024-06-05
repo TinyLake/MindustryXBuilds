@@ -10,6 +10,7 @@ import mindustry.net.Packets.*;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.storage.CoreBlock.*;
+import mindustryX.*;
 
 public class EventType{
 
@@ -355,9 +356,13 @@ public class EventType{
         public Building build;
         public Bullet source;
 
-        public BuildDamageEvent set(Building build, Bullet source){
+        @MindustryXApi
+        public float damage;
+
+        public BuildDamageEvent set(Building build, Bullet source, float damage){
             this.build = build;
             this.source = source;
+            this.damage = damage;
             return this;
         }
     }
@@ -566,9 +571,13 @@ public class EventType{
         public Unit unit;
         public Bullet bullet;
 
-        public UnitDamageEvent set(Unit unit, Bullet bullet){
+        @MindustryXApi
+        public float damage;
+
+        public UnitDamageEvent set(Unit unit, Bullet bullet, float damage){
             this.unit = unit;
             this.bullet = bullet;
+            this.damage = damage;
             return this;
         }
     }
