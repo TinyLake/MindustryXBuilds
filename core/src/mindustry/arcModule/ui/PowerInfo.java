@@ -60,8 +60,9 @@ public class PowerInfo{
     public static void update(){
         info.clear();
         Groups.powerGraph.each(item -> {
-            if(item.graph().team == Vars.player.team())
-                info.add(item.graph().getPowerBalance(), item.graph().getLastPowerStored(), item.graph().getLastCapacity(), item.graph().getLastPowerProduced(), item.graph().getLastPowerNeeded());
+            var graph = item.graph();
+            if(graph.all.isEmpty() || graph.all.first().team != Vars.player.team()) return;
+            info.add(item.graph().getPowerBalance(), item.graph().getLastPowerStored(), item.graph().getLastCapacity(), item.graph().getLastPowerProduced(), item.graph().getLastPowerNeeded());
         });
     }
 

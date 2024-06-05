@@ -651,10 +651,6 @@ public class DesktopInput extends InputHandler{
             }
         }
 
-        if(Core.input.keyTap(Binding.showRTSAi)){
-            settings.put("alwaysShowUnitRTSAi",!settings.getBool("alwaysShowUnitRTSAi"));
-        }
-
         if((cursorX != lastLineX || cursorY != lastLineY) && isPlacing() && mode == placing){
             updateLine(selectX, selectY);
             lastLineX = cursorX;
@@ -785,12 +781,6 @@ public class DesktopInput extends InputHandler{
                 Core.settings.put("lasersopacity", 0);
             }
         }
-
-        if (input.keyTap(Binding.superUnitEffect)) {
-            int level = settings.getInt("superUnitEffect");
-            settings.put("superUnitEffect", (level + 1) % 3);
-        }
-
         if (input.keyDown(Binding.oreAdsorption) && player.unit().tileOn() != null) {
             player.unit().tileOn().circle(Mathf.ceil(player.unit().type.mineRange / 8f), tile -> {
                 Tile ptile = player.unit().mineTile;

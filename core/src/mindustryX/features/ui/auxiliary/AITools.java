@@ -7,6 +7,8 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.ai.types.*;
+import mindustry.arcModule.ui.*;
+import mindustry.ui.*;
 import mindustryX.features.ui.*;
 import mindustryX.features.ui.auxiliary.ai.*;
 import mindustry.content.*;
@@ -18,10 +20,6 @@ import mindustry.ui.dialogs.*;
 import mindustry.world.*;
 
 import static mindustry.Vars.*;
-import static mindustryX.features.ui.auxiliary.ai.ArcMinerAI.*;
-import static mindustry.arcModule.ui.RStyles.clearLineNoneTogglei;
-import static mindustry.content.UnitTypes.*;
-import static mindustry.ui.Styles.flatToggleMenut;
 
 public class AITools extends AuxiliaryTools.Table{
     private AIController selectAI;
@@ -39,17 +37,17 @@ public class AITools extends AuxiliaryTools.Table{
 
     @Override
     public void setup(){
-        button(Icon.settingsSmall, clearLineNoneTogglei, 30, this::showSettingDialog);
+        button(Icon.settingsSmall, RStyles.clearLineNoneTogglei, 30, this::showSettingDialog);
 
         if(false) aiButton(new ATRIAI(), Blocks.worldProcessor.region, "ATRI AI");
-        aiButton(new ArcMinerAI(), mono.region, "矿机AI");
-        aiButton(new ArcBuilderAI(), poly.region, "重建AI");
-        aiButton(new ArcRepairAI(), mega.region, "修复AI");
-        aiButton(new DefenderAI(), oct.region, "保护AI");
+        aiButton(new ArcMinerAI(), UnitTypes.mono.region, "矿机AI");
+        aiButton(new ArcBuilderAI(), UnitTypes.poly.region, "重建AI");
+        aiButton(new ArcRepairAI(), UnitTypes.mega.region, "修复AI");
+        aiButton(new DefenderAI(), UnitTypes.oct.region, "保护AI");
     }
 
     private void aiButton(AIController ai, TextureRegion textureRegion, String describe){
-        button(new TextureRegionDrawable(textureRegion), clearLineNoneTogglei, 30, () -> selectAI(ai))
+        button(new TextureRegionDrawable(textureRegion), RStyles.clearLineNoneTogglei, 30, () -> selectAI(ai))
         .checked(b -> selectAI == ai).size(40).tooltip(describe);
     }
 
@@ -75,10 +73,10 @@ public class AITools extends AuxiliaryTools.Table{
                     for(Block block : ArcMinerAI.oreAllList){
                         if(indexer.floorOresCount[block.id] == 0) continue;
                         if(i++ % 3 == 0) list.row();
-                        list.button(block.emoji() + "\n" + indexer.floorOresCount[block.id], flatToggleMenut, () -> {
-                            if(oreList.contains(block)) oreList.remove(block);
-                            else if(!oreList.contains(block)) oreList.add(block);
-                        }).tooltip(block.localizedName).checked(k -> oreList.contains(block)).width(100f).height(50f);
+                        list.button(block.emoji() + "\n" + indexer.floorOresCount[block.id], Styles.flatToggleMenut, () -> {
+                            if(ArcMinerAI.oreList.contains(block)) ArcMinerAI.oreList.remove(block);
+                            else if(!ArcMinerAI.oreList.contains(block)) ArcMinerAI.oreList.add(block);
+                        }).tooltip(block.localizedName).checked(k -> ArcMinerAI.oreList.contains(block)).width(100f).height(50f);
                     }
                 }).row();
 
@@ -86,13 +84,13 @@ public class AITools extends AuxiliaryTools.Table{
 
                 c.table(list -> {
                     int i = 0;
-                    for(Block block : oreAllWallList){
+                    for(Block block : ArcMinerAI.oreAllWallList){
                         if(indexer.wallOresCount[block.id] == 0) continue;
                         if(i++ % 3 == 0) list.row();
-                        list.button(block.emoji() + "\n" + indexer.wallOresCount[block.id], flatToggleMenut, () -> {
-                            if(oreWallList.contains(block)) oreWallList.remove(block);
-                            else if(!oreWallList.contains(block)) oreWallList.add(block);
-                        }).tooltip(block.localizedName).checked(k -> oreWallList.contains(block)).width(100f).height(50f);
+                        list.button(block.emoji() + "\n" + indexer.wallOresCount[block.id], Styles.flatToggleMenut, () -> {
+                            if(ArcMinerAI.oreWallList.contains(block)) ArcMinerAI.oreWallList.remove(block);
+                            else if(!ArcMinerAI.oreWallList.contains(block)) ArcMinerAI.oreWallList.add(block);
+                        }).tooltip(block.localizedName).checked(k -> ArcMinerAI.oreWallList.contains(block)).width(100f).height(50f);
                     }
                 }).row();
 

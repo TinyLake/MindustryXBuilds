@@ -7,6 +7,7 @@ import arc.math.*;
 import arc.scene.event.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
+import mindustry.arcModule.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
@@ -17,7 +18,6 @@ import mindustry.world.blocks.storage.*;
 import mindustryX.features.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.DrawUtilities.drawText;
 
 public class arcScanner{
 
@@ -121,9 +121,9 @@ public class arcScanner{
             Lines.stroke(expandRate * 0.75f);
             Lines.circle(player.x, player.y, (radarCir * i * tilesize) / rRatio);
             float cirRatio = (radarCir * i * tilesize) / rRatio + 2f;
-            drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x, player.y + cirRatio, Pal.accent, Align.center);
-            drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 7 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 7 / 6), Pal.accent, Align.center);
-            drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 11 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 11 / 6), Pal.accent, Align.center);
+            DrawUtilities.drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x, player.y + cirRatio, Pal.accent, Align.center);
+            DrawUtilities.drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 7 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 7 / 6), Pal.accent, Align.center);
+            DrawUtilities.drawText(i * (int)radarCir + "", 0.2f / Scl.scl(1f) * expandRate, player.x + cirRatio * Mathf.cos(Mathf.PI * 11 / 6), player.y + cirRatio * Mathf.sin(Mathf.PI * 11 / 6), Pal.accent, Align.center);
         }
 
         if(scanRate < 1f){

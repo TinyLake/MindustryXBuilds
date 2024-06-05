@@ -6,6 +6,7 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
 import mindustry.arcModule.*;
+import mindustry.arcModule.toolpack.*;
 import mindustry.arcModule.ui.*;
 import mindustry.content.*;
 import mindustry.core.*;
@@ -18,8 +19,6 @@ import mindustry.ui.dialogs.*;
 import mindustryX.features.ui.*;
 
 import static mindustry.Vars.state;
-import static mindustry.arcModule.toolpack.arcWaveSpawner.calWinWave;
-import static mindustry.arcModule.ui.RStyles.*;
 
 public class WaveInfoTable extends AuxiliaryTools.Table{
     public static final float fontScl = 0.8f;
@@ -48,29 +47,24 @@ public class WaveInfoTable extends AuxiliaryTools.Table{
         left().top();
         waveInfo.left().top();
 
-        button(Icon.waves, clearAccentNonei, waveInfoDialog::show).size(40).tooltip("波次信息");
+        button(Icon.waves, RStyles.clearAccentNonei, waveInfoDialog::show).size(40).tooltip("波次信息");
 
         table(buttons -> {
             buttons.defaults().size(40);
 
-            buttons.button("<", clearLineNonet, () -> shiftWaveOffset(-1));
+            buttons.button("<", RStyles.clearLineNonet, () -> shiftWaveOffset(-1));
 
-            buttons.button("O", clearLineNonet, () -> setWaveOffset(0));
+            buttons.button("O", RStyles.clearLineNonet, () -> setWaveOffset(0));
 
-            buttons.button(">", clearLineNonet, () -> shiftWaveOffset(1));
+            buttons.button(">", RStyles.clearLineNonet, () -> shiftWaveOffset(1));
 
-            buttons.button("Go", clearLineNonet, () -> {
+            buttons.button("Go", RStyles.clearLineNonet, () -> {
                 state.wave += waveOffset;
                 setWaveOffset(0);
             });
 
-            buttons.button("♐", clearLineNonet, () -> {
-                String message = RFuncs.arcShareWaveInfo(state.wave + waveOffset);
-                int seperator = 145;
-                for(int i = 0; i < message.length() / (float)seperator; i++){
-                    Call.sendChatMessage(message.substring(i * seperator, Math.min(message.length(), (i + 1) * seperator)));
-                }
-            }).get().setDisabled(() -> !state.rules.waves && !Core.settings.getBool("arcShareWaveInfo"));
+            buttons.button("♐", RStyles.clearLineNonet, () -> RFuncs.shareWaveInfo(state.wave + waveOffset))
+            .disabled((b) -> !state.rules.waves && !Core.settings.getBool("arcShareWaveInfo"));
 
         }).left().row();
 
@@ -79,12 +73,12 @@ public class WaveInfoTable extends AuxiliaryTools.Table{
 
             setWave.row();
 
-            setWave.button(Icon.settingsSmall, clearAccentNonei, 30, () -> {
+            setWave.button(Icon.settingsSmall, RStyles.clearAccentNonei, 30, () -> {
                 Dialog lsSet = new BaseDialog("波次设定");
                 lsSet.cont.add("设定查询波次").padRight(5f).left();
                 TextField field = lsSet.cont.field(state.wave + waveOffset + "", text -> waveOffset = Integer.parseInt(text) - state.wave).size(320f, 54f).valid(Strings::canParsePositiveInt).maxTextLength(100).get();
                 lsSet.cont.row();
-                lsSet.cont.slider(1, calWinWave(), 1, res -> {
+                lsSet.cont.slider(1, arcWaveSpawner.calWinWave(), 1, res -> {
                     waveOffset = (int)res - state.wave;
                     field.setText((int)res + "");
                 });

@@ -35,7 +35,6 @@ import java.util.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
-import static mindustry.arcModule.RFuncs.getPrefix;
 
 public class MusicDialog extends BaseDialog{
     public static final String version = "1.2.4";
@@ -487,7 +486,7 @@ public class MusicDialog extends BaseDialog{
         }
 
         public void share(MusicInfo info){
-            Vars.ui.showConfirm("分享", "确认分享到聊天框?", () -> getInfoOrCall(info, fullInfo -> Call.sendChatMessage(getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id), true));
+            Vars.ui.showConfirm("分享", "确认分享到聊天框?", () -> getInfoOrCall(info, fullInfo -> Call.sendChatMessage(RFuncs.getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id), true));
         }
 
         public void share(MusicList list){
@@ -497,7 +496,7 @@ public class MusicDialog extends BaseDialog{
                     Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + URLEncoder.encode(list.build(), E));
                     req.submit(r -> {
                         String code = r.getResultAsString();
-                        Call.sendChatMessage(getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
+                        Call.sendChatMessage(RFuncs.getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
                     });
                     req.error(e -> Core.app.post(() -> ui.showException("分享失败", e)));
                 }catch(Exception e){
@@ -780,7 +779,7 @@ public class MusicDialog extends BaseDialog{
                 float width = Core.graphics.getWidth() / Scl.scl() * 0.9f;
                 t.top();
                 for(String str : tips){
-                    t.button(str, RStyles.flatt, () -> {
+                    t.button(str, Styles.flatt, () -> {
                         searchUI.setText(queryString = str);
                         search();
                     }).width(width);
@@ -1127,7 +1126,7 @@ public class MusicDialog extends BaseDialog{
         public void share(MusicInfo info){
             Vars.ui.showConfirm("分享", "确认分享到聊天框?", () -> getInfoOrCall(info, fullInfo -> {
                 try{
-                    Call.sendChatMessage(getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id + "\uf6aa" + URLEncoder.encode(fullInfo.name, E) + "\uf6aa" + URLEncoder.encode(fullInfo.author, E));
+                    Call.sendChatMessage(RFuncs.getPrefix("pink", "Music") + " " + fullInfo.src + "M" + fullInfo.id + "\uf6aa" + URLEncoder.encode(fullInfo.name, E) + "\uf6aa" + URLEncoder.encode(fullInfo.author, E));
                 }catch(Exception ignored){
                 }
             }));
@@ -1141,7 +1140,7 @@ public class MusicDialog extends BaseDialog{
                     Http.HttpRequest req = Http.post("https://pastebin.com/api/api_post.php", "api_dev_key=sdBDjI5mWBnHl9vBEDMNiYQ3IZe0LFEk&api_option=paste&api_paste_expire_date=10M&api_paste_code=" + URLEncoder.encode(buildList(list), E));
                     req.submit(r -> {
                         String code = r.getResultAsString();
-                        Call.sendChatMessage(getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
+                        Call.sendChatMessage(RFuncs.getPrefix("pink", "Music") + " $M" + code.substring(code.lastIndexOf('/') + 1));
                     });
                     req.error(e -> Core.app.post(() -> ui.showException("分享失败", e)));
                 }catch(Exception e){

@@ -15,8 +15,6 @@ import mindustry.world.blocks.payloads.*;
 import mindustryX.features.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.ARCVars.maxBuildPlans;
-import static mindustry.arcModule.DrawUtilities.drawNSideRegion;
 
 public class ARCUnits{
     private static boolean alwaysShowPlayerUnit, alwaysShowUnitRTSAi, unitHealthBar, unitLogicMoveLine, unitLogicTimerBars, unithitbox, unitBuildPlan;
@@ -264,7 +262,7 @@ public class ARCUnits{
                 for(BuildPlan b : unit.plans()){
                     unit.drawPlan(b, 0.5f);
                     counter += 1;
-                    if(counter >= maxBuildPlans) break;
+                    if(counter >= ARCVars.maxBuildPlans) break;
                 }
             }
             counter = 0;
@@ -280,7 +278,7 @@ public class ARCUnits{
                 y = b.drawy();
                 s = b.block.size * 2f;
                 counter += 1;
-                if(counter >= maxBuildPlans) break;
+                if(counter >= ARCVars.maxBuildPlans) break;
             }
 
             counter = 0;
@@ -299,7 +297,7 @@ public class ARCUnits{
                 y = b.drawy();
                 s = b.block.size * 2f;
                 counter += 1;
-                if(counter >= maxBuildPlans) break;
+                if(counter >= ARCVars.maxBuildPlans) break;
             }
             Draw.reset();
         }
@@ -317,9 +315,9 @@ public class ARCUnits{
         if(!arcBuildInfo) return;
         if(control.input.droppingItem){
             Color color = player.within(Core.input.mouseWorld(control.input.getMouseX(), control.input.getMouseY()), itemTransferRange) ? Color.gold : Color.red;
-            drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, color, 0.25f, player.unit().stack.item.uiIcon, false);
+            DrawUtilities.drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, color, 0.25f, player.unit().stack.item.uiIcon, false);
         }else if(control.input.isBuilding || control.input.selectedBlock() || !player.unit().plans().isEmpty()){
-            drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, Pal.heal, 0.25f, Icon.wrench.getRegion(), true);
+            DrawUtilities.drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, Pal.heal, 0.25f, Icon.wrench.getRegion(), true);
         }
     }
 }

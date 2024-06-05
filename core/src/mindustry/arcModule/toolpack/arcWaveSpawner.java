@@ -8,6 +8,7 @@ import arc.math.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.arcModule.*;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.game.*;
@@ -15,7 +16,6 @@ import mindustry.world.*;
 import mindustryX.features.ui.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.DrawUtilities.arcDashCircling;
 
 public class arcWaveSpawner{
 
@@ -51,7 +51,7 @@ public class arcWaveSpawner{
             if(Core.settings.getBool("alwaysshowdropzone")){
                 Draw.alpha(0.8f);
                 for(Tile tile : spawner.getSpawns()){
-                    arcDashCircling(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius, -flyerSpawnerRadius / state.rules.dropZoneRadius * 0.1f);
+                    DrawUtilities.arcDashCircling(tile.worldx(), tile.worldy(), state.rules.dropZoneRadius, -flyerSpawnerRadius / state.rules.dropZoneRadius * 0.1f);
                 }
             }else{
                 for(Tile tile : spawner.getSpawns()){
@@ -73,7 +73,7 @@ public class arcWaveSpawner{
                     }
                     Draw.color(Color.gray, Color.lightGray, Mathf.absin(Time.time, 8f, 1f));
                     Draw.alpha(0.8f);
-                    arcDashCircling(spawnX, spawnY, flyerSpawnerRadius, 0.1f);
+                    DrawUtilities.arcDashCircling(spawnX, spawnY, flyerSpawnerRadius, 0.1f);
 
                     Draw.color();
                     Draw.alpha(0.5f);

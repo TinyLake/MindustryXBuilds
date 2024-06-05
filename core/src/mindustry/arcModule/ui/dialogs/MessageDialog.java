@@ -7,14 +7,11 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
-import mindustry.*;
 import mindustry.arcModule.*;
 import mindustry.arcModule.toolpack.*;
-import mindustry.arcModule.ui.*;
 import mindustry.core.*;
 import mindustry.game.*;
 import mindustry.gen.*;
-import mindustry.input.*;
 import mindustry.ui.*;
 import mindustry.ui.dialogs.*;
 import mindustry.world.blocks.storage.*;
@@ -25,7 +22,6 @@ import java.util.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
-import static mindustry.ui.Styles.*;
 
 public class MessageDialog extends BaseDialog{
 
@@ -101,7 +97,7 @@ public class MessageDialog extends BaseDialog{
                     tt.add(formatTime(thisMsg.time)).style(Styles.outlineLabel).color(thisMsg.msgType.color).left().padLeft(20f).width(100f);
 
                     if(thisMsg.msgLoc.x != -1){
-                        tt.button("♐： " + (int)(thisMsg.msgLoc.x / tilesize) + "," + (int)(thisMsg.msgLoc.y / tilesize), RStyles.logicButton, () -> {
+                        tt.button("♐： " + (int)(thisMsg.msgLoc.x / tilesize) + "," + (int)(thisMsg.msgLoc.y / tilesize), Styles.logict, () -> {
                             control.input.panCamera(thisMsg.msgLoc);
                             MarkerType.mark.at(Tmp.v1.scl(thisMsg.msgLoc.x, thisMsg.msgLoc.y)).color = color;
                             hide();
@@ -128,7 +124,7 @@ public class MessageDialog extends BaseDialog{
                     tt.left();
                     tt.marginLeft(4);
                     tt.setColor(thisMsg.msgType.color);
-                    if(fieldMode) tt.field(thisMsg.message, nodeArea, text -> {
+                    if(fieldMode) tt.field(thisMsg.message, Styles.nodeArea, text -> {
                     }).growX();
                     else tt.labelWrap(getPlayerMsg(thisMsg)).growX();
                 }).pad(4).padTop(2).growX().grow();
@@ -176,10 +172,10 @@ public class MessageDialog extends BaseDialog{
             t.add("调整显示的信息").height(50f);
             t.row();
             t.table(tt -> {
-                tt.button("关闭全部", cleart, () -> {
+                tt.button("关闭全部", Styles.cleart, () -> {
                     for(arcMsgType type : arcMsgType.values()) type.show = false;
                 }).width(200f).height(50f);
-                tt.button("默认", cleart, () -> {
+                tt.button("默认", Styles.cleart, () -> {
                     for(arcMsgType type : arcMsgType.values()) type.show = true;
                     arcMsgType.serverTips.show = false;
                 }).width(200f).height(50f);

@@ -6,6 +6,7 @@ import arc.graphics.g2d.*;
 import arc.scene.style.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
+import mindustry.arcModule.ui.*;
 import mindustry.content.*;
 import mindustry.gen.*;
 import mindustry.input.*;
@@ -15,8 +16,6 @@ import mindustryX.features.ui.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
-import static mindustry.arcModule.ui.RStyles.clearLineNonei;
-import static mindustry.content.UnitTypes.vela;
 
 public class ScriptButtons extends AuxiliaryTools.Table{
 
@@ -39,7 +38,7 @@ public class ScriptButtons extends AuxiliaryTools.Table{
         addSettingButton(Icon.modeAttack, "autotarget", "自动攻击", s -> {
         });
 
-        addSettingButton(vela.uiIcon, "forceBoost", "强制助推", s -> {
+        addSettingButton(UnitTypes.vela.uiIcon, "forceBoost", "强制助推", s -> {
         });
 
         if(!mobile){
@@ -71,7 +70,7 @@ public class ScriptButtons extends AuxiliaryTools.Table{
     }
 
     protected Cell<ImageButton> scriptButton(Drawable icon, String description, Runnable runnable){
-        return button(icon, clearLineNonei, 30, runnable).tooltip(description);//TODO allowMobile
+        return button(icon, RStyles.clearLineNonei, 30, runnable).tooltip(description);//TODO allowMobile
     }
 
 }

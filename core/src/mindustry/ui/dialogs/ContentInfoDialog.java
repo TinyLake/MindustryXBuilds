@@ -5,6 +5,7 @@ import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.arcModule.*;
 import mindustry.ctype.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
@@ -14,7 +15,6 @@ import mindustry.world.meta.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
-import static mindustry.arcModule.RFuncs.getPrefix;
 
 public class ContentInfoDialog extends BaseDialog{
 
@@ -137,7 +137,7 @@ public class ContentInfoDialog extends BaseDialog{
     }
 
     private String arcItemInfo(UnlockableContent content, boolean description) {
-        StringBuilder builder = getPrefix("sky", "Content");
+        StringBuilder builder = RFuncs.getPrefix("sky", "Content");
         builder.append("标记了" + content.localizedName + content.emoji());
         builder.append("(" + content.name + ")");
         if (content.description != null && description) {

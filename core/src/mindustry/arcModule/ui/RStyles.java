@@ -11,12 +11,9 @@ import static mindustry.gen.Tex.underlineWhite;
 import static mindustry.ui.Styles.*;
 
 public class RStyles{
-    public static TextureRegionDrawable whiteuir;
     public static Drawable black1;
 
     public static TextButtonStyle
-    logicButton,
-    flatt,
     clearLineNonet,
     clearLineNoneTogglet;
 
@@ -27,28 +24,15 @@ public class RStyles{
     clearLineNoneTogglei;
 
     public static void load(){
-        whiteuir = (TextureRegionDrawable)Tex.whiteui;
+        var whiteuir = (TextureRegionDrawable)Tex.whiteui;
 
         black1 = whiteuir.tint(0f, 0f, 0f, 0.1f);
 
-        logicButton = new TextButtonStyle(){{
-            up = none;
-            over = flatOver;
-            font = Fonts.outline;
-            fontColor = Color.white;
-        }};
-
-        flatt = new TextButtonStyle(){{
+        clearLineNonet = new TextButtonStyle(){{
             font = Fonts.def;
             fontColor = Color.white;
-            down = flatOver;
-            up = black;
-            over = flatOver;
             disabled = black;
             disabledFontColor = Color.gray;
-        }};
-
-        clearLineNonet = new TextButtonStyle(flatt){{
             up = none;
             over = accentDrawable;
             down = underlineWhite;

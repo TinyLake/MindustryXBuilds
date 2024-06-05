@@ -8,6 +8,7 @@ import arc.graphics.g2d.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.content.*;
+import mindustry.ctype.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.ui.*;
@@ -21,11 +22,7 @@ import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
 
 public class RFuncs{
-    static final int msgSeperator = 145;
-
-    public interface Stringf<T>{
-        String get(T i);
-    }
+    private static final int msgSeperator = 145;
 
     public static void sendChatMsg(String msg){
         for(int i = 0; i < msg.length() / (float)msgSeperator; i++){
@@ -35,18 +32,18 @@ public class RFuncs{
 
     public static void colorizeContent(){
         if(!Core.settings.getBool("colorizedContent")) return;
-        content.items().each(c -> c.localizedName = colorized(c.color, c.localizedName));
-        content.liquids().each(c -> c.localizedName = colorized(c.color, c.localizedName));
-        content.statusEffects().each(c -> c.localizedName = colorized(c.color, c.localizedName));
-        content.planets().each(c -> c.localizedName = colorized(c.atmosphereColor, c.localizedName));
+        content.items().each(c -> colorizeContent(c, c.color));
+        content.liquids().each(c -> colorizeContent(c, c.color));
+        content.statusEffects().each(c -> colorizeContent(c, c.color));
+        content.planets().each(c -> colorizeContent(c, c.atmosphereColor));
         content.blocks().each(c -> {
-            if(c.hasColor) c.localizedName = colorized(blockColor(c), c.localizedName);
-            else if(c.itemDrop != null) c.localizedName = colorized(c.itemDrop.color, c.localizedName);
+            if(c.hasColor) colorizeContent(c, blockColor(c));
+            else if(c.itemDrop != null) colorizeContent(c, c.itemDrop.color);
         });
     }
 
-    private static String colorized(Color color, String name){
-        return "[#" + color + "]" + name + "[]";
+    private static void colorizeContent(UnlockableContent c, Color color){
+        c.localizedName = "[#" + color + "]" + c.localizedName + "[]";
     }
 
     private static Color blockColor(Block block){
@@ -70,8 +67,8 @@ public class RFuncs{
         return bestColor;
     }
 
-    public static String arcShareWaveInfo(int waves){
-        if(!state.rules.waves) return " ";
+    public static void shareWaveInfo(int waves){
+        if(!state.rules.waves) return;
         StringBuilder builder = new StringBuilder(getPrefix("orange", "Wave"));
         builder.append("标记了第").append(waves).append("波");
         if(waves < state.wave){
@@ -85,7 +82,7 @@ public class RFuncs{
         }
 
         builder.append(arcWaveInfo(waves));
-        return builder.toString();
+        sendChatMsg(builder.toString());
     }
 
     public static String calWaveTimer(){
@@ -178,10 +175,6 @@ public class RFuncs{
 
     public static String fixedTime(int timer){
         return fixedTime(timer, true);
-    }
-
-    public static StringBuilder getPrefix(Color color, String type){
-        return getPrefix("#" + color, type);
     }
 
     public static StringBuilder getPrefix(String color, String type){

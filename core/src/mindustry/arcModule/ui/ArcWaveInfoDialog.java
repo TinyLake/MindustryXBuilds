@@ -12,6 +12,7 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.ai.types.*;
+import mindustry.arcModule.*;
 import mindustry.arcModule.toolpack.*;
 import mindustry.content.*;
 import mindustry.core.*;
@@ -28,7 +29,6 @@ import mindustry.ui.dialogs.*;
 import java.util.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.RFuncs.*;
 import static mindustry.arcModule.toolpack.arcWaveSpawner.calWinWave;
 import static mindustry.game.SpawnGroup.never;
 import static mindustry.ui.Styles.*;
@@ -333,13 +333,13 @@ public class ArcWaveInfoDialog extends BaseDialog{
                                 tt.row();
                                 float firstWaveTime = state.rules.initialWaveSpacing <= 0 ? (2 * state.rules.waveSpacing) : state.rules.initialWaveSpacing;
                                 int thisTime = (int)(finalWave * state.rules.waveSpacing + firstWaveTime);
-                                tt.add(fixedTime(thisTime, false)).row();
+                                tt.add(RFuncs.fixedTime(thisTime, false)).row();
                                 Label waveTime = tt.add("").get();
                                 tt.update(() -> {
                                     if(!state.isGame()) waveTime.setText("");
                                     else{
                                         int deltaTime = thisTime - (int)(state.wave <= 1 ? (firstWaveTime - state.wavetime) : (firstWaveTime + state.rules.waveSpacing * (state.wave - 1) - state.wavetime));
-                                        waveTime.setText(arcColorTime(deltaTime, false));
+                                        waveTime.setText(RFuncs.arcColorTime(deltaTime, false));
                                     }
                                 });
                             }).width(120f).left();

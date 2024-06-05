@@ -22,7 +22,6 @@ import java.util.regex.*;
 import static arc.graphics.g2d.Draw.color;
 import static arc.graphics.g2d.Lines.stroke;
 import static mindustry.Vars.*;
-import static mindustry.arcModule.DrawUtilities.drawText;
 
 public class MarkerType{
     private static final Pattern posPattern = Pattern.compile("(?<type><[A-Za-z]+>)?\\((?<x>\\d+),(?<y>\\d+)\\)");
@@ -206,7 +205,7 @@ public class MarkerType{
             Drawf.arrow(player.x, player.y, x, y, 5f * tilesize, 4f, color);
 
             var p = Tmp.v1.set(this).sub(player).limit(4.5f * tilesize).add(player);
-            drawText((int)(dst(player) / 8) + "", 0.2f, p.x, p.y, color, Align.center);
+            DrawUtilities.drawText((int)(dst(player) / 8) + "", 0.2f, p.x, p.y, color, Align.center);
         }
     }
 }

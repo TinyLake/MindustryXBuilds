@@ -5,11 +5,10 @@ import arc.graphics.g2d.*;
 import arc.scene.style.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
+import mindustry.arcModule.ui.*;
 import mindustry.game.EventType.*;
 import mindustry.ui.*;
 import mindustryX.features.ui.auxiliary.*;
-
-import static mindustry.arcModule.ui.RStyles.*;
 
 public class AuxiliaryTools extends Table{
     private boolean shown = true;
@@ -45,7 +44,7 @@ public class AuxiliaryTools extends Table{
         clearChildren();
 
         table(Styles.black3, buttons -> {
-            buttons.button("[acid]辅助器", clearLineNoneTogglet, this::toggle).size(80f, 40f).tooltip((shown ? "关闭" : "开启") + "辅助器");
+            buttons.button("[acid]辅助器", RStyles.clearLineNoneTogglet, this::toggle).size(80f, 40f).tooltip((shown ? "关闭" : "开启") + "辅助器");
 
             if(shown){
                 for(Table table : toolsTables){
@@ -57,7 +56,7 @@ public class AuxiliaryTools extends Table{
         row();
 
         if(shown){
-            table(black1, body -> {
+            table(RStyles.black1, body -> {
                 body.defaults().expandX().left();
                 for(Table table : toolsTables){
                     table.margin(4);
@@ -80,7 +79,7 @@ public class AuxiliaryTools extends Table{
         }
 
         public void addButton(arc.scene.ui.layout.Table buttons){
-            buttons.button(icon, clearAccentNoneTogglei, 30, this::toggle)
+            buttons.button(icon, RStyles.clearAccentNoneTogglei, 30, this::toggle)
             .size(40).checked(b -> shown);
         }
 

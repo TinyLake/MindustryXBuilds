@@ -16,6 +16,7 @@ import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
+import mindustry.arcModule.*;
 import mindustry.arcModule.ui.*;
 import mindustry.content.*;
 import mindustry.core.GameState.*;
@@ -33,7 +34,6 @@ import mindustryX.features.*;
 import mindustryX.features.ui.*;
 
 import static mindustry.Vars.*;
-import static mindustry.arcModule.RFuncs.arcColorTime;
 import static mindustry.gen.Tex.*;
 import static mindustry.ui.Styles.*;
 
@@ -1056,7 +1056,7 @@ public class HudFragment{
                             else return 1f;
                         })).height(18).growX().row();
                 tt.add(new Bar(
-                        () -> arcColorTime(state.rules.waveTimer? (int)state.wavetime : (int) state.tick),
+                        () -> RFuncs.arcColorTime(state.rules.waveTimer? (int)state.wavetime : (int) state.tick),
                         () -> Color.valueOf("F5DEB3"),
                         () -> state.wavetime / state.rules.waveSpacing)).height(18).growX().row();
                 tt.add(new Bar(

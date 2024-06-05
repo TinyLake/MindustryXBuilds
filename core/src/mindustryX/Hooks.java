@@ -12,8 +12,6 @@ import mindustryX.features.*;
 
 import java.net.*;
 
-import static arc.Core.*;
-
 public class Hooks implements ApplicationListener{
     /** invoke before `Vars.init`. Note that may be executed from `Vars.loadAsync` */
     public static void beforeInit(){
@@ -85,11 +83,18 @@ public class Hooks implements ApplicationListener{
         if(Core.input.keyTap(Binding.point)){
             MarkerType.selected.markWithMessage(Core.input.mouseWorld());
         }
-        if(input.keyTap(Binding.toggle_block_render)){
-            settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
+        if(Core.input.keyTap(Binding.toggle_block_render)){
+            Core.settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
         }
-        if(input.keyTap(Binding.arcScanMode)){
+        if(Core.input.keyTap(Binding.arcScanMode)){
             ArcScanMode.enabled = !ArcScanMode.enabled;
+        }
+        if(Core.input.keyTap(Binding.showRTSAi)){
+            Core.settings.put("alwaysShowUnitRTSAi", !Core.settings.getBool("alwaysShowUnitRTSAi"));
+        }
+        if(Core.input.keyTap(Binding.superUnitEffect)){
+            int level = Core.settings.getInt("superUnitEffect");
+            Core.settings.put("superUnitEffect", (level + 1) % 3);
         }
     }
 }

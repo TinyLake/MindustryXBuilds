@@ -84,9 +84,19 @@ public class MenuFragment{
             }).grow();
         });
 
-        parent.fill(c -> c.bottom().right().button(Icon.discord, new ImageButtonStyle(){{
-            up = discordBanner;
-        }}, ui.discord::show).marginTop(9f).marginLeft(10f).tooltip("@discord").size(84, 45).name("discord"));
+//        parent.fill(c -> c.bottom().right().button(Icon.discord, new ImageButtonStyle(){{
+//            up = discordBanner;
+//        }}, ui.discord::show).marginTop(9f).marginLeft(10f).tooltip("@discord").size(84, 45).name("discord"));
+
+
+        if(AutoUpdate.INSTANCE.getActive()){
+            parent.fill(c -> c.bottom().right().button("更新", Icon.refresh, () -> {
+                AutoUpdate.INSTANCE.showDialog();
+            }).size(200, 60).name("更新").update(t -> {
+                t.getLabel().setColor(AutoUpdate.INSTANCE.getNewVersion() != null ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
+            }));
+        }
+
 
         //info icon
         if(mobile){
@@ -101,16 +111,19 @@ public class MenuFragment{
                     Tex.paneTop.draw(0, 0, Core.graphics.getWidth(), Core.scene.marginBottom);
                 }
             });
-        }
-
-        if(AutoUpdate.INSTANCE.getActive()){
-            parent.fill(c -> c.bottom().right().button("更新", Icon.refresh, () -> {
-                AutoUpdate.INSTANCE.showDialog();
-            }).size(200, 60).name("更新").update(t -> {
-                t.getLabel().setColor(AutoUpdate.INSTANCE.getNewVersion() != null ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
+        }else if(becontrol.active()){
+            parent.fill(c -> c.bottom().right().button("@be.check", Icon.refresh, () -> {
+                ui.loadfrag.show();
+                becontrol.checkUpdate(result -> {
+                    ui.loadfrag.hide();
+                    if(!result){
+                        ui.showInfo("@be.noupdates");
+                    }
+                });
+            }).size(200, 60).name("becheck").update(t -> {
+                t.getLabel().setColor(becontrol.isUpdateAvailable() ? Tmp.c1.set(Color.white).lerp(Pal.accent, Mathf.absin(5f, 1f)) : Color.white);
             }));
         }
-
 
         parent.fill(c -> c.bottom().left().table(t -> {
             t.background(Tex.buttonEdge3);

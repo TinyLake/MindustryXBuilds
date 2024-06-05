@@ -10,6 +10,7 @@ import arc.scene.ui.ImageButton.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustry.arcModule.*;
 import mindustry.game.Team;
 import mindustry.input.*;
 import mindustry.gen.*;
@@ -22,7 +23,6 @@ import mindustryX.features.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
-import static mindustry.arcModule.RFuncs.getPrefix;
 import static mindustry.input.InputHandler.follow;
 
 public class PlayerListFragment{
@@ -369,7 +369,7 @@ public class PlayerListFragment{
     }
 
     private String arcAtPlayer(String name){
-        StringBuilder builder = new StringBuilder(getPrefix("coral","AT"));
+        StringBuilder builder = new StringBuilder(RFuncs.getPrefix("coral","AT"));
         builder.append("戳了").append(name).append("[white]一下，并提醒你留意对话框");
         return builder.toString();
     }

@@ -38,7 +38,6 @@ import java.util.regex.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
-import static mindustry.arcModule.RFuncs.getPrefix;
 import static mindustry.content.Items.*;
 
 public class SchematicsDialog extends BaseDialog{
@@ -405,7 +404,7 @@ public class SchematicsDialog extends BaseDialog{
                         req.submit(r -> {
                             String code = r.getResultAsString();
                             if (clipbroad) arcSendClipBroadMsg(s, code);
-                            else RFuncs.sendChatMsg(getPrefix("blue", "Schem") + " " + code.substring(code.lastIndexOf('/') + 1));
+                            else RFuncs.sendChatMsg(RFuncs.getPrefix("blue", "Schem") + " " + code.substring(code.lastIndexOf('/') + 1));
                         });
                         req.error(e -> Core.app.post(() -> {ui.showException("分享失败", e);if (clipbroad) arcSendClipBroadMsg(s, "x");}));
                     } catch (Exception e) {

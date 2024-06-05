@@ -17,7 +17,6 @@ import mindustry.ui.dialogs.*;
 
 import static mindustry.Vars.*;
 import static mindustry.arcModule.ARCVars.arcui;
-import static mindustry.arcModule.RFuncs.getPrefix;
 
 public class arcChatPicture{
 
@@ -81,7 +80,7 @@ public class arcChatPicture{
             figureLink = t.field("在此输入图片网址api", text -> {
             }).width(400f).get();
             t.button("♐", () -> {
-                Call.sendChatMessage(getPrefix("yellow", "Picture").append(figureLink.getText()).toString().replace(" ", ""));
+                Call.sendChatMessage(RFuncs.getPrefix("yellow", "Picture").append(figureLink.getText()).toString().replace(" ", ""));
                 figureLink.clear();
             }).disabled(disable -> !figureLink.getText().startsWith("http"));
             t.row();
