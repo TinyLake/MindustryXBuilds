@@ -163,22 +163,6 @@ public class MendProjector extends Block{
         }
 
         @Override
-        public void drawBars() {
-            super.drawBars();
-            if (Core.settings.getBool("blockBars_mend")) {
-                Draw.color(Color.black, 0.3f);
-                Lines.stroke(4f);
-                Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-                        x + block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f);
-                Draw.color(Pal.heal, 1f);
-                Lines.stroke(2f);
-                Lines.line(x - block.size * tilesize / 2f * 0.6f, y + block.size * tilesize / 2.5f,
-                        x + 0.6f * (charge / reload - 0.5f) * block.size * tilesize, y + block.size * tilesize / 2.5f);
-                Draw.color();
-            }
-        }
-
-        @Override
         public void drawLight(){
             Drawf.light(x, y, lightRadius * smoothEfficiency, baseColor, 0.7f * smoothEfficiency);
         }

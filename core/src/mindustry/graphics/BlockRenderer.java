@@ -460,11 +460,6 @@ public class BlockRenderer{
                         Draw.z(Layer.power + 1);
                         build.drawDisabled();
                     }
-
-                    if(renderer.drawBars){
-                        Draw.z(Layer.turret + 4f);
-                        build.drawBars();
-                    }
                 }
                 Draw.reset();
             }else if(!visible){
