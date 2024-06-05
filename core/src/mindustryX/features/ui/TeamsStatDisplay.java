@@ -8,7 +8,6 @@ import arc.scene.ui.layout.*;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
-import mindustry.arcModule.*;
 import mindustry.content.*;
 import mindustry.core.*;
 import mindustry.game.*;
@@ -160,11 +159,11 @@ public class TeamsStatDisplay extends Table{
         table.row();
     }
 
-    private void addTeamData(Table table, TextureRegion icon, RFuncs.Stringf<Teams.TeamData> teamDataStringf){
+    private void addTeamData(Table table, TextureRegion icon, Func<Teams.TeamData,String> teamFunc){
         // 通用情况
         table.image(icon).size(15, 15).left();
         for(Teams.TeamData teamData : teams){
-            table.label(() -> "[#" + teamData.team.color + "]" + teamDataStringf.get(teamData)).fontScale(fontScl);
+            table.label(() -> "[#" + teamData.team.color + "]" + teamFunc.get(teamData)).fontScale(fontScl);
         }
         table.row();
     }
