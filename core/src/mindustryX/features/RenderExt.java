@@ -105,7 +105,7 @@ public class RenderExt{
             Draw.draw(Layer.overlayUI - 0.1f, build::drawSelect);
         if(massDriverLine && build instanceof MassDriverBuild b)
             drawMassDriverLine(b);
-        if(drawBars)
+        if(build != null && drawBars)
             drawBars(build);
     }
 
@@ -201,7 +201,7 @@ public class RenderExt{
 
     private static void drawBar(Building build, Color bg, Color fg, Float ratio){
         Draw.z(Layer.turret + 4f);
-        float x = build.x, size = build.block.size * (tilesize / 2);
+        float x = build.x, size = build.block.size * tilesize * 0.5f;
         float x1 = x - size * 0.6f, x2 = x + size * 0.6f, y = build.y + size * 0.8f;
         Draw.color(bg, 0.3f);
         Lines.stroke(4f);
