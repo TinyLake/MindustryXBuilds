@@ -39,6 +39,16 @@ public class ArcUnitFactoryDialog extends BaseDialog{
         //noinspection unchecked
         getCell(cont).setElement(new ScrollPane(cont)).growX();
 
+        closeOnBack();
+        addCloseButton();
+        //Lazy build
+        shown(() -> {
+            if(cont.hasChildren()) return;
+            setup();
+        });
+    }
+
+    private void setup(){
         cont.table(t -> {
             t.add("目标单位：");
             t.image().update(it -> it.setDrawable(spawnUnit.type.uiIcon)).scaling(Scaling.fit).size(iconMed);
@@ -122,9 +132,6 @@ public class ArcUnitFactoryDialog extends BaseDialog{
             Time.run(chatTime, () -> chatTime = 0f);
             control.input.panCamera(Tmp.v1.set(unitLoc).scl(tilesize));
         }).fillX().visible(() -> Core.settings.getBool("easyJS")).row();
-
-        closeOnBack();
-        addCloseButton();
     }
 
     void buildUnitFabricator(Table table){
