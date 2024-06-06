@@ -26,30 +26,36 @@ import static arc.util.Tmp.*;
  */
 public class DamagePopup{
     private static final Pool<Popup> popupPool = Pools.get(Popup.class, Popup::new);
+    private static final ObjectMap<Sized, Popup> popups = new ObjectMap<>();
 
     public static final float MIN_SCALE = 1f / 4 / Scl.scl(1);
     public static final float MAX_SCALE = 1f / 2 / Scl.scl(1);
 
     public static float popupLifetime = 50f;
-    public static float minPopupHealth = 600;
 
-    private static final ObjectMap<Sized, Popup> popups = new ObjectMap<>();
+    // 设置
+    public static boolean enable;
+    public static boolean playerPopupOnly;
+    public static float popupMinHealth;
 
     public static void init(){
         Events.on(BuildDamageEvent.class, e -> {
-            if(shouldPopup(e.source, e.build)){
+            if(enable && shouldPopup(e.source, e.build)){
                 popupDamage(e.source, e.build, e.damage);
             }
         });
 
         Events.on(UnitDamageEvent.class, e -> {
-            if(shouldPopup(e.bullet, e.unit)){
+            if(enable && shouldPopup(e.bullet, e.unit)){
                 popupDamage(e.bullet, e.unit, e.damage);
             }
         });
 
         Events.run(Trigger.update, () -> {
+            updateSettings();
+
             if(Vars.state.isPaused()) return;
+            if(popups.isEmpty()) return;
 
             Values<Popup> values = popups.values();
 
@@ -66,16 +72,35 @@ public class DamagePopup{
         });
 
         Events.run(Trigger.draw, () -> {
+            if(popups.isEmpty()) return;
+
             for(Popup popup : popups.values()){
                 popup.draw();
             }
         });
 
         Events.on(ResetEvent.class, e -> {
-            Values<Popup> values = popups.values();
-            popupPool.freeAll(values.toSeq());
-            popups.clear();
+            clearPopup();
         });
+    }
+
+    private static void updateSettings(){
+        boolean enableSetting = Core.settings.getBool("damagePopup");
+        playerPopupOnly = Core.settings.getBool("playerPopupOnly");
+        popupMinHealth = Core.settings.getInt("popupMinHealth");
+
+        if(enable != enableSetting){
+            enable = enableSetting;
+
+            // 关闭后保留已有跳字
+            // if(!enable) clearPopup();
+        }
+    }
+
+    public static void clearPopup(){
+        Values<Popup> values = popups.values();
+        popupPool.freeAll(values.toSeq());
+        popups.clear();
     }
 
     private static Entityc getSourceOwner(Bullet bullet){
@@ -89,9 +114,11 @@ public class DamagePopup{
     }
 
     private static boolean shouldPopup(Bullet bullet, Healthc damaged){
-        if(damaged.maxHealth() < minPopupHealth){
+        if(damaged.maxHealth() < popupMinHealth){
             return false;
         }
+
+        if(!playerPopupOnly) return true;
 
         Entityc owner = getSourceOwner(bullet);
         Unit playerUnit = Vars.player.unit();
@@ -100,8 +127,7 @@ public class DamagePopup{
         || (playerUnit instanceof BlockUnitUnit blockUnit && owner == blockUnit.tile())
         || (Vars.control.input.commandMode &&
             (owner instanceof Unit unitOwner && Vars.control.input.selectedUnits.contains(unitOwner)
-            || (owner instanceof Building buildOwner && Vars.control.input.commandBuildings.contains(buildOwner))
-            ));
+            || (owner instanceof Building buildOwner && Vars.control.input.commandBuildings.contains(buildOwner))));
     }
 
     private static void popupDamage(Sized source, Sized damaged, float damage){

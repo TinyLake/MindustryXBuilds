@@ -64,6 +64,9 @@ public class Settings{
             c.checkPref("bulletShow", true);
             c.checkPref("showMineBeam".toLowerCase(), true);
             c.checkPref("noPlayerHitBox", false);
+            c.checkPref("damagePopup", true);
+            c.checkPref("playerPopupOnly", true);
+            c.sliderPref("popupMinHealth", 600, 0, 4000, 50, i -> i + "[red]HP");
 
             c.addCategory("developerMode");
             c.checkPref("renderSort", false);
