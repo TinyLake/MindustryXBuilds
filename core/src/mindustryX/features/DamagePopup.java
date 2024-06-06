@@ -27,28 +27,30 @@ import static arc.util.Tmp.*;
 public class DamagePopup{
     private static final Pool<Popup> popupPool = Pools.get(Popup.class, Popup::new);
 
-    public static float LIFETIME = 90f;
     public static final float MIN_SCALE = 1f / 4 / Scl.scl(1);
     public static final float MAX_SCALE = 1f / 2 / Scl.scl(1);
+
+    public static float popupLifetime = 50f;
+    public static float minPopupHealth = 600;
 
     private static final ObjectMap<Sized, Popup> popups = new ObjectMap<>();
 
     public static void init(){
         Events.on(BuildDamageEvent.class, e -> {
-            if(e.source.owner == Vars.player.unit()
-            || Vars.player.unit() instanceof BlockUnitUnit blockUnit && e.source.owner == blockUnit.tile()){
+            if(shouldPopup(e.source, e.build)){
                 popupDamage(e.source, e.build, e.damage);
             }
         });
 
         Events.on(UnitDamageEvent.class, e -> {
-            if(e.bullet.owner == Vars.player.unit()
-            || Vars.player.unit() instanceof BlockUnitUnit blockUnit && e.bullet.owner == blockUnit.tile()){
+            if(shouldPopup(e.bullet, e.unit)){
                 popupDamage(e.bullet, e.unit, e.damage);
             }
         });
 
         Events.run(Trigger.update, () -> {
+            if(Vars.state.isPaused()) return;
+
             Values<Popup> values = popups.values();
 
             while(values.hasNext()){
@@ -68,30 +70,63 @@ public class DamagePopup{
                 popup.draw();
             }
         });
+
+        Events.on(ResetEvent.class, e -> {
+            Values<Popup> values = popups.values();
+            popupPool.freeAll(values.toSeq());
+            popups.clear();
+        });
+    }
+
+    private static Entityc getSourceOwner(Bullet bullet){
+        Entityc current = bullet.owner;
+
+        while(current instanceof Bullet b && b.owner != null){
+            current = b.owner;
+        }
+
+        return current;
+    }
+
+    private static boolean shouldPopup(Bullet bullet, Healthc damaged){
+        if(damaged.maxHealth() < minPopupHealth){
+            return false;
+        }
+
+        Entityc owner = getSourceOwner(bullet);
+        Unit playerUnit = Vars.player.unit();
+
+        return owner == playerUnit
+        || (playerUnit instanceof BlockUnitUnit blockUnit && owner == blockUnit.tile())
+        || (Vars.control.input.commandMode &&
+            (owner instanceof Unit unitOwner && Vars.control.input.selectedUnits.contains(unitOwner)
+            || (owner instanceof Building buildOwner && Vars.control.input.commandBuildings.contains(buildOwner))
+            ));
     }
 
     private static void popupDamage(Sized source, Sized damaged, float damage){
         if(Mathf.equal(damage, 0f)) return;
 
         float x = damaged.getX(), y = damaged.getY() + Mathf.range(damaged.hitSize() * 0.25f);
-        float scale = Mathf.clamp(damaged.hitSize() / 64 / Scl.scl(1), MIN_SCALE, MAX_SCALE);
+        float scale = Mathf.clamp(damaged.hitSize() / 32 / Scl.scl(1), MIN_SCALE, MAX_SCALE);
         Color color = damage > 0 ? Pal.health : Pal.heal;
         float rotation = damaged.angleTo(source) + Mathf.random(5f) + (damage > 0 ? 180 : 0);
         float offset = Mathf.random(8, 12);
 
         Popup popup = popups.get(damaged);
         if(popup == null){
-            popup = popupPool.obtain().set(x, y, LIFETIME, damage, color, 1f, scale, rotation, offset);
+            popup = popupPool.obtain().set(x, y, popupLifetime, damage, color, 1f, scale, rotation, offset);
             popups.put(damaged, popup);
         }else{
-            popup.damage += damage;
-            popup.count ++;
+            popup.superposeDamage(damage);
         }
     }
 
     private static class Popup implements Poolable{
-        public static final int MAX_DAMAGE_EFFECT = 7_000;
-        public static final int MAX_COUNT_EFFECT = 40;
+        public static float maxDamageEffect = 5_000;
+        public static int maxCountEffect = 50;
+        public static float damageEffectScl = 5f;
+        public static float countEffectScl = 2f;
 
         // data
         public Font font = Fonts.outline;
@@ -104,7 +139,7 @@ public class DamagePopup{
         public Color color;
 
         public float damage;
-        private float time;
+        private float timer;
         public int count;
 
         public Popup set(float x, float y, float lifetime, float damage, Color color, float alpha, float scale, float rotation, float offset){
@@ -122,7 +157,7 @@ public class DamagePopup{
         }
 
         public void draw(){
-            float fin = time / lifetime;
+            float fin = timer / lifetime;
 
             float easeOutDown = Bezier.quadratic(v1, fin,
             v2.set(1f, 1f),
@@ -136,7 +171,7 @@ public class DamagePopup{
             v5.set(1f, 1f)).y;
 
             float alpha = this.alpha * easeOutDown;
-            float scale = this.scale * countEffect() / 2 * easeOutDown;
+            float scale = this.scale * easeOutDown * Math.max(1, effect() / 3);
 
             float offset = this.offset * easeOutExpo;
 
@@ -151,20 +186,27 @@ public class DamagePopup{
         }
 
         public boolean dead(){
-            return time >= lifetime;
+            return timer >= lifetime;
         }
 
         public void update(){
-            time += Time.delta / countEffect();
+            timer += Time.delta / effect();
         }
 
-        public float countEffect(){
-            return 1f + 2.5f * Math.min(Math.abs(damage), MAX_DAMAGE_EFFECT) / MAX_DAMAGE_EFFECT + 2f * Mathf.clamp(count, 1, MAX_COUNT_EFFECT) / MAX_COUNT_EFFECT;
+        public float effect(){
+            float damageEffect = damageEffectScl * Math.min(Math.abs(damage), maxDamageEffect) / maxDamageEffect;
+            float countEffect = countEffectScl * (float)Mathf.clamp(count, 1, maxCountEffect) / maxCountEffect;
+            return 1f + damageEffect + countEffect;
+        }
+
+        public void superposeDamage(float damage){
+            this.damage += damage;
+            count++;
         }
 
         @Override
         public void reset(){
-            time = 0f;
+            timer = 0f;
             damage = 0f;
             count = 0;
         }

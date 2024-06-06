@@ -359,6 +359,11 @@ public class EventType{
         @MindustryXApi
         public float damage;
 
+        // MDTX: To prevent some bugs.
+        public BuildDamageEvent set(Building build, Bullet source){
+            return set(build, source, 0f);
+        }
+
         public BuildDamageEvent set(Building build, Bullet source, float damage){
             this.build = build;
             this.source = source;
@@ -573,6 +578,11 @@ public class EventType{
 
         @MindustryXApi
         public float damage;
+
+        // MDTX: To prevent some bugs.
+        public UnitDamageEvent set(Unit unit, Bullet bullet){
+            return set(unit, bullet, 0f);
+        }
 
         public UnitDamageEvent set(Unit unit, Bullet bullet, float damage){
             this.unit = unit;
