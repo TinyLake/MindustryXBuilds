@@ -1,6 +1,6 @@
 package mindustry.entities.comp;
 
-import arc.math.WindowedMean;
+import arc.math.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.annotations.Annotations.*;
@@ -59,6 +59,9 @@ abstract class ShieldComp implements Healthc, Posc{
 
         if(amount > 0 && type.killable){
             health -= amount;
+
+            onDamaged(amount);
+
             if(health <= 0 && !dead){
                 kill();
             }

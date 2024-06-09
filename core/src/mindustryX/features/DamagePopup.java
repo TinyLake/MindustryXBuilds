@@ -17,6 +17,7 @@ import mindustry.game.EventType.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.ui.*;
+import mindustryX.events.*;
 
 import static arc.util.Tmp.*;
 
@@ -33,7 +34,7 @@ public class DamagePopup{
     public static final float maxScale = 1f / 2 / Scl.scl(1);
 
     // 无持续攻击的消退时间
-    public static float popupLifetime = 50f;
+    public static float popupLifetime = 60f;
 
     // 设置
     public static boolean enable;
@@ -41,15 +42,15 @@ public class DamagePopup{
     public static float popupMinHealth;
 
     public static void init(){
-        Events.on(BuildDamageEvent.class, e -> {
-            if(enable && shouldPopup(e.source, e.build)){
-                popupDamage(e.source, e.build, e.damage);
+        Events.on(BuildUnderDamagedEvent.class, e -> {
+            if(enable && shouldPopup(e.bullet, e.build)){
+                popup(e.bullet, e.build, e.damage);
             }
         });
 
-        Events.on(UnitDamageEvent.class, e -> {
+        Events.on(UnitUnderDamagedEvent.class, e -> {
             if(enable && shouldPopup(e.bullet, e.unit)){
-                popupDamage(e.bullet, e.unit, e.damage);
+                popup(e.bullet, e.unit, e.damage);
             }
         });
 
@@ -79,7 +80,7 @@ public class DamagePopup{
             Rect cameraBounds = Core.camera.bounds(r1).grow(4 * Vars.tilesize);
 
             for(Popup popup : popups.values()){
-                if(cameraBounds.contains(popup.x, popup.y)){
+                if(cameraBounds.contains(popup.entity.getX(), popup.entity.getY())){
                     popup.draw();
                 }
             }
@@ -136,54 +137,65 @@ public class DamagePopup{
             || (owner instanceof Building buildOwner && Vars.control.input.commandBuildings.contains(buildOwner))));
     }
 
-    private static void popupDamage(Sized source, Sized damaged, float damage){
-        if(Mathf.equal(damage, 0f)) return;
+    private static void popup(Sized source, Sized damaged, float amount){
+        if(Mathf.equal(amount, 0f)) return;
 
-        float x = damaged.getX(), y = damaged.getY() + Mathf.range(damaged.hitSize() * 0.25f);
-        float scale = Mathf.clamp(damaged.hitSize() / 32 / Scl.scl(1), minScale, maxScale);
-        Color color = damage > 0 ? Pal.health : Pal.heal;
-        float rotation = (source != null ? damaged.angleTo(source) + Mathf.random(5f) : Mathf.random(20)) + (damage > 0 ? 180 : 0);
-        float offset = Mathf.random(8, 12);
+        float offsetY = Mathf.range(damaged.hitSize() * 0.1f);
+        float scale = Mathf.clamp(damaged.hitSize() / 64 / Scl.scl(1), minScale, maxScale);
+        Color color = amount > 0 ? Pal.health : Pal.heal;
+        float rotation = source != null
+        ? damaged.angleTo(source) + Mathf.random(5f) + (amount > 0 ? 180 : 0)
+        : Mathf.random(20);
+        float offsetLength = Mathf.random(8, 12);
 
         Popup popup = popups.get(damaged);
         if(popup == null){
-            popup = popupPool.obtain().set(x, y, popupLifetime, damage, color, 1f, scale, rotation, offset);
+            popup = popupPool.obtain().set(damaged, 0, offsetY, popupLifetime, Math.abs(amount), color, 1f, scale, rotation, offsetLength);
             popups.put(damaged, popup);
         }else{
-            popup.superposeDamage(damage);
+            popup.superposeAmount(Math.abs(amount));
         }
     }
 
     private static class Popup implements Poolable{
-        public static float maxDamageEffect = 5_000;
+        public static float maxAmountEffect = 5_000;
         public static int maxCountEffect = 50;
-        public static float damageEffect = 3f;
+        public static float amountEffect = 3f;
         public static float countEffect = 2f;
+        public static float fontScaleEffectScl = 8f;
+        public static float minDecelerateAmount = 300;
 
         // data
         public Font font = Fonts.outline;
-        public float x, y;
+        public Sized entity;
+        public float offsetX, offsetY;
         public float lifetime;
         public float alpha;
         public float scale;
-        public float offset;
+        public float offsetLength;
         public float rotation; // deg
         public Color color;
 
-        public float damage;
-        private float timer;
+        public float amount;
         public int count;
 
-        public Popup set(float x, float y, float lifetime, float damage, Color color, float alpha, float scale, float rotation, float offset){
-            this.x = x;
-            this.y = y;
+        private float lastAmount;
+        private float timer;
+        private float decelerateTime;
+
+        public Popup set(Sized entity, float offsetX, float offsetY, float lifetime, float amount, Color color, float alpha, float scale, float rotation, float offsetLength){
+            this.entity = entity;
+
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+
             this.lifetime = lifetime;
-            this.damage = damage;
+            this.amount = amount;
             this.color = color;
             this.alpha = alpha;
             this.scale = scale;
             this.rotation = rotation;
-            this.offset = offset;
+            this.offsetLength = offsetLength;
 
             return this;
         }
@@ -203,17 +215,17 @@ public class DamagePopup{
             v5.set(1f, 1f)).y;
 
             float alpha = this.alpha * easeOutDown;
-            float scale = this.scale * easeOutDown * Math.max(effect() / 3, 1);
+            float scale = this.scale * easeOutDown * Math.max(effect() / fontScaleEffectScl, 1);
 
-            float offset = this.offset * easeOutExpo;
+            float offsetLength = this.offsetLength * easeOutExpo;
 
-            float fy = y + offset * Mathf.sin(rotation * Mathf.degRad),
-            fx = x + offset * Mathf.cos(rotation * Mathf.degRad);
+            float fx = entity.getX() + offsetX + offsetLength * Mathf.sin(rotation * Mathf.degRad),
+            fy = entity.getY() + offsetY + offsetLength * Mathf.cos(rotation * Mathf.degRad);
 
             c1.set(color).a(alpha);
 
             Draw.z(Layer.overlayUI);
-            font.draw(Strings.autoFixed(damage, 1), fx, fy, c1, scale, false, Align.center);
+            font.draw(Strings.autoFixed(amount, 1), fx, fy, c1, scale, false, Align.center);
             Draw.reset();
         }
 
@@ -222,28 +234,48 @@ public class DamagePopup{
         }
 
         public void update(){
-            timer += Time.delta / effect();
+            float deltaAmount = amount - lastAmount;
+
+            timer += Time.delta * (decelerateTime > 0 ? 0.1f : 1f);
+
+            if(deltaAmount >= minDecelerateAmount){
+                decelerateTime = lifetime / 2;
+                lastAmount = amount;
+            }
+
+            if(decelerateTime > 0){
+                decelerateTime = Math.max(0, decelerateTime - Time.delta);
+            }
         }
 
         public float effect(){
-            float damageEffect = Popup.damageEffect * Math.min(Math.abs(damage), maxDamageEffect) / maxDamageEffect;
-            float countEffect = Popup.countEffect * (float)Mathf.clamp(count, 1, maxCountEffect) / maxCountEffect;
+            float damageEffect = Popup.amountEffect * Math.min(amount / maxAmountEffect, 1);
+            float countEffect = Popup.countEffect * Math.min(count / maxCountEffect, 1);
             return 1f + damageEffect + countEffect;
         }
 
-        public void superposeDamage(float damage){
-            this.damage += damage;
+        public void superposeAmount(float amount){
+            this.amount += amount;
             count++;
-
-            timer -= Time.delta * effect();
-            timer = Math.max(0, timer);
         }
 
         @Override
         public void reset(){
-            timer = 0f;
-            damage = 0f;
+            entity = null;
+            offsetX = 0;
+            offsetY = 0;
+
+            lifetime = 0;
+            alpha = 0;
+            scale = 0;
+            offsetLength = 0;
+            rotation = 0;
+            color = Color.white;
+
+            lastAmount = 0f;
+            amount = 0f;
             count = 0;
+            timer = 0f;
         }
     }
 }

@@ -1642,7 +1642,9 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
     /** Handles splash damage with a bullet source. */
     public void damage(Bullet bullet, Team source, float damage){
         damage(source, damage);
-        Events.fire(bulletDamageEvent.set(self(), bullet));
+        float realDamage = lastHealth - health;
+
+        Events.fire(bulletDamageEvent.set(self(), bullet, realDamage));
     }
 
     /** Changes this building's team in a safe manner. */
@@ -1884,7 +1886,10 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
 
         //TODO handle this better on the client.
         if(!net.client()){
-            health -= handleDamage(damage);
+            float handledDamage = handleDamage(damage);
+            health -= handledDamage;
+
+            onDamaged(handledDamage);
         }
 
         healthChanged();
@@ -1892,6 +1897,11 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
         if(health <= 0){
             Call.buildDestroyed(self());
         }
+    }
+
+    @Override
+    public void onDamaged(float damage){
+        BuildUnderDamagedEvent.fire(self(), damage);
     }
 
     public void healthChanged(){

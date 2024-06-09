@@ -27,6 +27,7 @@ import mindustry.ui.*;
 import mindustry.world.*;
 import mindustry.world.blocks.environment.*;
 import mindustry.world.blocks.payloads.*;
+import mindustryX.events.*;
 
 import static mindustry.Vars.*;
 import static mindustry.logic.GlobalVars.*;
@@ -527,6 +528,11 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
         if(health < maxHealth && amount > 0){
             wasHealed = true;
         }
+    }
+
+    @Override
+    public void onDamaged(float damage){
+        UnitUnderDamagedEvent.fire(self(), damage);
     }
 
     @Override

@@ -3,6 +3,7 @@ package mindustry.entities.comp;
 import arc.util.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.gen.*;
+import mindustryX.*;
 
 @Component
 abstract class HealthComp implements Entityc, Posc{
@@ -60,6 +61,9 @@ abstract class HealthComp implements Entityc, Posc{
 
     void damage(float amount){
         health -= amount;
+
+        onDamaged(amount);
+
         hitTime = 1f;
         if(health <= 0 && !dead){
             kill();
@@ -82,6 +86,11 @@ abstract class HealthComp implements Entityc, Posc{
 
     void damageContinuousPierce(float amount){
         damagePierce(amount * Time.delta, hitTime <= -20 + hitDuration);
+    }
+
+    @MindustryXApi
+    void onDamaged(float damage){
+
     }
 
     void clampHealth(){

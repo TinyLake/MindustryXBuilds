@@ -15,6 +15,7 @@ import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.world.*;
+import mindustryX.events.*;
 
 import static mindustry.Vars.*;
 
@@ -491,12 +492,12 @@ public class Damage{
             boolean dead = unit.dead;
 
             float amount = calculateDamage(scaled ? Math.max(0, unit.dst(x, y) - unit.type.hitSize/2) : unit.dst(x, y), radius, damage);
-            float lastHealth = unit.health;
+
+            UnitUnderDamagedEvent.setBullet(source);
             unit.damage(amount);
-            float realDamage = lastHealth - unit.health;
 
             if(source != null){
-                Events.fire(bulletDamageEvent.set(unit, source, realDamage));
+                Events.fire(bulletDamageEvent.set(unit, source));
                 unit.controller().hit(source);
 
                 if(!dead && unit.dead){
@@ -539,6 +540,8 @@ public class Damage{
             //why? because otherwise the building would absorb everything in one cell, which means much less damage than a nearby explosion.
             //this needs to be compensated
             if(in != null && in.team != team && in.block.size > 1 && in.health > damage){
+                BuildUnderDamagedEvent.setBullet(source);
+
                 //deal the damage of an entire side, to be equivalent with maximum 'standard' damage
                 in.damage(team, damage * Math.min((in.block.size), baseRadius * 0.4f));
                 //no need to continue with the explosion
