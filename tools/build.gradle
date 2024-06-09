@@ -1,3 +1,13 @@
+buildscript{
+    repositories{
+        maven{ url 'https://jitpack.io' }
+    }
+    dependencies{
+        classpath arcModule(":extensions:packer")
+        classpath arcModule(":arc-core")
+    }
+}
+
 sourceSets.main.java.srcDirs = ["src/"]
 
 import arc.files.Fi

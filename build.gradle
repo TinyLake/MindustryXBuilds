@@ -10,19 +10,6 @@ buildscript{
             return "com.github.anuken${localArc ? "" : ".Arc"}:$name:$arcHash"
         }
     }
-    
-    repositories{
-        mavenLocal()
-        mavenCentral()
-        google()
-        maven{ url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        maven{ url 'https://jitpack.io' }
-    }
-
-    dependencies{
-        classpath arcModule(":extensions:packer")
-        classpath arcModule(":arc-core")
-    }
 }
 
 plugins{
@@ -52,10 +39,6 @@ allprojects{
             }
         }
 
-        debugged = {
-            return new File(projectDir.parent, '../Mindustry-Debug').exists() && !project.hasProperty("release") && project.hasProperty("args")
-        }
-
         getBuildVersion = {
             if(!project.hasProperty("buildversion")) return "custom build"
             return project.getProperties()["buildversion"]
@@ -69,27 +52,6 @@ allprojects{
         maven{ url "https://oss.sonatype.org/content/repositories/releases/" }
         maven{ url 'https://jitpack.io' }
     }
-
-    tasks.withType(JavaCompile){
-        targetCompatibility = 8
-        sourceCompatibility = JavaVersion.VERSION_17
-        options.encoding = "UTF-8"
-        options.compilerArgs += ["-Xlint:deprecation"]
-        doFirst{
-            delete("$rootDir/core/assets/cache")
-        }
-
-        options.forkOptions.jvmArgs += [
-            '--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
-            '--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
-            '--add-opens=java.base/sun.reflect.annotation=ALL-UNNAMED'
-        ]
-    }
 }
 
 configure(project(":annotations")){
@@ -102,10 +64,6 @@ configure(project(":annotations")){
 
 //compile with java 8 compatibility for everything except the annotation project
 configure(subprojects - project(":annotations")){
-    tasks.withType(JavaCompile){
-        options.compilerArgs.addAll(['--release', '8'])
-    }
-
     tasks.withType(Javadoc){
         options{
             addStringOption('Xdoclint:none', '-quiet')
@@ -127,8 +85,6 @@ project(":desktop"){
         implementation arcModule("natives:natives-desktop")
         implementation arcModule("natives:natives-freetype-desktop")
 
-        if(debugged()) implementation project(":debug")
-
         implementation "com.github.Anuken:steamworks4j:$steamworksVersion"
 
         implementation arcModule("backends:backend-sdl")
@@ -146,8 +102,6 @@ project(":core"){
             option("-target", "1.8")
         }
     }
-
-    compileJava.options.fork = true
 
     task copyChangelog{
         doLast{
@@ -189,12 +143,13 @@ project(":core"){
         api arcModule("extensions:fx")
         api arcModule("extensions:arcnet")
         api "com.github.Anuken:rhino:$rhinoVersion"
-        if(localArc && debugged()) api arcModule("extensions:recorder")
         if(localArc) api arcModule(":extensions:packer")
 
-        annotationProcessor 'com.github.Anuken:jabel:0.9.0'
+//        compileOnly 'com.github.bsideup.jabel:jabel-javac-plugin:0.4.2'
+        annotationProcessor 'com.github.bsideup.jabel:jabel-javac-plugin:0.4.2'
+//        annotationProcessor 'com.github.Anuken:jabel:0.9.0'
         compileOnly project(":annotations")
-        kapt project(":annotations")
+        if(!project.hasProperty("noKapt")) kapt project(":annotations")
     }
 
     afterEvaluate{

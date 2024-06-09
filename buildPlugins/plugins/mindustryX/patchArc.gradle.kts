@@ -86,17 +86,19 @@ dependencies {
     }
 
     val api by configurations
-    val patchSrc by configurations.creating {
+    val patchArc by configurations.creating {
         attributes {
             attribute(patched, true)
         }
     }
+    configurations.named("compileOnlyApi").configure { extendsFrom(patchArc) }
+    "runtimeOnly"(files(patchArc))
+
+
     val arcLib = api.dependencies.find { it.name == "arc-core" }
         ?: error("Can't find arc-core")
     api.dependencies.remove(arcLib)
-    api(files(patchSrc))
-
-    patchSrc(arcLib as ExternalModuleDependency){
+    patchArc(arcLib as ExternalModuleDependency) {
         isTransitive = false
     }
 }
