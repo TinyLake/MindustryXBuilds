@@ -41,6 +41,7 @@ import mindustry.world.blocks.power.*;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 import mindustry.world.modules.*;
+import mindustryX.events.*;
 import mindustryX.features.*;
 
 import java.util.*;
@@ -1624,6 +1625,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
             damage = Damage.applyArmor(damage, block.armor);
         }
 
+        BuildUnderDamagedEvent.setBullet(other);
         damage(other.team, damage);
         Events.fire(bulletDamageEvent.set(self(), other));
 
@@ -1641,10 +1643,10 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
 
     /** Handles splash damage with a bullet source. */
     public void damage(Bullet bullet, Team source, float damage){
-        damage(source, damage);
-        float realDamage = lastHealth - health;
+        BuildUnderDamagedEvent.setBullet(bullet);
 
-        Events.fire(bulletDamageEvent.set(self(), bullet, realDamage));
+        damage(source, damage);
+        Events.fire(bulletDamageEvent.set(self(), bullet));
     }
 
     /** Changes this building's team in a safe manner. */

@@ -22,6 +22,7 @@ import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.*;
+import mindustryX.events.*;
 import mindustryX.features.*;
 
 import static mindustry.Vars.*;
