@@ -28,7 +28,10 @@ public class Main extends Mod{
         }
         return null;
     }
+
     public Main(){
+        //When import mod, the constructor will be invoked.
+        if(Vars.clientLoaded) return;
         if(System.getProperty("MDTX-loaded") == null){
             System.setProperty("MDTX-loaded", "true");
             LoaderPlatform impl = getLoaderPlatform();
