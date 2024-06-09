@@ -28,9 +28,11 @@ public class DamagePopup{
     private static final Pool<Popup> popupPool = Pools.get(Popup.class, Popup::new);
     private static final ObjectMap<Sized, Popup> popups = new ObjectMap<>();
 
-    public static final float MIN_SCALE = 1f / 4 / Scl.scl(1);
-    public static final float MAX_SCALE = 1f / 2 / Scl.scl(1);
+    // 跳字初始缩放限制
+    public static final float minScale = 1f / 4 / Scl.scl(1);
+    public static final float maxScale = 1f / 2 / Scl.scl(1);
 
+    // 无持续攻击的消退时间
     public static float popupLifetime = 50f;
 
     // 设置
@@ -74,8 +76,12 @@ public class DamagePopup{
         Events.run(Trigger.draw, () -> {
             if(popups.isEmpty()) return;
 
+            Rect cameraBounds = Core.camera.bounds(r1).grow(4 * Vars.tilesize);
+
             for(Popup popup : popups.values()){
-                popup.draw();
+                if(cameraBounds.contains(popup.x, popup.y)){
+                    popup.draw();
+                }
             }
         });
 
@@ -103,24 +109,24 @@ public class DamagePopup{
         popups.clear();
     }
 
-    private static Entityc getSourceOwner(Bullet bullet){
-        Entityc current = bullet.owner;
+    private static Entityc getSourceOwner(Ownerc source){
+        Entityc current = source.owner();
 
-        while(current instanceof Bullet b && b.owner != null){
-            current = b.owner;
+        while(current instanceof Ownerc o && o.owner() != null){
+            current = o.owner();
         }
 
         return current;
     }
 
-    private static boolean shouldPopup(Bullet bullet, Healthc damaged){
+    private static boolean shouldPopup(Ownerc source, Healthc damaged){
         if(damaged.maxHealth() < popupMinHealth){
             return false;
         }
 
-        if(!playerPopupOnly) return true;
+        if(source == null || !playerPopupOnly) return true;
 
-        Entityc owner = getSourceOwner(bullet);
+        Entityc owner = getSourceOwner(source);
         Unit playerUnit = Vars.player.unit();
 
         return owner == playerUnit
@@ -134,9 +140,9 @@ public class DamagePopup{
         if(Mathf.equal(damage, 0f)) return;
 
         float x = damaged.getX(), y = damaged.getY() + Mathf.range(damaged.hitSize() * 0.25f);
-        float scale = Mathf.clamp(damaged.hitSize() / 32 / Scl.scl(1), MIN_SCALE, MAX_SCALE);
+        float scale = Mathf.clamp(damaged.hitSize() / 32 / Scl.scl(1), minScale, maxScale);
         Color color = damage > 0 ? Pal.health : Pal.heal;
-        float rotation = damaged.angleTo(source) + Mathf.random(5f) + (damage > 0 ? 180 : 0);
+        float rotation = (source != null ? damaged.angleTo(source) + Mathf.random(5f) : Mathf.random(20)) + (damage > 0 ? 180 : 0);
         float offset = Mathf.random(8, 12);
 
         Popup popup = popups.get(damaged);
@@ -151,8 +157,8 @@ public class DamagePopup{
     private static class Popup implements Poolable{
         public static float maxDamageEffect = 5_000;
         public static int maxCountEffect = 50;
-        public static float damageEffectScl = 5f;
-        public static float countEffectScl = 2f;
+        public static float damageEffect = 3f;
+        public static float countEffect = 2f;
 
         // data
         public Font font = Fonts.outline;
@@ -197,7 +203,7 @@ public class DamagePopup{
             v5.set(1f, 1f)).y;
 
             float alpha = this.alpha * easeOutDown;
-            float scale = this.scale * easeOutDown * Math.max(1, effect() / 3);
+            float scale = this.scale * easeOutDown * Math.max(effect() / 3, 1);
 
             float offset = this.offset * easeOutExpo;
 
@@ -220,14 +226,17 @@ public class DamagePopup{
         }
 
         public float effect(){
-            float damageEffect = damageEffectScl * Math.min(Math.abs(damage), maxDamageEffect) / maxDamageEffect;
-            float countEffect = countEffectScl * (float)Mathf.clamp(count, 1, maxCountEffect) / maxCountEffect;
+            float damageEffect = Popup.damageEffect * Math.min(Math.abs(damage), maxDamageEffect) / maxDamageEffect;
+            float countEffect = Popup.countEffect * (float)Mathf.clamp(count, 1, maxCountEffect) / maxCountEffect;
             return 1f + damageEffect + countEffect;
         }
 
         public void superposeDamage(float damage){
             this.damage += damage;
             count++;
+
+            timer -= Time.delta * effect();
+            timer = Math.max(0, timer);
         }
 
         @Override
