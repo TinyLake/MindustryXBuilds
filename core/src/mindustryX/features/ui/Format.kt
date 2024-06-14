@@ -65,6 +65,20 @@ data class Format @JvmOverloads constructor(private var decimal: Int = 2, privat
         return "(${World.toTile(pos.x)},${World.toTile(pos.y)})"
     }
 
+    fun duration(seconds: Float, unit: Boolean = true) = buildString {
+        append(if (seconds > 0) "[orange]" else "[acid]")
+        val s = abs(seconds)
+        if (s >= 60) {
+            append((seconds / 60).toInt())
+            append(" : ")
+            append((s % 60).toInt())
+        } else {
+            append(format0(seconds))
+        }
+        append("[]")
+        if (unit) append(if (s >= 60) "min" else "s")
+    }
+
     @JvmOverloads
     fun percent(cur: Float, max: Float, percent: Float = 100 * cur / max, showPercent: Boolean = percent < 0.95f): String {
         return buildString {
@@ -102,4 +116,8 @@ object FormatDefault {
 
     @JvmStatic
     fun formatTile(pos: Position): String = Format.default.formatTile(pos)
+
+    @JvmOverloads
+    @JvmStatic
+    fun duration(seconds: Float, unit: Boolean = true): String = Format.default.duration(seconds, unit)
 }
