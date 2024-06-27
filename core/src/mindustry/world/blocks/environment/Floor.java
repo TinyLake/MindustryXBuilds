@@ -85,6 +85,7 @@ public class Floor extends Block{
     public Floor(String name){
         super(name);
         variants = 3;
+        schematicPriority = 100;
     }
 
     public Floor(String name, int variants){
