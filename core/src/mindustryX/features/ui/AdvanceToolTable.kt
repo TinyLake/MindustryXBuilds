@@ -1,9 +1,8 @@
 package mindustryX.features.ui
 
+import arc.Core
 import arc.Events
 import arc.math.Mathf
-import arc.math.geom.Vec2
-import arc.scene.ui.layout.Table
 import arc.struct.Seq
 import arc.util.Reflect
 import mindustry.Vars
@@ -16,13 +15,10 @@ import mindustry.gen.Iconc
 import mindustry.gen.Payloadc
 import mindustry.gen.Unit
 import mindustry.ui.Styles
-import mindustry.ui.dialogs.BaseDialog
-import mindustry.world.Tile
 import mindustry.world.blocks.payloads.Payload
+import mindustryX.features.LogicExt
 import mindustryX.features.TimeControl
 import mindustryX.features.UIExt
-import kotlin.math.abs
-import kotlin.math.min
 
 //move from mindustry.arcModule.ui.AdvanceToolTable
 class AdvanceToolTable : ToolTableBase() {
@@ -38,7 +34,6 @@ class AdvanceToolTable : ToolTableBase() {
     }
 
     val factoryDialog: ArcUnitFactoryDialog = ArcUnitFactoryDialog()
-    val tileCopyDialog: TileCopyDialog = TileCopyDialog()
 
     init {
         icon = Iconc.wrench.toString()
@@ -89,14 +84,14 @@ class AdvanceToolTable : ToolTableBase() {
                 button("创世神", Styles.flatToggleMenut) { worldCreator = !worldCreator }
                     .checked { worldCreator }.size(70f, 30f)
                 button("强制放置", Styles.flatToggleMenut) { forcePlacement = !forcePlacement }
-                    .checked { forcePlacement }.size(70f, 30f)
+                    .checked { forcePlacement }.size(72f, 30f)
                 button("解禁", Styles.flatToggleMenut) {
                     allBlocksReveal = !allBlocksReveal
                     Reflect.invoke<Any>(Vars.ui.hudfrag.blockfrag, "rebuild")
                 }.checked { allBlocksReveal }
                     .tooltip("[acid]显示并允许建造所有物品").size(50f, 30f)
-                button("[orange]复制地形", Styles.flatToggleMenut) { tileCopyDialog.show() }
-                    .tooltip("[acid]复制特定地形").size(70f, 30f).checked { false }
+                button("地形蓝图", Styles.flatToggleMenut) { Core.settings.put("terrainSchematic", !LogicExt.terrainSchematic) }
+                    .checked { LogicExt.terrainSchematic }.size(72f, 30f)
             }
 
             row().add("规则：")
@@ -128,45 +123,5 @@ class AdvanceToolTable : ToolTableBase() {
             unit.payloads().each { load: Payload? -> reUnit.addPayload(load) }
         }
         return reUnit
-    }
-
-    class TileCopyDialog : BaseDialog("地块复制器") {
-        private val fromA = Vec2(0f, 0f)
-        private val fromB = Vec2(0f, 0f)
-        private val toA = Vec2(0f, 0f)
-
-        init {
-            cont.table { tt: Table ->
-                tt.add("复制区角A：")
-                UIExt.buildPositionRow(tt, fromA)
-            }.row()
-            cont.table { tt: Table ->
-                tt.add("复制区角B：")
-                UIExt.buildPositionRow(tt, fromB)
-            }.row()
-            cont.table { tt: Table ->
-                tt.add("粘贴区左下坐标：")
-                UIExt.buildPositionRow(tt, toA)
-            }.row()
-            cont.button("复制！") {
-                Vars.ui.showInfoFade("复制蓝图中...\n[orange]测试中功能，请等待后续完善")
-                val left2 = Vec2(min(fromA.x, fromB.x), min(fromA.y, fromB.y))
-                var x = 0
-                while (x <= abs(fromA.x - fromB.x)) {
-                    var y = 0
-                    while (y <= abs(fromA.y - fromB.y)) {
-                        val copyTile = Vars.world.tile((left2.x + x).toInt(), (left2.y + y).toInt())
-                        val thisTile = Vars.world.tile((toA.x + x).toInt(), (toA.y + y).toInt())
-                        Tile.setFloor(thisTile, copyTile.floor(), copyTile.overlay())
-                        if (copyTile.build == null) thisTile.setBlock(copyTile.block())
-                        else thisTile.setBlock(copyTile.block(), copyTile.build.team, copyTile.build.rotation)
-
-                        y++
-                    }
-                    x++
-                }
-            }.height(50f).fillX()
-            addCloseButton()
-        }
     }
 }
