@@ -77,19 +77,21 @@ public class Floor extends Block{
     public int blendId = -1;
 
     protected TextureRegion[][] edges;
-    protected Seq<Block> blenders = new Seq<>();
+    protected Seq<Floor> blenders = new Seq<>();
     protected Bits blended = new Bits(256);
     protected int[] dirs = new int[8];
     protected TextureRegion edgeRegion;
 
     public Floor(String name){
-        super(name);
-        variants = 3;
+        this(name, 3);
     }
 
     public Floor(String name, int variants){
         super(name);
         this.variants = variants;
+        placeableLiquid = true;
+        placeEffect = Fx.rotateBlock;
+        schematicPriority = 100;
     }
 
     @Override
@@ -174,16 +176,21 @@ public class Floor extends Block{
         }
 
         packer.add(PageType.environment, name + "-edge", result);
+        result.dispose();
     }
 
     @Override
     public void drawBase(Tile tile){
         Mathf.rand.setSeed(tile.pos());
-        Draw.rect(variantRegions[Mathf.randomSeed(tile.pos(), 0, Math.max(0, variantRegions.length - 1))], tile.worldx(), tile.worldy());
+        Draw.rect(variantRegions[variant(tile.x, tile.y)], tile.worldx(), tile.worldy());
 
         Draw.alpha(1f);
         drawEdges(tile);
         drawOverlay(tile);
+    }
+
+    public int variant(int x, int y){
+        return Mathf.randomSeed(Point2.pack(x, y), 0, Math.max(0, variantRegions.length - 1));
     }
 
     public void drawOverlay(Tile tile){
@@ -270,12 +277,12 @@ public class Floor extends Block{
     protected void drawBlended(Tile tile, boolean checkId){
         blenders.sort(a -> a.id);
 
-        for(Block block : blenders){
+        for(Floor block : blenders){
             for(int i = 0; i < 8; i++){
                 Point2 point = Geometry.d8[i];
                 Tile other = tile.nearby(point);
                 if(other != null && other.floor() == block && (!checkId || dirs[i] == block.id)){
-                    TextureRegion region = edge((Floor)block, 1 - point.x, 1 - point.y);
+                    TextureRegion region = block.edge(tile.x, tile.y, 1 - point.x, 1 - point.y);
                     Draw.rect(region, tile.worldx(), tile.worldy());
                 }
             }
@@ -302,8 +309,18 @@ public class Floor extends Block{
         return blendId;
     }
 
+    /** Returns the edge array that should be used to draw at the specified tile position. */
+    protected TextureRegion[][] edges(int x, int y){
+        return blendGroup.asFloor().edges;
+    }
+
+    protected TextureRegion edge(int x, int y, int rx, int ry){
+        return edges(x, y)[rx][2 - ry];
+    }
+
+    @Deprecated
     protected TextureRegion[][] edges(){
-        return ((Floor)blendGroup).edges;
+        return edges(0, 0);
     }
 
     /** @return whether the edges from {@param other} should be drawn onto this tile **/
