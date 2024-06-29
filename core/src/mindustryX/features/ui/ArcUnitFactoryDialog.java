@@ -409,7 +409,7 @@ public class ArcUnitFactoryDialog extends BaseDialog{
         Unit reUnit = unit.type.create(unit.team);
         reUnit.health = unit.health;
         reUnit.shield = unit.shield;
-        reUnit.stack = unit.stack;
+        reUnit.stack = unit.stack.copy();
 
         if(unit instanceof Payloadc pay && reUnit instanceof Payloadc rePay){
             pay.payloads().each(rePay::addPayload);
