@@ -57,6 +57,7 @@ public class ArcOld{
                 default -> "全部显示";
             });
             c.checkPref("forceEnableDarkness", true, (b) -> enableDarkness = b);
+            enableDarkness = settings.getBool("forceEnableDarkness");
             c.sliderPref("HiddleItemTransparency", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
             c.sliderPref("overdrive_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
             c.sliderPref("mend_zone", 0, 0, 100, 2, i -> i > 0 ? i + "%" : "关闭");
@@ -178,7 +179,9 @@ public class ArcOld{
             c.checkPref("save_more_map", false);
             c.checkPref("forceIgnoreAttack", false);
             c.checkPref("allBlocksReveal", false, b -> AdvanceToolTable.allBlocksReveal = b);
+            AdvanceToolTable.allBlocksReveal = settings.getBool("allBlocksReveal");
             c.checkPref("worldCreator", false, b -> AdvanceToolTable.worldCreator = b);
+            AdvanceToolTable.worldCreator = settings.getBool("worldCreator");
             c.checkPref("overrideSkipWave", false);
             c.checkPref("forceConfigInventory", false);
             c.addCategory("arcStrongCheat");
@@ -225,7 +228,7 @@ public class ArcOld{
             c.addCategory("developerMode");
             c.checkPref("rotateCanvas", false);
             c.checkPref("limitupdate", false, v -> {
-                if(!v || !clientLoaded) return;
+                if(!v) return;
                 settings.put("limitupdate", false);
                 ui.showConfirm("确认开启限制更新", "此功能可以大幅提升fps，但会导致视角外的一切停止更新\n在服务器里会造成不同步\n强烈不建议在单人开启\n\n[darkgray]在帧数和体验里二选一", () -> {
                     settings.put("limitupdate", true);
