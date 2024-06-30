@@ -78,7 +78,8 @@ public class Main extends Mod{
         }
 
         try{
-            loadError("Detected ARC client, skip: " + Reflect.get(Version.class, "arcbuild"));
+            loadError("Detected ARC client, skip: " + Reflect.get(Version.class, "arcBuild"));
+            return false;
         }catch(Exception e){/*ignore*/}
 
         ModMeta meta = null;
