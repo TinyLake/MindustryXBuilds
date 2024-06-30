@@ -41,6 +41,10 @@ public class Settings{
                 maxSchematicSize = v == 257 ? Integer.MAX_VALUE : v;
                 return v == 257 ? "无限" : String.valueOf(v);
             });
+            {
+                var v = Core.settings.getInt("maxSchematicSize");
+                maxSchematicSize = v == 257 ? Integer.MAX_VALUE : v;
+            }
 
             c.addCategory("blockSettings");
             c.checkPref("staticShieldsBorder", false);

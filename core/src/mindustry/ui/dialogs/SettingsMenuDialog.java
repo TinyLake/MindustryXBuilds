@@ -660,7 +660,6 @@ public class SettingsMenuDialog extends BaseDialog{
             SliderSetting res;
             list.add(res = new SliderSetting(name, def, min, max, step, s));
             settings.defaults(name, def);
-            s.get(settings.getInt(name));
             return res;
         }
 
@@ -672,7 +671,6 @@ public class SettingsMenuDialog extends BaseDialog{
         public void checkPref(String name, boolean def, Boolc changed){
             list.add(new CheckSetting(name, def, changed));
             settings.defaults(name, def);
-            changed.get(settings.getBool(name));
         }
 
         public void addCategory(String name){
