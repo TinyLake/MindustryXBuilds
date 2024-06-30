@@ -118,7 +118,6 @@ public class DatabaseDialog extends BaseDialog{
     }
 
     boolean unlocked(UnlockableContent content){
-        //return (!Vars.state.isCampaign() && !Vars.state.isMenu()) || content.unlocked();
-        return true;
+        return (!Vars.state.isCampaign() && !Vars.state.isMenu()) || content.unlocked();
     }
 }

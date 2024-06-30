@@ -38,7 +38,7 @@ public class LogicDialog extends BaseDialog{
 
     @Nullable LExecutor executor;
 
-    private boolean dispose = false;
+    private boolean noSave = false;
 
     public LogicDialog(){
         super("logic");
@@ -52,10 +52,10 @@ public class LogicDialog extends BaseDialog{
 
         shown(this::setup);
         hidden(() -> {
-            if(!dispose){
+            if(!noSave){
                 consumer.get(canvas.save());
             } else {
-                dispose = false;
+                noSave = false;
             }});
         onResize(() -> {
             setup();
@@ -270,7 +270,7 @@ public class LogicDialog extends BaseDialog{
                     t.button("[orange]清空",Icon.trash,style,() -> canvas.clearAll()).marginLeft(12f);
                     t.row();
                     t.button("[orange]丢弃更改", Icon.cancel,style, () -> ui.showConfirm("确认丢弃?", () -> {
-                        dispose = true;
+                        noSave = true;
                         dialog.hide();
                         hide();
                     })).marginLeft(12f);

@@ -28,6 +28,7 @@ import mindustry.world.blocks.logic.MemoryBlock.*;
 import mindustry.world.blocks.logic.MessageBlock.*;
 import mindustry.world.blocks.payloads.*;
 import mindustry.world.meta.*;
+import mindustryX.features.ui.ArcMessageDialog.*;
 
 import static mindustry.Vars.*;
 
@@ -1597,11 +1598,11 @@ public class LExecutor{
             switch(type){
                 case notify -> {
                     ui.hudfrag.showToast(Icon.info, text);
-                    ArcMessageDialog.addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.logicNotify,text).sendMessage());
+                    ArcMessageDialog.addMsg(new Msg(Type.logicNotify,text).sendMessage());
                 }
                 case announce -> {
                     ui.announce(text, exec.numf(duration));
-                    ArcMessageDialog.addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.logicAnnounce,text).sendMessage());
+                    ArcMessageDialog.addMsg(new Msg(Type.logicAnnounce,text).sendMessage());
                 }
                 case toast -> ui.showInfoToast(text, exec.numf(duration));
                 //TODO desync?

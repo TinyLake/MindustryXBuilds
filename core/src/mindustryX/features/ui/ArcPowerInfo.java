@@ -12,42 +12,30 @@ import mindustry.ui.*;
 
 //move from mindustry.arcModule.ui.PowerInfo
 public class ArcPowerInfo{
-    private static final ArcPowerInfo info = new ArcPowerInfo();
-    public float powerbal;
-    public float stored;
-    public float capacity;
-    public float produced;
-    public float need;
+    public static float balance, stored, capacity, produced, need;
 
-    public void add(float powerbal, float stored, float cap, float produced, float need){
-        this.powerbal += powerbal;
-        this.stored += stored;
-        this.capacity += cap;
-        this.produced += produced;
-        this.need += need;
+    public static void update(){
+        balance = 0;
+        stored = 0;
+        capacity = 0;
+        produced = 0;
+        need = 0;
+        Groups.powerGraph.each(item -> {
+            var graph = item.graph();
+            if(graph.all.isEmpty() || graph.all.first().team != Vars.player.team()) return;
+            balance += graph.getPowerBalance();
+            stored += graph.getLastPowerStored();
+            capacity += graph.getLastCapacity();
+            produced += graph.getLastPowerProduced();
+            need += graph.getLastPowerNeeded();
+        });
     }
 
-    private void clear(){
-        this.powerbal = 0;
-        this.stored = 0;
-        this.capacity = 0;
-        this.produced = 0;
-        this.need = 0;
+    public static int getPowerBalance(){
+        return (int)(balance * 60);
     }
 
-    public int getPowerBalance(){
-        return (int)(powerbal * 60);
-    }
-
-    public float getStored(){
-        return stored;
-    }
-
-    public float getCapacity(){
-        return capacity;
-    }
-
-    public float getSatisfaction(){
+    public static float getSatisfaction(){
         if(Mathf.zero(produced)){
             return 0f;
         }else if(Mathf.zero(need)){
@@ -57,31 +45,20 @@ public class ArcPowerInfo{
     }
 
 
-    public static void update(){
-        info.clear();
-        Groups.powerGraph.each(item -> {
-            var graph = item.graph();
-            if(graph.all.isEmpty() || graph.all.first().team != Vars.player.team()) return;
-            info.add(item.graph().getPowerBalance(), item.graph().getLastPowerStored(), item.graph().getLastCapacity(), item.graph().getLastPowerProduced(), item.graph().getLastPowerNeeded());
-        });
-    }
-
     public static Element getBars(){
         Table power = new Table(Tex.wavepane).marginTop(6);
 
         Bar powerBar = new Bar(
-        () -> Core.bundle.format("bar.powerbalance", (info.getPowerBalance() >= 0 ? "+" : "") + UI.formatAmount(info.getPowerBalance())) +
-        (info.getSatisfaction() >= 1 ? "" : " [gray]" + (int)(info.getSatisfaction() * 100) + "%"),
-        () -> Pal.powerBar,
-        info::getSatisfaction);
+        () -> Core.bundle.format("bar.powerbalance", (getPowerBalance() >= 0 ? "+" : "") + UI.formatAmount(getPowerBalance())) +
+        (getSatisfaction() >= 1 ? "" : " [gray]" + (int)(getSatisfaction() * 100) + "%"),
+        () -> Pal.powerBar, ArcPowerInfo::getSatisfaction);
         Bar batteryBar = new Bar(
-        () -> Core.bundle.format("bar.powerstored", UI.formatAmount((long)info.getStored()), UI.formatAmount((long)info.getCapacity())),
+        () -> Core.bundle.format("bar.powerstored", UI.formatAmount((long)stored), UI.formatAmount((long)capacity)),
         () -> Pal.powerBar,
-        () -> info.getStored() / info.getCapacity());
+        () -> stored / capacity);
 
         power.clicked(() -> {
-            int arccoreitems = Core.settings.getInt("arccoreitems");
-            Core.settings.put("arccoreitems", (arccoreitems + 1) % 4);
+            Core.settings.put("arccoreitems", (Core.settings.getInt("arccoreitems") + 1) % 4);
         });
         power.margin(0);
         power.add(powerBar).height(18).growX().padBottom(1);

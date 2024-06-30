@@ -400,7 +400,8 @@ public class SchematicsDialog extends BaseDialog{
                         req.submit(r -> {
                             String code = r.getResultAsString();
                             if (clipbroad) arcSendClipBroadMsg(s, code);
-                            else ArcMessageDialog.share("Schem", " " + code.substring(code.lastIndexOf('/') + 1));
+                            //添加颜色字符，保持ARC兼容性
+                            else ArcMessageDialog.share("[blue]<Schem>[]", " " + code.substring(code.lastIndexOf('/') + 1));
                         });
                         req.error(e -> Core.app.post(() -> {
                             ui.showException("分享失败", e);
@@ -456,16 +457,7 @@ public class SchematicsDialog extends BaseDialog{
         UIExt.announce("已保存至剪贴板");
     }
 
-    public boolean resolveSchematic(String msg, @Nullable Player sender) {
-        if ((!msg.contains(ShareType)) || (!ArcMessageDialog.arcMsgType.schematic.show)) {
-            return false;
-        }
-        int start = msg.indexOf(' ', msg.indexOf(ShareType) + ShareType.length());
-        Http.get("https://pastebin.com/raw/" + msg.substring(start + 1), r -> readShare(r.getResultAsString().replace(" ", "+"), sender));
-        return true;
-    }
-
-    private void readShare(String base64, @Nullable Player sender) {
+    public void readShare(String base64, @Nullable Player sender) {
         Core.app.post(() -> {
             try {
                 Schematic s = Schematics.readBase64(base64);

@@ -18,16 +18,11 @@ import static mindustry.Vars.*;
 
 //move from mindustry.arcModule.draw.ARCBuilds
 public class ArcBuilds{
-    static boolean targetAir = false, targetGround = false, canShoot = false;
-    static boolean turretForceShowRange = false;
-
-    static int turretShowRange = 0, turretAlertRange;
-
-    static boolean canHitPlayer = false, canHitCommand = false, canHitPlans = false, canHitMouse = false;
-
-    static boolean showTurretAmmo = false, showTurretAmmoAmount = false;
-
-    static boolean blockWeaponTargetLine = false, blockWeaponTargetLineWhenIdle = false;
+    private static boolean targetAir = false, targetGround = false, canShoot = false;
+    private static boolean turretForceShowRange = false;
+    private static int turretShowRange = 0, turretAlertRange;
+    private static boolean showTurretAmmo = false, showTurretAmmoAmount = false;
+    private static boolean blockWeaponTargetLine = false, blockWeaponTargetLineWhenIdle = false;
 
     static{
         // 减少性能开销
@@ -81,11 +76,11 @@ public class ArcBuilds{
             if((turretShowRange == 3 || (turretShowRange == 2 && targetAir) || (turretShowRange == 1 && targetGround)))
                 drawRange(build);
             else if(turretAlertRange > 0 && build.team != player.team()){
-                canHitPlayer = !player.unit().isNull() && player.unit().hittable() && (player.unit().isFlying() ? targetAir : targetGround)
+                boolean canHitPlayer = !player.unit().isNull() && player.unit().hittable() && (player.unit().isFlying() ? targetAir : targetGround)
                 && build.within(player.unit().x, player.unit().y, build.range() + turretAlertRange);
-                canHitMouse = build.within(Core.input.mouseWorldX(), Core.input.mouseWorldY(), build.range() + turretAlertRange);
-                canHitCommand = control.input.commandMode && ((ArcUnits.selectedUnitsFlyer && targetAir) || (ArcUnits.selectedUnitsLand && targetGround));
-                canHitPlans = (control.input.block != null || control.input.selectPlans.size > 0) && targetGround;
+                boolean canHitMouse = build.within(Core.input.mouseWorldX(), Core.input.mouseWorldY(), build.range() + turretAlertRange);
+                boolean canHitCommand = control.input.commandMode && ((ArcUnits.selectedUnitsFlyer && targetAir) || (ArcUnits.selectedUnitsLand && targetGround));
+                boolean canHitPlans = (control.input.block != null || control.input.selectPlans.size > 0) && targetGround;
                 if(canHitPlayer || (canHitMouse && (canHitCommand || canHitPlans))) drawRange(build);
             }
 
@@ -137,7 +132,7 @@ public class ArcBuilds{
             ammoTypes = t.ammoTypes;
         }else if(block instanceof ItemTurret t){
             ammoTypes = t.ammoTypes;
-        }else if(block instanceof PowerTurret t){
+        }else if(block instanceof PowerTurret){
             turretBulletDraw(x, y, Icon.power.getRegion(), iconSize, range, 0f);
             return;
         }else return;

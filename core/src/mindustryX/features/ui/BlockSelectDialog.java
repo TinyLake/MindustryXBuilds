@@ -14,7 +14,10 @@ import static mindustry.Vars.*;
 
 //move from mindustry.arcModule.ui.dialogs.BlockSelectDialog
 public class BlockSelectDialog extends BaseDialog{
-
+    private final Boolf<Block> condition;
+    private final Cons<Block> cons;
+    private final Boolf<Block> checked;
+    private final boolean autoHide;
     private String searchBlock = "";
     private final Table blockTable = new Table();
 
@@ -24,19 +27,23 @@ public class BlockSelectDialog extends BaseDialog{
 
     public BlockSelectDialog(Boolf<Block> condition, Cons<Block> cons, Boolf<Block> checked, boolean autoHide){
         super("方块选择器");
-        rebuild(condition, cons, checked, autoHide);
+        this.condition = condition;
+        this.cons = cons;
+        this.checked = checked;
+        this.autoHide = autoHide;
         cont.pane(td -> {
             td.field("", t -> {
                 searchBlock = !t.isEmpty() ? t.toLowerCase() : "";
-                rebuild(condition, cons, checked, autoHide);
+                rebuild();
             }).maxTextLength(50).growX().get().setMessageText("搜索...");
             td.row();
             td.add(blockTable);
         });
+        rebuild();
         addCloseButton();
     }
 
-    private void rebuild(Boolf<Block> condition, Cons<Block> cons, Boolf<Block> checked, boolean autoHide){
+    private void rebuild(){
         blockTable.clear();
         blockTable.table(td -> {
             Seq<Block> blocks = content.blocks().select(block -> condition.get(block) && (searchBlock.isEmpty() || block.name.contains(searchBlock) || block.localizedName.contains(searchBlock)) && (block.privileged || AdvanceToolTable.allBlocksReveal || !block.isHidden())).sort(block -> block.group.ordinal());

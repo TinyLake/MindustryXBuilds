@@ -5,6 +5,7 @@ import arc.graphics.*;
 import arc.math.geom.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
+import arc.struct.Queue;
 import arc.struct.*;
 import arc.util.*;
 import mindustry.*;
@@ -25,18 +26,16 @@ import static mindustry.Vars.*;
 
 //move from mindustry.arcModule.ui.dialogs.MessageDialog
 public class ArcMessageDialog extends BaseDialog{
-    private static boolean ignoreMark = false;
-    public static final Seq<advanceMsg> msgList = new Seq<>();
-
-    private int maxMsgRecorded = Math.max(Core.settings.getInt("maxMsgRecorded"), 20);
+    public static final Queue<Msg> msgList = new Queue<>();//队头为新添加的
+    private static int maxMsgRecorded = Math.max(Core.settings.getInt("maxMsgRecorded"), 20);
     private Table historyTable;
-    private Boolean fieldMode = false;
+    private boolean fieldMode = false;
 
     public ArcMessageDialog(){
         super("ARC-中央监控室");
 
         //voiceControl.voiceControlDialog();
-        cont.pane(t -> historyTable = t).growX().scrollX(false);
+        cont.pane(t -> historyTable = t).maxWidth(1000).scrollX(false);
 
         addCloseButton();
         buttons.button("设置", Icon.settings, this::arcMsgSettingTable);
@@ -44,7 +43,7 @@ public class ArcMessageDialog extends BaseDialog{
 
         buttons.row();
         buttons.button("清空", Icon.trash, () -> {
-            clearMsg();
+            msgList.clear();
             build();
         });
 
@@ -52,19 +51,19 @@ public class ArcMessageDialog extends BaseDialog{
         onResize(this::build);
 
         Events.on(EventType.WorldLoadEvent.class, e -> {
-            addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.eventWorldLoad, "载入地图： " + state.map.name()));
-            addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.eventWorldLoad, "简介： " + state.map.description()));
-            limitMsg(maxMsgRecorded);
+            addMsg(new Msg(Type.eventWorldLoad, "载入地图： " + state.map.name()));
+            addMsg(new Msg(Type.eventWorldLoad, "简介： " + state.map.description()));
+            while(msgList.size >= maxMsgRecorded) msgList.removeLast();
         });
 
         Events.on(EventType.WaveEvent.class, e -> {
             if(state.wavetime < 60f) return;
-            addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.eventWave, "波次： " + state.wave + " | " + getWaveInfo(state.wave - 1)));
+            addMsg(new Msg(Type.eventWave, "波次： " + state.wave + " | " + getWaveInfo(state.wave - 1)));
         });
 
         Events.on(EventType.BlockDestroyEvent.class, e -> {
             if(e.tile.build instanceof CoreBlock.CoreBuild)
-                addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.eventCoreDestory, "核心摧毁： " + "(" + (int)e.tile.x + "," + (int)e.tile.y + ")", new Vec2(e.tile.x * 8, e.tile.y * 8)));
+                addMsg(new Msg(Type.eventCoreDestory, "核心摧毁： " + "(" + (int)e.tile.x + "," + (int)e.tile.y + ")", new Vec2(e.tile.x * 8, e.tile.y * 8)));
         });
     }
 
@@ -126,43 +125,42 @@ public class ArcMessageDialog extends BaseDialog{
     void build(){
         historyTable.clear();
         historyTable.setWidth(800f);
-        if(msgList.size == 0) return;
-        for(int i = msgList.size - 1; i >= 0; i--){
-            int finalI = i;
-            if(!msgList.get(finalI).msgType.show) continue;
-            historyTable.table(Tex.whiteui, t -> {
-                advanceMsg thisMsg = msgList.get(finalI);
-                t.background(Tex.whitePane);
-                t.setColor(thisMsg.msgType.color);
+        int i = 0;
+        for(var msg : msgList){
+            i++;
+            int id = i;
+            if(!msg.msgType.show) continue;
+            historyTable.table(Tex.whitePane, t -> {
+                t.setColor(msg.msgType.color);
                 t.marginTop(5);
 
                 t.table(Tex.whiteui, tt -> {
-                    tt.color.set(thisMsg.msgType.color);
+                    tt.color.set(msg.msgType.color);
 
-                    if(msgList.get(finalI).msgType == arcMsgType.chat)
-                        tt.add(getPlayerName(thisMsg)).style(Styles.outlineLabel).left().width(300f);
+                    if(msg.msgType == Type.chat)
+                        tt.add(getPlayerName(msg)).style(Styles.outlineLabel).left().width(300f);
                     else
-                        tt.add(thisMsg.msgType.name).style(Styles.outlineLabel).color(thisMsg.msgType.color).left().width(300f);
+                        tt.add(msg.msgType.name).style(Styles.outlineLabel).color(msg.msgType.color).left().width(300f);
 
-                    tt.add(formatTime(thisMsg.time)).style(Styles.outlineLabel).color(thisMsg.msgType.color).left().padLeft(20f).width(100f);
+                    tt.add(formatTime(msg.time)).style(Styles.outlineLabel).color(msg.msgType.color).left().padLeft(20f).width(100f);
 
-                    if(thisMsg.msgLoc.x != -1){
-                        tt.button("♐： " + (int)(thisMsg.msgLoc.x / tilesize) + "," + (int)(thisMsg.msgLoc.y / tilesize), Styles.logict, () -> {
-                            control.input.panCamera(thisMsg.msgLoc);
-                            MarkerType.mark.at(Tmp.v1.scl(thisMsg.msgLoc.x, thisMsg.msgLoc.y)).color = color;
+                    if(msg.msgLoc != null){
+                        tt.button("♐： " + (int)(msg.msgLoc.x / tilesize) + "," + (int)(msg.msgLoc.y / tilesize), Styles.logict, () -> {
+                            control.input.panCamera(msg.msgLoc);
+                            MarkerType.mark.at(Tmp.v1.scl(msg.msgLoc.x, msg.msgLoc.y)).color = color;
                             hide();
                         }).padLeft(50f).height(24f).width(150f);
                     }
 
                     tt.add().growX();
-                    tt.add("    " + (msgList.size - finalI)).style(Styles.outlineLabel).color(thisMsg.msgType.color).padRight(10);
+                    tt.add("    " + id).style(Styles.outlineLabel).color(msg.msgType.color).padRight(10);
 
                     tt.button(Icon.copy, Styles.logici, () -> {
-                        Core.app.setClipboardText(thisMsg.message);
+                        Core.app.setClipboardText(msg.message);
                         ui.announce("已导出本条聊天记录");
                     }).size(24f).padRight(6);
                     tt.button(Icon.cancel, Styles.logici, () -> {
-                        msgList.remove(finalI);
+                        msgList.remove(msg);
                         build();
                     }).size(24f);
 
@@ -173,18 +171,18 @@ public class ArcMessageDialog extends BaseDialog{
                 t.table(tt -> {
                     tt.left();
                     tt.marginLeft(4);
-                    tt.setColor(thisMsg.msgType.color);
-                    if(fieldMode) tt.field(thisMsg.message, Styles.nodeArea, text -> {
+                    tt.setColor(msg.msgType.color);
+                    if(fieldMode) tt.field(msg.message, Styles.nodeArea, text -> {
                     }).growX();
-                    else tt.labelWrap(getPlayerMsg(thisMsg)).growX();
+                    else tt.labelWrap(getPlayerMsg(msg)).growX();
                 }).pad(4).padTop(2).growX().grow();
 
                 t.marginBottom(7);
-            }).growX().maxWidth(1000f).padBottom(15f).row();
+            }).growX().padBottom(15f).row();
         }
     }
 
-    private String getPlayerName(advanceMsg msgElement){
+    private String getPlayerName(Msg msgElement){
         int typeStart = msgElement.message.indexOf("[coral][");
         int typeEnd = msgElement.message.indexOf("[coral]]");
         if(typeStart == -1 || typeEnd == -1 || typeEnd <= typeStart){
@@ -194,8 +192,8 @@ public class ArcMessageDialog extends BaseDialog{
         return msgElement.message.substring(typeStart + 20, typeEnd);
     }
 
-    private String getPlayerMsg(advanceMsg msgElement){
-        if(msgElement.msgType != arcMsgType.normal) return msgElement.message;
+    private String getPlayerMsg(Msg msgElement){
+        if(msgElement.msgType != Type.normal) return msgElement.message;
         int typeStart = msgElement.message.indexOf("[coral][");
         int typeEnd = msgElement.message.indexOf("[coral]]");
         if(typeStart == -1 || typeEnd == -1 || typeEnd <= typeStart){
@@ -209,30 +207,23 @@ public class ArcMessageDialog extends BaseDialog{
         if(Core.settings.getInt("maxMsgRecorded") == 0) Core.settings.put("maxMsgRecorded", 500);
 
         setDialog.cont.table(t -> {
-
-            t.check("停止识别标记等交互信息", ignoreMark, a -> ignoreMark = !ignoreMark).left().width(300f);
-            t.row();
-
             t.check("信息编辑模式", fieldMode, a -> {
                 fieldMode = a;
                 build();
-            }).left().width(200f);
-            t.row();
+            }).left().width(200f).row();
 
-            t.add("调整显示的信息").height(50f);
-            t.row();
+            t.add("调整显示的信息").height(50f).row();
             t.table(tt -> {
                 tt.button("关闭全部", Styles.cleart, () -> {
-                    for(arcMsgType type : arcMsgType.values()) type.show = false;
+                    for(Type type : Type.values()) type.show = false;
                 }).width(200f).height(50f);
                 tt.button("默认", Styles.cleart, () -> {
-                    for(arcMsgType type : arcMsgType.values()) type.show = true;
-                    arcMsgType.serverTips.show = false;
+                    for(Type type : Type.values()) type.show = true;
+                    Type.serverTips.show = false;
                 }).width(200f).height(50f);
-            });
-            t.row();
+            }).row();
             t.table(Tex.button, tt -> tt.pane(tp -> {
-                for(arcMsgType type : arcMsgType.values()){
+                for(Type type : Type.values()){
 
                     CheckBox box = new CheckBox("[#" + type.color.toString() + "]" + type.name);
 
@@ -271,143 +262,107 @@ public class ArcMessageDialog extends BaseDialog{
         return new SimpleDateFormat("HH:mm:ss", Locale.US).format(time);
     }
 
-    public static void resolveMsg(String message, @Nullable Player playersender){
-        if(!ignoreMark){
-            if(resolveMarkMsg(message, playersender)) return;
-            if(ui.schematics.resolveSchematic(message, playersender)) return;
+    public static void resolveMsg(String message, @Nullable Player sender){
+        Type type = resolveMarkType(message);
+        if(type == null) type = resolveServerType(message);
+        if(type == null) type = sender != null ? Type.chat : Type.normal;
 
-            if(playersender != null){
-                addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.chat, message, playersender.name(), new Vec2(playersender.x, playersender.y)));
-                return;
+        addMsg(new Msg(type, message, sender != null ? sender.name() : null, sender != null ? new Vec2(sender.x, sender.y) : null));
+        if(!type.show) return;
+        switch(type){
+            case schematic -> {
+                String id = message.split("<Schem>")[1];
+                id = id.substring(id.indexOf(' ') + 1);
+                Http.get("https://pastebin.com/raw/" + id, r -> ui.schematics.readShare(r.getResultAsString().replace(" ", "+"), sender));
             }
-            if(resolveServerMsg(message)) return;
-        }
-        addMsg(new ArcMessageDialog.advanceMsg(ArcMessageDialog.arcMsgType.normal, message));
-    }
-
-    public static boolean resolveMarkMsg(String message, @Nullable Player playersender){
-        //除了markType以外的内容
-        if(message.contains("<ARC")){
-            if(message.contains("标记了") && message.contains("Wave")){
-                addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.markWave, message));
-                return true;
-            }else if(message.contains("标记了") && message.contains("Content")){
-                addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.markContent, message));
-                return true;
-            }else if(message.contains("<AT>")){
-                addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.markPlayer, message));
-                if(message.substring(message.indexOf("AT")).contains(player.name)){
-                    if(playersender != null)
-                        ui.announce("[gold]你被[white] " + playersender.name + " [gold]戳了一下，请注意查看信息框哦~", 10);
-                    else ui.announce("[orange]你被戳了一下，请注意查看信息框哦~", 10);
-                }
-                return true;
+            case markPlayer -> {
+                if(message.split("AT")[1].contains(player.name)) return;
+                if(sender != null)
+                    ui.announce("[gold]你被[white] " + sender.name + " [gold]戳了一下，请注意查看信息框哦~", 10);
+                else ui.announce("[orange]你被戳了一下，请注意查看信息框哦~", 10);
             }
         }
-        return false;
     }
 
-    public static boolean resolveServerMsg(String message){
-        Seq<String> serverMsg = Seq.with("加入了服务器", "离开了服务器", "自动存档完成", "登录成功", "经验+", "[YELLOW]本局游戏时长:", "[YELLOW]单人快速投票", "[GREEN]回档成功",
-        "[YELLOW]PVP保护时间, 全力进攻吧", "[YELLOW]发起", "[YELLOW]你可以在投票结束前使用", "[GREEN]投票成功", "[GREEN]换图成功,当前地图",
-        "[RED]本地图禁用单位", "[RED]该地图限制空军,禁止进入敌方领空", "[yellow]本地图限制空军", "[YELLOW]火焰过多造成服务器卡顿,自动关闭火焰",
-        " [GREEN]====", "[RED]无效指令", "[RED]该技能", "切换成功",
-        "[violet][投票系统][]", "[coral][-]野生的", "[CYAN][+]野生的"   // xem相关
-        );
+    public static Type resolveMarkType(String message){
+        if(!message.contains("<ARC")) return null;
+        if(message.contains("标记了") && message.contains("Wave")) return Type.markWave;
+        if(message.contains("标记了") && message.contains("Content")) return Type.markContent;
+        if(message.contains("<AT>")) return Type.markPlayer;
+        if(message.contains("<Schem>")) return Type.schematic;
+        return null;
+    }
+
+    private static final Seq<String> serverMsg = Seq.with("加入了服务器", "离开了服务器", "自动存档完成", "登录成功", "经验+", "[YELLOW]本局游戏时长:", "[YELLOW]单人快速投票", "[GREEN]回档成功",
+    "[YELLOW]PVP保护时间, 全力进攻吧", "[YELLOW]发起", "[YELLOW]你可以在投票结束前使用", "[GREEN]投票成功", "[GREEN]换图成功,当前地图",
+    "[RED]本地图禁用单位", "[RED]该地图限制空军,禁止进入敌方领空", "[yellow]本地图限制空军", "[YELLOW]火焰过多造成服务器卡顿,自动关闭火焰",
+    " [GREEN]====", "[RED]无效指令", "[RED]该技能", "切换成功",
+    "[violet][投票系统][]", "[coral][-]野生的", "[CYAN][+]野生的"   // xem相关
+    );
+
+    public static Type resolveServerType(String message){
+        if(message.contains("小贴士")) return Type.serverTips;
+        if(message.contains("[YELLOW][技能]")) return Type.serverSkill;
         for(int i = 0; i < serverMsg.size; i++){
             if(message.contains(serverMsg.get(i))){
-                addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.serverMsg, message));
-                return true;
+                return Type.serverMsg;
             }
         }
-
-        if(message.contains("小贴士")){
-            addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.serverTips, message));
-            return true;
-        }
-        if(message.contains("[acid][公屏][white]")){
-            addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.serverToast, message));
-            return true;
-        }
-        if(message.contains("[YELLOW][技能]")){
-            addMsg(new ArcMessageDialog.advanceMsg(arcMsgType.serverSkill, message));
-            return true;
-        }
-
-        return false;
+        return null;
     }
 
-    public static void addMsg(advanceMsg msg){
-        msgList.add(msg);
-    }
-
-    private void clearMsg(){
-        msgList.clear();
-    }
-
-    private void limitMsg(int maxMsg){
-        // 限制信息数量
-        while(true){
-            if(msgList.size < maxMsg) return;
-            msgList.remove(0);
-        }
+    public static void addMsg(Msg msg){
+        msgList.addFirst(msg);
     }
 
     void exportMsg(){
         StringBuilder messageHis = new StringBuilder();
-        messageHis.append("下面是[MDTX").append(Version.mdtXBuild).append("] 导出的游戏内聊天记录").append("\n");
+        messageHis.append("下面是[MDTX-").append(Version.mdtXBuild).append("] 导出的游戏内聊天记录").append("\n");
         messageHis.append("*** 当前地图名称: ").append(state.map.name()).append("（模式：").append(state.rules.modeName).append("）\n");
         messageHis.append("*** 当前波次: ").append(state.wave).append("\n");
-
-        StringBuilder messageLs = new StringBuilder();
-        int messageCount = 0;
-        for(int i = 0; i < msgList.size; i++){
-            String msg = msgList.get(i).message;
-            messageLs.insert(0, msg + "\n");
-            messageCount += 1;
+        messageHis.append("成功选取共 ").append(msgList.size).append(" 条记录，如下：\n");
+        for(var msg : msgList){
+            messageHis.append(Strings.stripColors(msg.message)).append("\n");
         }
-
-        messageHis.append("成功选取共 ").append(messageCount).append(" 条记录，如下：\n");
-        messageHis.append(messageLs);
         Core.app.setClipboardText(Strings.stripGlyphs(Strings.stripColors(messageHis.toString())));
     }
 
-    public static class advanceMsg{
-        public final arcMsgType msgType;
+    public static class Msg{
+        public final Type msgType;
         public final String message;
         public final Date time;
         public final String sender;
         public boolean selected;
-        public final Vec2 msgLoc;
+        public final @Nullable Vec2 msgLoc;
 
-        public advanceMsg(arcMsgType msgType, String message, Date time, String sender, Vec2 msgLoc){
+        public Msg(Type msgType, String message, Date time, String sender, Vec2 msgLoc){
             this.msgType = msgType;
             this.message = message;
             this.time = time;
             this.sender = sender;
-            this.msgLoc = new Vec2().set(msgLoc);
+            this.msgLoc = msgLoc;
         }
 
-        public advanceMsg(arcMsgType msgType, String message, String sender, Vec2 msgLoc){
+        public Msg(Type msgType, String message, String sender, Vec2 msgLoc){
             this(msgType, message, new Date(), sender, msgLoc);
         }
 
-        public advanceMsg(arcMsgType msgType, String message, Vec2 msgLoc){
+        public Msg(Type msgType, String message, Vec2 msgLoc){
             this(msgType, message, "null", msgLoc);
         }
 
-        public advanceMsg(arcMsgType msgType, String message){
-            this(msgType, message, new Vec2(-1, -1));
+        public Msg(Type msgType, String message){
+            this(msgType, message, null);
         }
 
 
-        public advanceMsg sendMessage(){
+        public Msg sendMessage(){
             ui.chatfrag.addMessage(msgType.arcMsgPreFix() + message);
             return this;
         }
     }
 
-    public enum arcMsgType{
+    public enum Type{
         normal("消息", Color.gray),
 
         chat("聊天", Color.valueOf("#778899")),
@@ -440,7 +395,7 @@ public class ArcMessageDialog extends BaseDialog{
         public Color color;
         public Boolean show;
 
-        arcMsgType(String type, String subClass, Color color, Boolean show){
+        Type(String type, String subClass, Color color, Boolean show){
             this.name = subClass.isEmpty() ? type : (type + "~" + subClass);
             this.type = type;
             this.subClass = subClass;
@@ -448,11 +403,11 @@ public class ArcMessageDialog extends BaseDialog{
             this.show = show;
         }
 
-        arcMsgType(String type, String subClass, Color color){
+        Type(String type, String subClass, Color color){
             this(type, subClass, color, true);
         }
 
-        arcMsgType(String type, Color color){
+        Type(String type, Color color){
             this(type, "", color);
         }
 

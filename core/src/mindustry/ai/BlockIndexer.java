@@ -45,7 +45,7 @@ public class BlockIndexer{
     /** Stores all wallore quadrants on the map. Maps ID to qX to qY to a list of tiles with that ore. */
     private IntSeq[][][] oresWall;
     /** All wallores available on this map. */
-    private ObjectIntMap<Item> allOresWall = new ObjectIntMap<>();
+    private final ObjectIntMap<Item> allOresWall = new ObjectIntMap<>();
 
     public Integer[] floorOresCount = new Integer[content.blocks().size +1];
     public Integer[] wallOresCount = new Integer[content.blocks().size +1];

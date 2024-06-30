@@ -294,8 +294,8 @@ public class Weapon implements Cloneable{
                 }
                 Draw.alpha(0.8f);
                 Lines.line(wx, wy, mount.aimX, mount.aimY);
-                if(Core.settings.getInt("unitTargetType")==0 || !(unit.controller() instanceof Player))
-                    Lines.spikes(mount.aimX,mount.aimY,4f,4f,4, (float) (Math.atan((mount.aimX-wx)/(mount.aimY-wy)*doubleRadDeg))+45f);
+                if(!(unit.controller() instanceof Player) || Core.settings.getInt("unitTargetType") == 0)
+                    Lines.spikes(mount.aimX, mount.aimY, 4f, 4f, 4, (float)(Math.atan((mount.aimX - wx) / (mount.aimY - wy) * doubleRadDeg)) + 45f);
                 Draw.reset();
             }
         }

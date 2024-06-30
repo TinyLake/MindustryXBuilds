@@ -42,12 +42,7 @@ public class Schematic implements Publishable, Comparable<Schematic>{
     }
 
     public boolean containsBlock(Block block){
-        AtomicBoolean contains = new AtomicBoolean(false);
-        tiles.each(t -> {
-            if(t.block == block) contains.set(true);
-        });
-        return contains.get();
-
+        return tiles.find(tile -> tile.block == block) != null;
     }
 
     public float powerProduction(){
