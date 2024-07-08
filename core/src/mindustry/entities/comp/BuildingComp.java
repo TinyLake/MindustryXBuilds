@@ -41,12 +41,12 @@ import mindustry.world.blocks.power.*;
 import mindustry.world.consumers.*;
 import mindustry.world.meta.*;
 import mindustry.world.modules.*;
-import mindustryX.events.*;
 import mindustryX.features.*;
 
 import java.util.*;
 
 import static mindustry.Vars.*;
+import static mindustryX.events.BuildHealthChangedEvent.buildHealthChangedEvent;
 
 @EntityDef(value = {Buildingc.class}, isFinal = false, genio = false, serialize = false)
 @Component(base = true)
@@ -1625,7 +1625,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
             damage = Damage.applyArmor(damage, block.armor);
         }
 
-        BuildUnderDamagedEvent.setBullet(other);
+        buildHealthChangedEvent.setSource(other);
         damage(other.team, damage);
         Events.fire(bulletDamageEvent.set(self(), other));
 
@@ -1643,7 +1643,7 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
 
     /** Handles splash damage with a bullet source. */
     public void damage(Bullet bullet, Team source, float damage){
-        BuildUnderDamagedEvent.setBullet(bullet);
+        buildHealthChangedEvent.setSource(bullet);
 
         damage(source, damage);
         Events.fire(bulletDamageEvent.set(self(), bullet));
@@ -1903,7 +1903,13 @@ abstract class BuildingComp implements Posc, Teamc, Healthc, Buildingc, Timerc, 
 
     @Override
     public void onDamaged(float damage){
-        BuildUnderDamagedEvent.fire(self(), damage);
+        buildHealthChangedEvent.fire(self(), damage);
+    }
+
+    @Override
+    public void onHealed(float amount){
+        buildHealthChangedEvent.setType(DamageType.heal);
+        buildHealthChangedEvent.fire(self(), amount);
     }
 
     public void healthChanged(){

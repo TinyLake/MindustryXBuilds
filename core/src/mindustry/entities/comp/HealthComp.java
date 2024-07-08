@@ -62,7 +62,9 @@ abstract class HealthComp implements Entityc, Posc{
     void damage(float amount){
         health -= amount;
 
-        onDamaged(amount);
+        if(amount != 0){
+            onDamaged(amount);
+        }
 
         hitTime = 1f;
         if(health <= 0 && !dead){
@@ -93,14 +95,26 @@ abstract class HealthComp implements Entityc, Posc{
 
     }
 
+    @MindustryXApi
+    void onHealed(float amount){
+
+    }
+
     void clampHealth(){
         health = Math.min(health, maxHealth);
     }
 
     /** Heals by a flat amount. */
     void heal(float amount){
+        float lastHealth = health;
+
         health += amount;
         clampHealth();
+
+        float healAmount = health - lastHealth;
+        if(healAmount != 0){
+            onHealed(healAmount);
+        }
     }
 
     /** Heals by a 0-1 fraction of max health. */

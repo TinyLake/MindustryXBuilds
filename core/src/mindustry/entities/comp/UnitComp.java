@@ -27,10 +27,11 @@ import mindustry.ui.*;
 import mindustry.world.*;
 import mindustry.world.blocks.environment.*;
 import mindustry.world.blocks.payloads.*;
-import mindustryX.events.*;
+import mindustryX.features.*;
 
 import static mindustry.Vars.*;
 import static mindustry.logic.GlobalVars.*;
+import static mindustryX.events.UnitHealthChangedEvent.unitHealthChangedEvent;
 
 @Component(base = true)
 abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, Itemsc, Rotc, Unitc, Weaponsc, Drawc, Boundedc, Syncc, Shieldc, Displayable, Ranged, Minerc, Builderc, Senseable, Settable{
@@ -532,7 +533,13 @@ abstract class UnitComp implements Healthc, Physicsc, Hitboxc, Statusc, Teamc, I
 
     @Override
     public void onDamaged(float damage){
-        UnitUnderDamagedEvent.fire(self(), damage);
+        unitHealthChangedEvent.fire(self(), damage);
+    }
+
+    @Override
+    public void onHealed(float amount){
+        unitHealthChangedEvent.setType(DamageType.heal);
+        unitHealthChangedEvent.fire(self(), amount);
     }
 
     @Override

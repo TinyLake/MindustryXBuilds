@@ -7,7 +7,6 @@ import arc.math.*;
 import arc.math.geom.*;
 import arc.scene.ui.layout.*;
 import arc.struct.*;
-import arc.struct.ObjectMap.*;
 import arc.util.*;
 import arc.util.pooling.*;
 import arc.util.pooling.Pool.*;
@@ -19,6 +18,8 @@ import mindustry.graphics.*;
 import mindustry.ui.*;
 import mindustryX.events.*;
 
+import java.util.*;
+
 import static arc.util.Tmp.*;
 
 /**
@@ -27,7 +28,10 @@ import static arc.util.Tmp.*;
  */
 public class DamagePopup{
     private static final Pool<Popup> popupPool = Pools.get(Popup.class, Popup::new);
-    private static final ObjectMap<Sized, Popup> popups = new ObjectMap<>();
+
+    /** 所有的跳字 */
+    private static final Seq<Popup> popups = new Seq<>();
+    private static final ObjectMap<Sized, Popup> mappedPopup = new ObjectMap<>();
 
     // 跳字初始缩放限制
     public static final float minScale = 1f / 4 / Scl.scl(1);
@@ -42,15 +46,15 @@ public class DamagePopup{
     public static float popupMinHealth;
 
     public static void init(){
-        Events.on(BuildUnderDamagedEvent.class, e -> {
-            if(enable && shouldPopup(e.bullet, e.build)){
-                popup(e.bullet, e.build, e.damage);
+        Events.on(BuildHealthChangedEvent.class, e -> {
+            if(enable && shouldPopup(e.source, e.build)){
+                popup(e.source, e.build, e.type, e.amount);
             }
         });
 
-        Events.on(UnitUnderDamagedEvent.class, e -> {
-            if(enable && shouldPopup(e.bullet, e.unit)){
-                popup(e.bullet, e.unit, e.damage);
+        Events.on(UnitHealthChangedEvent.class, e -> {
+            if(enable && shouldPopup(e.source, e.unit)){
+                popup(e.source, e.unit, e.type, e.amount);
             }
         });
 
@@ -60,14 +64,19 @@ public class DamagePopup{
             if(Vars.state.isPaused()) return;
             if(popups.isEmpty()) return;
 
-            Values<Popup> values = popups.values();
+            Iterator<Popup> iterator = popups.iterator();
 
-            while(values.hasNext()){
-                Popup popup = values.next();
+            while(iterator.hasNext()){
+                Popup popup = iterator.next();
 
                 if(popup.dead()){
+                    if(popup.damaged != null && superpose(popup.type)){
+                        mappedPopup.remove(popup.damaged);
+                    }
+
+                    iterator.remove();
+
                     popupPool.free(popup);
-                    values.remove();
                 }else{
                     popup.update();
                 }
@@ -79,8 +88,8 @@ public class DamagePopup{
 
             Rect cameraBounds = Core.camera.bounds(r1).grow(4 * Vars.tilesize);
 
-            for(Popup popup : popups.values()){
-                if(cameraBounds.contains(popup.entity.getX(), popup.entity.getY())){
+            for(Popup popup : popups){
+                if(cameraBounds.contains(popup.getX(), popup.getY())){
                     popup.draw();
                 }
             }
@@ -105,9 +114,9 @@ public class DamagePopup{
     }
 
     public static void clearPopup(){
-        Values<Popup> values = popups.values();
-        popupPool.freeAll(values.toSeq());
+        popupPool.freeAll(popups);
         popups.clear();
+        mappedPopup.clear();
     }
 
     private static Entityc getSourceOwner(Ownerc source){
@@ -120,14 +129,24 @@ public class DamagePopup{
         return current;
     }
 
-    private static boolean shouldPopup(Ownerc source, Healthc damaged){
+    private static boolean shouldPopup(Sized source, Healthc damaged){
         if(damaged.maxHealth() < popupMinHealth){
             return false;
         }
 
-        if(source == null || !playerPopupOnly) return true;
+        if(source == null) return true;
 
-        Entityc owner = getSourceOwner(source);
+        // 视角外的跳字
+        Rect cameraBounds = Core.camera.bounds(r1).grow(4 * Vars.tilesize);
+        if(!cameraBounds.contains(source.getX(), source.getY())){
+            return false;
+        }
+
+        if(!playerPopupOnly) return true;
+
+        if(!(source instanceof Ownerc sourceOwner)) return true;
+
+        Entityc owner = getSourceOwner(sourceOwner);
         Unit playerUnit = Vars.player.unit();
 
         return owner == playerUnit
@@ -137,61 +156,89 @@ public class DamagePopup{
             || (owner instanceof Building buildOwner && Vars.control.input.commandBuildings.contains(buildOwner))));
     }
 
-    private static void popup(Sized source, Sized damaged, float amount){
+    private static void popup(Sized source, Sized damaged, DamageType type, float amount){
         if(Mathf.equal(amount, 0f)) return;
 
-        float offsetY = Mathf.range(damaged.hitSize() * 0.1f);
-        float scale = Mathf.clamp(damaged.hitSize() / 64 / Scl.scl(1), minScale, maxScale);
-        Color color = amount > 0 ? Pal.health : Pal.heal;
-        float rotation = source != null
-        ? damaged.angleTo(source) + Mathf.random(5f) + (amount > 0 ? 180 : 0)
-        : Mathf.random(20);
-        float offsetLength = Mathf.random(8, 12);
+        float hitSize = damaged.hitSize();
 
-        Popup popup = popups.get(damaged);
-        if(popup == null){
-            popup = popupPool.obtain().set(damaged, 0, offsetY, popupLifetime, Math.abs(amount), color, 1f, scale, rotation, offsetLength);
-            popups.put(damaged, popup);
+        float offsetX, offsetY;
+        float rotation = source != null
+        ? damaged.angleTo(source) + Mathf.random(35f)
+        : 90 + Mathf.range(35f);
+
+        float scale = Mathf.clamp(hitSize / 64 / Scl.scl(1), minScale, maxScale);
+        float offsetLength = hitSize * Mathf.random(0.4f, 0.7f);
+
+        if(superpose(type)){
+            offsetX = Angles.trnsx(rotation, hitSize * Mathf.random(0.2f, 0.4f));
+            offsetY = Angles.trnsy(rotation, hitSize * Mathf.random(0.2f, 0.4f));
         }else{
-            popup.superposeAmount(Math.abs(amount));
+            offsetX = Angles.trnsx(rotation, hitSize * Mathf.random(0.3f, 0.4f));
+            offsetY = Angles.trnsy(rotation, hitSize * Mathf.random(0.3f, 0.4f));
+
+            scale *= 0.65f; // 堆叠的跳字有更大的效果
+        }
+
+        if(superpose(type)){
+            Popup popup = mappedPopup.get(damaged);
+
+            if(popup == null){
+                popup = popupPool.obtain().set(damaged, type, offsetX, offsetY, popupLifetime, Math.abs(amount), 1f, scale, rotation, offsetLength);
+                mappedPopup.put(damaged, popup);
+                popups.add(popup);
+            }else{
+                popup.superposeAmount(Math.abs(amount));
+            }
+        }else{
+            Popup popup = popupPool.obtain().set(damaged, type, offsetX, offsetY, popupLifetime, Math.abs(amount), 1f, scale, rotation, offsetLength);
+            popups.add(popup);
         }
     }
 
-    private static class Popup implements Poolable{
+    private static boolean superpose(DamageType type){
+        return type == DamageType.normal;
+    }
+
+    private static class Popup implements Poolable, Position{
         public static float maxAmountEffect = 5_000;
         public static int maxCountEffect = 50;
         public static float amountEffect = 3f;
         public static float countEffect = 2f;
         public static float fontScaleEffectScl = 8f;
-        public static float minDecelerateAmount = 300;
+        public static float splashTime = 15f;
 
         // data
+        public DamageType type;
         public Font font = Fonts.outline;
-        public Sized entity;
+        public Sized damaged;
+        public float originX, originY;
         public float offsetX, offsetY;
         public float lifetime;
         public float alpha;
         public float scale;
         public float offsetLength;
         public float rotation; // deg
-        public Color color;
 
         public float amount;
         public int count;
 
-        private float lastAmount;
         private float timer;
-        private float decelerateTime;
+        private float floatTimer;
+        private float splashTimer;
 
-        public Popup set(Sized entity, float offsetX, float offsetY, float lifetime, float amount, Color color, float alpha, float scale, float rotation, float offsetLength){
-            this.entity = entity;
+        public Popup set(Sized damaged, DamageType type, float offsetX, float offsetY, float lifetime, float amount, float alpha, float scale, float rotation, float offsetLength){
+            this.damaged = damaged;
+
+            this.type = type;
+
+            this.originX = damaged.getX();
+            this.originY = damaged.getY();
 
             this.offsetX = offsetX;
             this.offsetY = offsetY;
 
             this.lifetime = lifetime;
             this.amount = amount;
-            this.color = color;
             this.alpha = alpha;
             this.scale = scale;
             this.rotation = rotation;
@@ -203,29 +250,35 @@ public class DamagePopup{
         public void draw(){
             float fin = timer / lifetime;
 
-            float easeOutDown = Bezier.quadratic(v1, fin,
+            float alphaScaleEase = Bezier.quadratic(v1, fin,
             v2.set(1f, 1f),
-            v3.set(0.565f, 1f),
-            v4.set(0.39f, 0.575f),
-            v5.set(0.5f, 0.5f)).y;
-            float easeOutExpo = Bezier.quadratic(v1, fin,
-            v2.set(0f, 0f),
-            v3.set(0.19f, 1f),
-            v4.set(0.22f, 1f),
-            v5.set(1f, 1f)).y;
+            v3.set(0f, 1f),
+            v4.set(0f, 0.8f),
+            v5.set(0f, 0.5f)).y;
 
-            float alpha = this.alpha * easeOutDown;
-            float scale = this.scale * easeOutDown * Math.max(effect() / fontScaleEffectScl, 1);
+            float alpha = this.alpha * alphaScaleEase;
+            float scale = this.scale * alphaScaleEase * Math.max(effect() / fontScaleEffectScl, 1);
 
-            float offsetLength = this.offsetLength * easeOutExpo;
+            float fx = getX() + offsetX, fy = getY() + offsetY;
 
-            float fx = entity.getX() + offsetX + offsetLength * Mathf.sin(rotation * Mathf.degRad),
-            fy = entity.getY() + offsetY + offsetLength * Mathf.cos(rotation * Mathf.degRad);
+            if(!superpose(type)){
+                float positionEase = Bezier.quadratic(v1, fin,
+                v2.set(0f, 0f),
+                v3.set(0.19f, 1f),
+                v4.set(0.22f, 1f),
+                v5.set(1f, 1f)).y;
 
-            c1.set(color).a(alpha);
+                float offsetLength = this.offsetLength * positionEase;
 
+                fx += Angles.trnsx(rotation, offsetLength);
+                fy += Angles.trnsy(rotation, offsetLength);
+            }
+
+            c1.set(type.color).a(alpha).lerp(Color.white, splashTimer / splashTime * 0.75f);
+
+            String text = (type.icon != null ? type.icon : "") + Strings.autoFixed(amount, 1);
             Draw.z(Layer.overlayUI);
-            font.draw(Strings.autoFixed(amount, 1), fx, fy, c1, scale, false, Align.center);
+            font.draw(text, fx, fy, c1, scale, false, Align.center);
             Draw.reset();
         }
 
@@ -234,21 +287,18 @@ public class DamagePopup{
         }
 
         public void update(){
-            float deltaAmount = amount - lastAmount;
-
-            timer += Time.delta * (decelerateTime > 0 ? 0.1f : 1f);
-
-            if(deltaAmount >= minDecelerateAmount){
-                decelerateTime = lifetime / 2;
-                lastAmount = amount;
+            if(floatTimer > 0){
+                floatTimer = Math.max(0, floatTimer - Time.delta);
+            }else{
+                timer += Time.delta;
             }
 
-            if(decelerateTime > 0){
-                decelerateTime = Math.max(0, decelerateTime - Time.delta);
+            if(splashTimer > 0){
+                splashTimer = Math.max(0, splashTimer - Time.delta);
             }
         }
 
-        public float effect(){
+        protected float effect(){
             float damageEffect = Popup.amountEffect * Math.min(amount / maxAmountEffect, 1);
             float countEffect = Popup.countEffect * Math.min(count / maxCountEffect, 1);
             return 1f + damageEffect + countEffect;
@@ -257,11 +307,17 @@ public class DamagePopup{
         public void superposeAmount(float amount){
             this.amount += amount;
             count++;
+
+            floatTimer = lifetime;
+            splashTimer = splashTime;
         }
 
         @Override
         public void reset(){
-            entity = null;
+            damaged = null;
+
+            type = DamageType.normal;
+
             offsetX = 0;
             offsetY = 0;
 
@@ -270,12 +326,20 @@ public class DamagePopup{
             scale = 0;
             offsetLength = 0;
             rotation = 0;
-            color = Color.white;
 
-            lastAmount = 0f;
             amount = 0f;
             count = 0;
             timer = 0f;
+        }
+
+        @Override
+        public float getX(){
+            return !superpose(type) ? originX : damaged.getX();
+        }
+
+        @Override
+        public float getY(){
+            return !superpose(type) ? originY : damaged.getY();
         }
     }
 }

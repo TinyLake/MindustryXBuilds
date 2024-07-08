@@ -22,10 +22,11 @@ import mindustry.graphics.*;
 import mindustry.type.*;
 import mindustry.world.*;
 import mindustry.world.blocks.*;
-import mindustryX.events.*;
 import mindustryX.features.*;
 
 import static mindustry.Vars.*;
+import static mindustryX.events.BuildHealthChangedEvent.buildHealthChangedEvent;
+import static mindustryX.events.UnitHealthChangedEvent.unitHealthChangedEvent;
 
 public class BulletType extends Content implements Cloneable{
     static final UnitDamageEvent bulletDamageEvent = new UnitDamageEvent();
@@ -369,6 +370,7 @@ public class BulletType extends Content implements Cloneable{
         }
 
         if(heals() && build.team == b.team && !(build.block instanceof ConstructBlock)){
+            buildHealthChangedEvent.setSource(b);
             healEffect.at(build.x, build.y, 0f, healColor, build.block);
             build.heal(healPercent / 100f * build.maxHealth + healAmount);
         }else if(build.team != b.team && direct){
@@ -383,7 +385,9 @@ public class BulletType extends Content implements Cloneable{
 
         if(entity instanceof Healthc h){
             if(entity instanceof Unit){
-                UnitUnderDamagedEvent.setBullet(b);
+                unitHealthChangedEvent.setSource(b);
+            }else if(entity instanceof Building){
+                buildHealthChangedEvent.setSource(b);
             }
 
             if(pierceArmor){
@@ -473,7 +477,10 @@ public class BulletType extends Content implements Cloneable{
 
     public void createSplashDamage(Bullet b, float x, float y){
         if(splashDamageRadius > 0 && !b.absorbed){
+            // MDTX: 建筑会延迟一帧 不取建筑爆炸
+            unitHealthChangedEvent.startWrap().setType(DamageType.splash);
             Damage.damage(b.team, x, y, splashDamageRadius, splashDamage * b.damageMultiplier(), splashDamagePierce, collidesAir, collidesGround, scaledSplashDamage, b);
+            unitHealthChangedEvent.endWrap();
 
             if(status != StatusEffects.none){
                 Damage.status(b.team, x, y, splashDamageRadius, status, statusDuration, collidesAir, collidesGround);
@@ -481,6 +488,7 @@ public class BulletType extends Content implements Cloneable{
 
             if(heals()){
                 indexer.eachBlock(b.team, x, y, splashDamageRadius, Building::damaged, other -> {
+                    buildHealthChangedEvent.setSource(b);
                     healEffect.at(other.x, other.y, 0f, healColor, other.block);
                     other.heal(healPercent / 100f * other.maxHealth() + healAmount);
                 });
