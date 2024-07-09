@@ -42,18 +42,18 @@ public class DamagePopup{
 
     // 设置
     public static boolean enable;
-    public static boolean playerPopupOnly;
+    public static boolean playerPopupOnly, healPopup;
     public static float popupMinHealth;
 
     public static void init(){
         Events.on(BuildHealthChangedEvent.class, e -> {
-            if(enable && shouldPopup(e.source, e.build)){
+            if(enable && shouldPopup(e.source, e.build, e.type)){
                 popup(e.source, e.build, e.type, e.amount);
             }
         });
 
         Events.on(UnitHealthChangedEvent.class, e -> {
-            if(enable && shouldPopup(e.source, e.unit)){
+            if(enable && shouldPopup(e.source, e.unit, e.type)){
                 popup(e.source, e.unit, e.type, e.amount);
             }
         });
@@ -101,16 +101,17 @@ public class DamagePopup{
     }
 
     private static void updateSettings(){
-        boolean enableSetting = Core.settings.getBool("damagePopup");
+        enable = Core.settings.getBool("damagePopup");
+        healPopup = Core.settings.getBool("healPopup");
         playerPopupOnly = Core.settings.getBool("playerPopupOnly");
         popupMinHealth = Core.settings.getInt("popupMinHealth");
 
-        if(enable != enableSetting){
-            enable = enableSetting;
-
-            // 关闭后保留已有跳字
-            // if(!enable) clearPopup();
-        }
+//        if(enable != enableSetting){
+//            enable = enableSetting;
+//
+//            // 关闭后保留已有跳字
+//            // if(!enable) clearPopup();
+//        }
     }
 
     public static void clearPopup(){
@@ -129,16 +130,17 @@ public class DamagePopup{
         return current;
     }
 
-    private static boolean shouldPopup(Sized source, Healthc damaged){
+    private static boolean shouldPopup(Sized source, Healthc damaged, DamageType type){
         if(damaged.maxHealth() < popupMinHealth){
             return false;
         }
 
+        if(type == DamageType.heal && !healPopup) return false;
         if(source == null) return true;
 
         // 视角外的跳字
         Rect cameraBounds = Core.camera.bounds(r1).grow(4 * Vars.tilesize);
-        if(!cameraBounds.contains(source.getX(), source.getY())){
+        if(!cameraBounds.contains(damaged.getX(), damaged.getY())){
             return false;
         }
 
@@ -152,8 +154,8 @@ public class DamagePopup{
         return owner == playerUnit
         || (playerUnit instanceof BlockUnitUnit blockUnit && owner == blockUnit.tile())
         || (Vars.control.input.commandMode &&
-            (owner instanceof Unit unitOwner && Vars.control.input.selectedUnits.contains(unitOwner)
-            || (owner instanceof Building buildOwner && Vars.control.input.commandBuildings.contains(buildOwner))));
+        (owner instanceof Unit unitOwner && Vars.control.input.selectedUnits.contains(unitOwner)
+        || (owner instanceof Building buildOwner && Vars.control.input.commandBuildings.contains(buildOwner))));
     }
 
     private static void popup(Sized source, Sized damaged, DamageType type, float amount){
