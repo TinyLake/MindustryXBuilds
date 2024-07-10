@@ -65,6 +65,7 @@ public class Settings{
             c.checkPref("showMineBeam".toLowerCase(), true);
             c.checkPref("noPlayerHitBox", false);
             c.checkPref("damagePopup", true);
+            c.checkPref("healPopup", true);
             c.checkPref("playerPopupOnly", true);
             c.sliderPref("popupMinHealth", 600, 0, 4000, 50, i -> i + "[red]HP");
 
