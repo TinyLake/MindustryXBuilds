@@ -33,7 +33,7 @@ class AdvanceToolTable : ToolTableBase() {
         var allBlocksReveal: Boolean = false
     }
 
-    val factoryDialog: ArcUnitFactoryDialog = ArcUnitFactoryDialog()
+    val factoryDialog: UnitFactoryDialog = UnitFactoryDialog()
 
     init {
         icon = Iconc.wrench.toString()
