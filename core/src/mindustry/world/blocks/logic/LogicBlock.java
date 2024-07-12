@@ -26,6 +26,7 @@ import mindustry.world.blocks.ConstructBlock.*;
 import mindustry.world.meta.*;
 import mindustryX.*;
 import mindustryX.events.*;
+import mindustryX.features.*;
 
 import java.io.*;
 import java.util.zip.*;
@@ -97,7 +98,7 @@ public class LogicBlock extends Block{
     }
 
     public boolean accessible(){
-        return !privileged || state.rules.editor || state.playtestingMap != null;
+        return !privileged || state.rules.editor || state.playtestingMap != null || RenderExt.showOtherInfo;
     }
 
     @Override
@@ -239,6 +240,8 @@ public class LogicBlock extends Block{
         public boolean checkedDuplicates = false;
         //dynamic only for privileged processors
         public int ipt = instructionsPerTick;
+
+        private static boolean showVars = false;
 
         /** Block of code to run after load. */
         public @Nullable Runnable loadBlock;
@@ -561,10 +564,12 @@ public class LogicBlock extends Block{
             }
 
             //draw top text on separate layer
+            //draw link order
+            int i = 0;
             for(LogicLink l : links){
                 Building build = world.build(l.x, l.y);
                 if(l.active && validLink(build)){
-                    build.block.drawPlaceText(l.name, build.tileX(), build.tileY(), true);
+                    build.block.drawPlaceText(l.name + "[" + i++ + "]", build.tileX(), build.tileY(), true);
                 }
             }
         }
@@ -587,9 +592,55 @@ public class LogicBlock extends Block{
 
         @Override
         public void buildConfiguration(Table table){
-            table.button(Icon.pencil, Styles.cleari, () -> {
-                ui.logic.show(code, executor, privileged, code -> configure(compress(code, relativeConnections())));
-            }).size(40);
+            table.setBackground(Styles.black3);
+            Table vars = new Table();
+            table.table(t -> {
+                t.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
+                t.button(Icon.copy, Styles.cleari, () -> {
+                    Core.app.setClipboardText(code);
+                    UIExt.announce("已复制逻辑");
+                }).size(40);
+                t.button(Icon.download, Styles.cleari, () -> {
+                    updateCode(Core.app.getClipboardText().replace("\r\n", "\n"));
+                    UIExt.announce("已导入逻辑(仅单机生效)");
+                }).size(40);
+                t.button(Icon.info, Styles.cleari, () -> {
+                    showVars = !showVars;
+                    vars.clear();
+                    if(showVars) buildVarsTable(vars);
+                    table.pack();
+                }).size(40);
+            });
+            table.row().pane(vars).pad(4).maxHeight(400f);
+            if(showVars) buildVarsTable(vars);
+        }
+
+        private void buildVarsTable(Table table){
+            final var vars = executor.vars;
+            table.update(() -> {
+                if(vars != executor.vars){
+                    table.clear();
+                    buildVarsTable(table);
+                }
+            });
+
+            table.setColor(Color.lightGray);
+            for(var s : vars){
+                if(s.name.startsWith("___")) continue;
+                table.add(s.name).color(LogicDialog.arcVarsColor(s)).align(Align.left);
+                table.label(() -> LogicDialog.arcVarsText(s)).align(Align.right);
+                table.row();
+            }
+        }
+
+        public void showEditDialog(){
+            showEditDialog(false);
+        }
+
+        public void showEditDialog(boolean forceEditor){
+            ui.logic.show(code, executor, privileged, code -> {
+                configure(compress(code, relativeConnections()));
+            });
         }
 
         @Override
