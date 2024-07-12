@@ -27,6 +27,7 @@ import mindustry.world.blocks.ConstructBlock.*;
 import mindustry.world.meta.*;
 import mindustryX.*;
 import mindustryX.events.*;
+import mindustryX.features.*;
 
 import java.io.*;
 import java.util.zip.*;
@@ -110,11 +111,15 @@ public class LogicBlock extends Block{
 
     @Override
     public boolean checkForceDark(Tile tile){
-        return !accessible();
+        return !accessibleRead();
     }
 
     public boolean accessible(){
-        return !privileged || state.rules.editor || state.playtestingMap != null || state.rules.allowEditWorldProcessors;
+        return !privileged || state.rules.editor || state.playtestingMap != null || state.rules.allowEditWorldProcessors || RenderExt.showOtherInfo && !net.client();
+    }
+
+    private boolean accessibleRead(){
+        return accessible() || RenderExt.showOtherInfo;
     }
 
     @Override
@@ -259,6 +264,8 @@ public class LogicBlock extends Block{
         /** Display name, for convenience. This is currently only available for world processors. */
         public @Nullable String tag;
         public char iconTag;
+
+        private static boolean showVars = false;
 
         /** Block of code to run after load. */
         public @Nullable Runnable loadBlock;
@@ -424,7 +431,7 @@ public class LogicBlock extends Block{
 
         @Override
         public boolean displayable(){
-            return accessible();
+            return accessibleRead();
         }
 
         @Override
@@ -447,7 +454,7 @@ public class LogicBlock extends Block{
 
         @Override
         public Cursor getCursor(){
-            return !accessible() ? SystemCursor.arrow : super.getCursor();
+            return !accessibleRead() ? SystemCursor.arrow : super.getCursor();
         }
 
         //logic blocks cause write problems when picked up
@@ -583,17 +590,19 @@ public class LogicBlock extends Block{
             }
 
             //draw top text on separate layer
+            //draw link order
+            int i = 0;
             for(LogicLink l : links){
                 Building build = world.build(l.x, l.y);
                 if(l.active && validLink(build)){
-                    build.block.drawPlaceText(l.name, build.tileX(), build.tileY(), true);
+                    build.block.drawPlaceText(l.name + "[" + i++ + "]", build.tileX(), build.tileY(), true);
                 }
             }
         }
 
         @Override
         public void drawSelect(){
-            if(!accessible()) return;
+            if(!accessibleRead()) return;
 
             Groups.unit.each(u -> u.controller() instanceof LogicAI ai && ai.controller == this, unit -> {
                 Drawf.square(unit.x, unit.y, unit.hitSize, unit.rotation + 45);
@@ -640,12 +649,46 @@ public class LogicBlock extends Block{
 
         @Override
         public boolean shouldShowConfigure(Player player){
-            return accessible();
+            return accessibleRead();
         }
 
         @Override
         public void buildConfiguration(Table table){
-            table.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
+            table.setBackground(Styles.black3);
+            Table vars = new Table();
+            table.table(t -> {
+                t.button(Icon.pencil, Styles.cleari, ()->{
+                    if(!accessible())
+                        UIExt.announce("[yellow]当前无权编辑，仅供查阅");
+                    showEditDialog();
+                }).size(40);
+                t.button(Icon.info, Styles.cleari, () -> {
+                    showVars = !showVars;
+                    vars.clear();
+                    if(showVars) buildVarsTable(vars);
+                    table.pack();
+                }).size(40);
+            });
+            table.row().pane(vars).pad(4).maxHeight(400f);
+            if(showVars) buildVarsTable(vars);
+        }
+
+        private void buildVarsTable(Table table){
+            final var vars = executor.vars;
+            table.update(() -> {
+                if(vars != executor.vars){
+                    table.clear();
+                    buildVarsTable(table);
+                }
+            });
+
+            table.setColor(Color.lightGray);
+            for(var s : vars){
+                if(s.name.startsWith("___")) continue;
+                table.add(s.name).color(LogicDialog.arcVarsColor(s)).align(Align.left);
+                table.label(() -> LogicDialog.arcVarsText(s)).align(Align.right);
+                table.row();
+            }
         }
 
         public void showEditDialog(){
