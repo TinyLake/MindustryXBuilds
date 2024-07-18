@@ -565,6 +565,8 @@ public class PlacementFragment{
 
                                                 Call.setUnitCommand(player, ids.toArray(), command);
                                             }).checked(i -> currentCommand[0] == command).size(50f).tooltip(command.localized());
+                                        }
+                                    }).fillX().padTop(4f).left();
                                 }
                             }else{
                                 u.add(Core.bundle.get("commandmode.nounits")).color(Color.lightGray).growX().center().labelAlign(Align.center).pad(6);
