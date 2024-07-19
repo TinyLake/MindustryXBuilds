@@ -10,6 +10,7 @@ async function clearOldAssets(tag: string, keep: number = 9) {
     const assets = release.data.assets.sort((a, b) => a.name < b.name ? 1 : -1)
     if (assets.length <= keep) return
     const toRemove = assets.slice(keep)
+    toRemove.push(...assets.filter(it => it.name.includes("server")))
     console.log("ToRemove", toRemove.map(it => it.name))
     await Promise.all(toRemove.map(it =>
         octokit.rest.repos.deleteReleaseAsset({
