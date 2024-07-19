@@ -66,6 +66,7 @@ public class Settings{
             c.checkPref("noPlayerHitBox", false);
 
             c.addCategory("developerMode");
+            c.checkPref("renderMerge", false);
             c.checkPref("renderSort", false);
         }));
         ArcOld.init(categories);

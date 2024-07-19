@@ -10,7 +10,7 @@ public class MySortedSpriteBatch extends SortedSpriteBatch2{
     private static final boolean DEBUG = false;
     private static final int PRIME1 = 0xbe1f14b1;
     private static final int PRIME2 = 0xb4b82e39;
-    int[] extraZ = new int[10000];
+    int[] extraZ = new int[InitialSize];
     //增加小的delta，来保持原来的前后顺序
     int orderZ = 0;
     int hashZ = 0;//打乱hash值，来检查渲染异常
@@ -33,11 +33,113 @@ public class MySortedSpriteBatch extends SortedSpriteBatch2{
     @Override
     protected void expandRequests(){
         super.expandRequests();
-        extraZ = new int[requests.length];
+        extraZ = Arrays.copyOf(extraZ, requestZ.length);
     }
+
+    private static final float[] tmpVertices = new float[24];
 
     @Override
     protected void draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float rotation){
+        if(RenderExt.renderMerge){
+            if(!Mathf.zero(rotation)){
+                //bottom left and top right corner points relative to origin
+                float worldOriginX = x + originX;
+                float worldOriginY = y + originY;
+                float fx = -originX;
+                float fy = -originY;
+                float fx2 = width - originX;
+                float fy2 = height - originY;
+
+                // rotate
+                float cos = Mathf.cosDeg(rotation);
+                float sin = Mathf.sinDeg(rotation);
+
+                float x1 = cos * fx - sin * fy + worldOriginX;
+                float y1 = sin * fx + cos * fy + worldOriginY;
+                float x2 = cos * fx - sin * fy2 + worldOriginX;
+                float y2 = sin * fx + cos * fy2 + worldOriginY;
+                float x3 = cos * fx2 - sin * fy2 + worldOriginX;
+                float y3 = sin * fx2 + cos * fy2 + worldOriginY;
+                float x4 = x1 + (x3 - x2);
+                float y4 = y3 - (y2 - y1);
+
+                float u = region.u;
+                float v = region.v2;
+                float u2 = region.u2;
+                float v2 = region.v;
+
+                float color = this.colorPacked;
+                float mixColor = this.mixColorPacked;
+
+                tmpVertices[0] = x1;
+                tmpVertices[1] = y1;
+                tmpVertices[2] = color;
+                tmpVertices[3] = u;
+                tmpVertices[4] = v;
+                tmpVertices[5] = mixColor;
+
+                tmpVertices[6] = x2;
+                tmpVertices[7] = y2;
+                tmpVertices[8] = color;
+                tmpVertices[9] = u;
+                tmpVertices[10] = v2;
+                tmpVertices[11] = mixColor;
+
+                tmpVertices[12] = x3;
+                tmpVertices[13] = y3;
+                tmpVertices[14] = color;
+                tmpVertices[15] = u2;
+                tmpVertices[16] = v2;
+                tmpVertices[17] = mixColor;
+
+                tmpVertices[18] = x4;
+                tmpVertices[19] = y4;
+                tmpVertices[20] = color;
+                tmpVertices[21] = u2;
+                tmpVertices[22] = v;
+                tmpVertices[23] = mixColor;
+            }else{
+                float fx2 = x + width;
+                float fy2 = y + height;
+                float u = region.u;
+                float v = region.v2;
+                float u2 = region.u2;
+                float v2 = region.v;
+
+                float color = this.colorPacked;
+                float mixColor = this.mixColorPacked;
+
+                tmpVertices[0] = x;
+                tmpVertices[1] = y;
+                tmpVertices[2] = color;
+                tmpVertices[3] = u;
+                tmpVertices[4] = v;
+                tmpVertices[5] = mixColor;
+
+                tmpVertices[6] = x;
+                tmpVertices[7] = fy2;
+                tmpVertices[8] = color;
+                tmpVertices[9] = u;
+                tmpVertices[10] = v2;
+                tmpVertices[11] = mixColor;
+
+                tmpVertices[12] = fx2;
+                tmpVertices[13] = fy2;
+                tmpVertices[14] = color;
+                tmpVertices[15] = u2;
+                tmpVertices[16] = v2;
+                tmpVertices[17] = mixColor;
+
+                tmpVertices[18] = fx2;
+                tmpVertices[19] = y;
+                tmpVertices[20] = color;
+                tmpVertices[21] = u2;
+                tmpVertices[22] = v;
+                tmpVertices[23] = mixColor;
+            }
+            draw(region.texture, tmpVertices, 0, 24);
+            return;
+        }
         super.draw(region, x, y, originX, originY, width, height, rotation);
         if(sort && !flushing && RenderExt.renderSort){
             int h = region.texture.hashCode();
@@ -58,11 +160,7 @@ public class MySortedSpriteBatch extends SortedSpriteBatch2{
                 h = (h + hashZ) * PRIME1;
                 h = h ^ (h >>> 16);
             }
-            int[] extraZ = this.extraZ;
-            int v = ((orderZ++) << 16) | (h & 0xffff);
-            for(int i = (count - offset) / SPRITE_SIZE; i > 0; i--){
-                extraZ[numRequests - i] = v;
-            }
+            extraZ[numRequests - 1] = ((orderZ++) << 16) | (h & 0xffff);
         }
     }
 
@@ -103,7 +201,11 @@ public class MySortedSpriteBatch extends SortedSpriteBatch2{
     private static int[] order = new int[1000];
     private static int[] order2 = new int[1000];
 
-    /** 将输入arr映射到有序的0-n域 */
+    /**
+     * 将输入arr重映射到有序的[0,unique)域
+     * @param arr 待排序数组，输出会映射为id值
+     * @return unique
+     */
     private static int sortMap(int[] arr, int len){
         var map = MySortedSpriteBatch.vMap;
         int[] order = MySortedSpriteBatch.order;
@@ -141,9 +243,13 @@ public class MySortedSpriteBatch extends SortedSpriteBatch2{
         return unique;
     }
 
+    /**
+     * 计数排序
+     * @param arr 待排序数组，输出为新loc
+     */
     private static void countingSortMap(int[] arr, int len){
         int[] order = MySortedSpriteBatch.order, counts = MySortedSpriteBatch.order2;
-        var map = MySortedSpriteBatch.vMap;
+        var map = MySortedSpriteBatch.vMap;//z->id
         map.clear();
         int unique = 0;
         for(int i = 0; i < len; i++){
@@ -166,9 +272,8 @@ public class MySortedSpriteBatch extends SortedSpriteBatch2{
         //对z值排序
         Arrays.sort(order, 0, unique);//order -> z
 
-        //将counts转换为locs
-        int loc = 0;
-        for(int i = 0; i < unique; i++){
+        //将counts转换为locs(每个id起始位置)
+        for(int i = 0, loc = 0; i < unique; i++){
             int id = map.getOrPut(order[i], -1);
             int c = counts[id];
             counts[id] = loc;

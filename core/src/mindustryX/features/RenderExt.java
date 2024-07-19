@@ -37,7 +37,7 @@ public class RenderExt{
     public static float overdriveZoneTransparency;
     public static boolean logicDisplayNoBorder, arcDrillMode;
     public static int blockRenderLevel;
-    public static boolean renderSort;
+    public static boolean renderSort, renderMerge;
     public static boolean massDriverLine;
     public static int massDriverLineInterval;
     public static boolean drawBars, drawBarsMend;
@@ -77,6 +77,7 @@ public class RenderExt{
             arcDrillMode = Core.settings.getBool("arcdrillmode");
             blockRenderLevel = Core.settings.getInt("blockRenderLevel");
             renderSort = Core.settings.getBool("renderSort");
+            renderMerge = Core.settings.getBool("renderMerge");
             massDriverLine = Core.settings.getBool("mass_driver_line");
             massDriverLineInterval = Core.settings.getInt("mass_driver_line_interval");
             drawBars = Core.settings.getBool("blockBars");

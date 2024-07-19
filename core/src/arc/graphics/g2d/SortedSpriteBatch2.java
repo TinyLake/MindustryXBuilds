@@ -6,6 +6,7 @@ import arc.graphics.gl.*;
 import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
+import mindustryX.features.*;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -25,19 +26,16 @@ public class SortedSpriteBatch2 extends SpriteBatch{
         Runnable run;
     }
 
+    protected static final int InitialSize = 10000;
     static ForkJoinHolder commonPool;
-
     boolean multithreaded = (Core.app.getVersion() >= 21 && !Core.app.isIOS()) || Core.app.isDesktop();
-    int[] contiguous = new int[2048], contiguousCopy = new int[2048];
-    DrawRequest[] copy = new DrawRequest[0];
-    int[] locs = new int[contiguous.length];
 
-    protected DrawRequest[] requests = new DrawRequest[10000];
-    protected boolean sort;
-    protected boolean flushing;
-    protected int[] requestZ = new int[10000];
-    protected float[] vertices = new float[24 * 10000];
+    protected boolean sort, flushing;
+    protected DrawRequest[] requests = new DrawRequest[InitialSize], copy = new DrawRequest[0];
+    protected int[] requestZ = new int[InitialSize];
+    protected float[] vertices = new float[SPRITE_SIZE * InitialSize];
     protected int numRequests = 0, numVertices = 0;
+    int[] contiguous = new int[2048], contiguousCopy = new int[2048];
 
     {
         for(int i = 0; i < requests.length; i++){
@@ -77,15 +75,25 @@ public class SortedSpriteBatch2 extends SpriteBatch{
     @Override
     protected void draw(Texture texture, float[] spriteVertices, int offset, int count){
         if(sort && !flushing){
-            if(numRequests >= this.requests.length) expandRequests();
             //MDTX: shared vertices, no slice
             if(numVertices + count >= vertices.length){
                 vertices = Arrays.copyOf(vertices, vertices.length * 3 / 2);
             }
-            int[] requestZ = this.requestZ;
-            final DrawRequest req = requests[numRequests];
+            int num = numRequests;
+            //MDTX: 合批优化
+            if(RenderExt.renderMerge && num > 1){
+                final DrawRequest last = requests[num - 1];
+                if(last.run == null && last.texture == texture && last.blending == blending && requestZ[num - 1] == Float.floatToRawIntBits(z + 16f)){
+                    System.arraycopy(spriteVertices, offset, vertices, numVertices, count);
+                    last.verticesLength += count;
+                    numVertices += count;
+                    return;
+                }
+            }
+            if(num >= this.requests.length) expandRequests();
+            final DrawRequest req = requests[num];
             System.arraycopy(spriteVertices, offset, vertices, req.verticesOffset = numVertices, req.verticesLength = count);
-            requestZ[numRequests] = Float.floatToRawIntBits(z + 16f);
+            requestZ[num] = Float.floatToRawIntBits(z + 16f);
             req.texture = texture;
             req.blending = blending;
             req.run = null;
@@ -139,8 +147,7 @@ public class SortedSpriteBatch2 extends SpriteBatch{
     }
 
     protected void expandRequests(){
-        final DrawRequest[] requests = this.requests, newRequests = new DrawRequest[requests.length * 7 / 4];
-        System.arraycopy(requests, 0, newRequests, 0, Math.min(newRequests.length, requests.length));
+        final DrawRequest[] requests = this.requests, newRequests = Arrays.copyOf(requests, requests.length * 7 / 4);
         for(int i = requests.length; i < newRequests.length; i++){
             newRequests[i] = new DrawRequest();
         }
@@ -233,12 +240,14 @@ public class SortedSpriteBatch2 extends SpriteBatch{
 
         final int[] sorted = CountingSort.countingSortMapMT(contiguous, contiguousCopy, L);
 
-        if(locs.length < L + 1) locs = new int[L + L / 10];
-        if(copy.length < numRequests) copy = new DrawRequest[numRequests + (numRequests >> 3)];
-        final int[] locs = this.locs;
-        for(int i = 0; i < L; i++){
-            locs[i + 1] = locs[i] + sorted[i * 3 + 2];
+
+        final int[] locs = contiguous;
+        locs[0] = 0;
+        for(int i = 0, ptr = 0; i < L; i++){
+            ptr += sorted[i * 3 + 2];
+            locs[i + 1] = ptr;
         }
+        if(copy.length < requests.length) copy = new DrawRequest[requests.length];
         PopulateTask.tasks = sorted;
         PopulateTask.src = requests;
         PopulateTask.dest = copy;
