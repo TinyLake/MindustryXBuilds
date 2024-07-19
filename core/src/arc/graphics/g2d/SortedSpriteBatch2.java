@@ -11,10 +11,20 @@ import java.util.*;
 import java.util.concurrent.*;
 
 //MDTX modified type of requestZ, from float[] to int[]
-//MDTX: sorted requests store in copy(instead write back), reduce one copy and prevent memory fragment
+//MDTX: sorted requests store in `copy`(instead write back), reduce one copy and prevent memory fragment
+//MDTX(WayZer, 2024/7/19): optimize req.vertices
 
 /** Fast sorting implementation written by zxtej. Don't ask me how it works. */
 public class SortedSpriteBatch2 extends SpriteBatch{
+    public static class DrawRequest{
+        TextureRegion region = new TextureRegion();
+        float x, y, originX, originY, width, height, rotation, color, mixColor;
+        int verticesOffset, verticesLength;
+        Texture texture;
+        Blending blending;
+        Runnable run;
+    }
+
     static ForkJoinHolder commonPool;
 
     boolean multithreaded = (Core.app.getVersion() >= 21 && !Core.app.isIOS()) || Core.app.isDesktop();
@@ -26,7 +36,8 @@ public class SortedSpriteBatch2 extends SpriteBatch{
     protected boolean sort;
     protected boolean flushing;
     protected int[] requestZ = new int[10000];
-    protected int numRequests = 0;
+    protected float[] vertices = new float[24 * 10000];
+    protected int numRequests = 0, numVertices = 0;
 
     {
         for(int i = 0; i < requests.length; i++){
@@ -66,19 +77,20 @@ public class SortedSpriteBatch2 extends SpriteBatch{
     @Override
     protected void draw(Texture texture, float[] spriteVertices, int offset, int count){
         if(sort && !flushing){
-            if(numRequests + count - offset >= this.requests.length) expandRequests();
-            int[] requestZ = this.requestZ;
-            DrawRequest[] requests = this.requests;
-
-            for(int i = offset; i < count; i += SPRITE_SIZE){
-                final DrawRequest req = requests[numRequests];
-                requestZ[numRequests] = Float.floatToRawIntBits((req.z = z) + 16f);
-                System.arraycopy(spriteVertices, i, req.vertices, 0, req.vertices.length);
-                req.texture = texture;
-                req.blending = blending;
-                req.run = null;
-                numRequests++;
+            if(numRequests >= this.requests.length) expandRequests();
+            //MDTX: shared vertices, no slice
+            if(numVertices + count >= vertices.length){
+                vertices = Arrays.copyOf(vertices, vertices.length * 3 / 2);
             }
+            int[] requestZ = this.requestZ;
+            final DrawRequest req = requests[numRequests];
+            System.arraycopy(spriteVertices, offset, vertices, req.verticesOffset = numVertices, req.verticesLength = count);
+            requestZ[numRequests] = Float.floatToRawIntBits(z + 16f);
+            req.texture = texture;
+            req.blending = blending;
+            req.run = null;
+            numRequests++;
+            numVertices += count;
         }else{
             super.draw(texture, spriteVertices, offset, count);
         }
@@ -91,7 +103,7 @@ public class SortedSpriteBatch2 extends SpriteBatch{
             final DrawRequest req = requests[numRequests];
             req.x = x;
             req.y = y;
-            requestZ[numRequests] = Float.floatToRawIntBits((req.z = z) + 16f);
+            requestZ[numRequests] = Float.floatToRawIntBits(z + 16f);
             req.originX = originX;
             req.originY = originY;
             req.width = width;
@@ -118,7 +130,7 @@ public class SortedSpriteBatch2 extends SpriteBatch{
             req.blending = blending;
             req.mixColor = mixColorPacked;
             req.color = colorPacked;
-            requestZ[numRequests] = Float.floatToRawIntBits((req.z = z) + 16f);
+            requestZ[numRequests] = Float.floatToRawIntBits(z + 16f);
             req.texture = null;
             numRequests++;
         }else{
@@ -163,7 +175,7 @@ public class SortedSpriteBatch2 extends SpriteBatch{
                     req.run.run();
                     req.run = null;
                 }else if(req.texture != null){
-                    super.draw(req.texture, req.vertices, 0, req.vertices.length);
+                    super.draw(req.texture, vertices, req.verticesOffset, req.verticesLength);
                 }else{
                     super.draw(req.region, req.x, req.y, req.originX, req.originY, req.width, req.height, req.rotation);
                 }
@@ -175,7 +187,7 @@ public class SortedSpriteBatch2 extends SpriteBatch{
             mixColor.abgr8888(mixColorPacked);
             blending = preBlending;
 
-            numRequests = 0;
+            numRequests = numVertices = 0;
 
             flushing = false;
         }
