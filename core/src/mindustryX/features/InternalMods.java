@@ -5,6 +5,7 @@ import arc.struct.*;
 import mindustry.core.*;
 import mindustry.mod.*;
 import mindustry.mod.Mods.*;
+import mindustryX.*;
 import mindustryX.mods.claj.*;
 
 import static arc.Core.files;
@@ -12,11 +13,12 @@ import static mindustry.Vars.modDirectory;
 
 public class InternalMods{
     public static Seq<LoadedMod> load(){
-        return Seq.with(
-        internalMod(meta("claj", "Claj联机", "1.1", "[#0096FF]xzxADIxzx cong重写 WayZer合并进MDTX"), new Claj()),
-        internalMod(meta("Kotlin", "Kotlin语言标准库", "1.9.20", "Jetbrains"), new Mod(){
-        })
-        );
+        Seq<LoadedMod> mods = new Seq<>();
+        mods.add(internalMod(meta("claj", "Claj联机", "1.1", "[#0096FF]xzxADIxzx cong重写 WayZer合并进MDTX"), new Claj()));
+        mods.add(internalMod(meta("Kotlin", "Kotlin语言标准库", "1.9.20", "Jetbrains")));
+        if(!VarsX.isLoader)
+            mods.add(internalMod(meta("MindustryX", "MindustryX", Version.mdtXBuild, "")));
+        return mods;
     }
 
     private static ModMeta meta(String id, String displayName, String version, String author){
@@ -35,5 +37,10 @@ public class InternalMods{
         Fi file = modDirectory.child("internal-" + meta.name + ".jar");
         Fi root = files.internal("/mindustryX/mods/" + meta.name);
         return new LoadedMod(file, root, main, InternalMods.class.getClassLoader(), meta);
+    }
+
+    private static LoadedMod internalMod(ModMeta meta){
+        return internalMod(meta, new Mod(){
+        });
     }
 }
