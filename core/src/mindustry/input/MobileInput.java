@@ -497,7 +497,8 @@ public class MobileInput extends InputHandler implements GestureListener{
 
         down = true;
 
-        if(player.dead()) return false;
+        boolean createSchematic = schematicMode && block == null;
+        if(!createSchematic && player.dead()) return false;
 
         //get tile on cursor
         Tile cursor = tileAt(screenX, screenY);
@@ -512,7 +513,7 @@ public class MobileInput extends InputHandler implements GestureListener{
 
         //call tap events
         if(pointer == 0 && !selecting){
-            if(schematicMode && block == null){
+            if(createSchematic){
                 mode = rebuildMode ? rebuildSelect : schematicSelect;
 
                 //engage schematic selection mode
@@ -735,7 +736,7 @@ public class MobileInput extends InputHandler implements GestureListener{
         boolean locked = locked();
 
         if(player.dead()){
-            mode = none;
+            if(!schematicMode) mode = none;
             manualShooting = false;
             payloadTarget = null;
         }
