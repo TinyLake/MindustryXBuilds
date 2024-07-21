@@ -23,132 +23,28 @@ public class MySortedSpriteBatch extends SortedSpriteBatch2{
     }
 
     @Override
+    protected void flush(){
+        DebugUtil.lastFlushCount++;
+        super.flush();
+    }
+
+    @Override
     protected void flushRequests(){
-        if(!flushing){
-            DebugUtil.lastDrawRequests += numRequests;
-            super.flushRequests();
-        }
+        DebugUtil.lastVertices += numVertices / 6;
+        DebugUtil.lastDrawRequests += numRequests;
+        super.flushRequests();
+    }
+
+    @Override
+    protected void switchTexture(Texture texture){
+        DebugUtil.lastSwitchTexture++;
+        super.switchTexture(texture);
     }
 
     @Override
     protected void expandRequests(){
         super.expandRequests();
         extraZ = Arrays.copyOf(extraZ, requestZ.length);
-    }
-
-    private static final float[] tmpVertices = new float[24];
-
-    @Override
-    protected void draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float rotation){
-        if(RenderExt.renderMerge){
-            if(!Mathf.zero(rotation)){
-                //bottom left and top right corner points relative to origin
-                float worldOriginX = x + originX;
-                float worldOriginY = y + originY;
-                float fx = -originX;
-                float fy = -originY;
-                float fx2 = width - originX;
-                float fy2 = height - originY;
-
-                // rotate
-                float cos = Mathf.cosDeg(rotation);
-                float sin = Mathf.sinDeg(rotation);
-
-                float x1 = cos * fx - sin * fy + worldOriginX;
-                float y1 = sin * fx + cos * fy + worldOriginY;
-                float x2 = cos * fx - sin * fy2 + worldOriginX;
-                float y2 = sin * fx + cos * fy2 + worldOriginY;
-                float x3 = cos * fx2 - sin * fy2 + worldOriginX;
-                float y3 = sin * fx2 + cos * fy2 + worldOriginY;
-                float x4 = x1 + (x3 - x2);
-                float y4 = y3 - (y2 - y1);
-
-                float u = region.u;
-                float v = region.v2;
-                float u2 = region.u2;
-                float v2 = region.v;
-
-                float color = this.colorPacked;
-                float mixColor = this.mixColorPacked;
-
-                tmpVertices[0] = x1;
-                tmpVertices[1] = y1;
-                tmpVertices[2] = color;
-                tmpVertices[3] = u;
-                tmpVertices[4] = v;
-                tmpVertices[5] = mixColor;
-
-                tmpVertices[6] = x2;
-                tmpVertices[7] = y2;
-                tmpVertices[8] = color;
-                tmpVertices[9] = u;
-                tmpVertices[10] = v2;
-                tmpVertices[11] = mixColor;
-
-                tmpVertices[12] = x3;
-                tmpVertices[13] = y3;
-                tmpVertices[14] = color;
-                tmpVertices[15] = u2;
-                tmpVertices[16] = v2;
-                tmpVertices[17] = mixColor;
-
-                tmpVertices[18] = x4;
-                tmpVertices[19] = y4;
-                tmpVertices[20] = color;
-                tmpVertices[21] = u2;
-                tmpVertices[22] = v;
-                tmpVertices[23] = mixColor;
-            }else{
-                float fx2 = x + width;
-                float fy2 = y + height;
-                float u = region.u;
-                float v = region.v2;
-                float u2 = region.u2;
-                float v2 = region.v;
-
-                float color = this.colorPacked;
-                float mixColor = this.mixColorPacked;
-
-                tmpVertices[0] = x;
-                tmpVertices[1] = y;
-                tmpVertices[2] = color;
-                tmpVertices[3] = u;
-                tmpVertices[4] = v;
-                tmpVertices[5] = mixColor;
-
-                tmpVertices[6] = x;
-                tmpVertices[7] = fy2;
-                tmpVertices[8] = color;
-                tmpVertices[9] = u;
-                tmpVertices[10] = v2;
-                tmpVertices[11] = mixColor;
-
-                tmpVertices[12] = fx2;
-                tmpVertices[13] = fy2;
-                tmpVertices[14] = color;
-                tmpVertices[15] = u2;
-                tmpVertices[16] = v2;
-                tmpVertices[17] = mixColor;
-
-                tmpVertices[18] = fx2;
-                tmpVertices[19] = y;
-                tmpVertices[20] = color;
-                tmpVertices[21] = u2;
-                tmpVertices[22] = v;
-                tmpVertices[23] = mixColor;
-            }
-            draw(region.texture, tmpVertices, 0, 24);
-            return;
-        }
-        super.draw(region, x, y, originX, originY, width, height, rotation);
-        if(sort && !flushing && RenderExt.renderSort){
-            int h = region.texture.hashCode();
-            if(DEBUG){
-                h = (h + hashZ) * PRIME1;
-                h = h ^ (h >>> 16);
-            }
-            extraZ[numRequests - 1] = ((orderZ++) << 16) | (h & 0xffff);
-        }
     }
 
     @Override

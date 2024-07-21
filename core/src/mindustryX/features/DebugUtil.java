@@ -5,13 +5,13 @@ import arc.util.*;
 import mindustry.game.EventType.*;
 
 public class DebugUtil{
-    public static int lastDrawRequests = 0;
+    public static int lastDrawRequests, lastVertices, lastFlushCount, lastSwitchTexture;
     public static long logicTime, rendererTime, uiTime;//nanos
     private static long rendererStart, uiStart;//nanos
 
     public static void init(){
         Events.run(Trigger.preDraw, () -> {
-            lastDrawRequests = 0;
+            lastDrawRequests = lastVertices = lastFlushCount = lastSwitchTexture = 0;
             rendererStart = Time.nanos();
         });
         Events.run(Trigger.postDraw, () -> rendererTime = Time.timeSinceNanos(rendererStart));

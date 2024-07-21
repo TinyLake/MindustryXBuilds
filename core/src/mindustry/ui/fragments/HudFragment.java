@@ -334,7 +334,8 @@ public class HudFragment{
                 info.label(() -> Strings.format("LG/DW/UI(ms) @/@/@", Time.nanosToMillis(DebugUtil.logicTime), Time.nanosToMillis(DebugUtil.rendererTime), Time.nanosToMillis(DebugUtil.uiTime)))
                 .left().style(Styles.outlineLabel).name("cpuTime");
                 info.row();
-                info.label(() -> "Draws: " + DebugUtil.lastDrawRequests).left().style(Styles.outlineLabel).name("draw");
+                info.label(() -> Strings.format("D/V/T/F @/@/@/@",
+                DebugUtil.lastDrawRequests, DebugUtil.lastVertices, DebugUtil.lastSwitchTexture, DebugUtil.lastFlushCount)).left().style(Styles.outlineLabel).name("draw");
                 info.row();
                 if (!android){
                     info.label(() -> "缩放: " + String.format("%.2f", renderer.getScale())).left().style(Styles.outlineLabel);

@@ -3,6 +3,7 @@ package arc.graphics.g2d;
 import arc.*;
 import arc.graphics.*;
 import arc.graphics.gl.*;
+import arc.math.*;
 import arc.math.geom.*;
 import arc.struct.*;
 import arc.util.*;
@@ -18,14 +19,14 @@ import java.util.concurrent.*;
 /** Fast sorting implementation written by zxtej. Don't ask me how it works. */
 public class SortedSpriteBatch2 extends SpriteBatch{
     public static class DrawRequest{
-        TextureRegion region = new TextureRegion();
-        float x, y, originX, originY, width, height, rotation, color, mixColor;
+        float color, mixColor;
         int verticesOffset, verticesLength;
         Texture texture;
         Blending blending;
         Runnable run;
     }
 
+    private static final float[] EXISTED = new float[0];
     protected static final int InitialSize = 10000;
     static ForkJoinHolder commonPool;
     boolean multithreaded = (Core.app.getVersion() >= 21 && !Core.app.isIOS()) || Core.app.isDesktop();
@@ -33,9 +34,10 @@ public class SortedSpriteBatch2 extends SpriteBatch{
     protected boolean sort, flushing;
     protected DrawRequest[] requests = new DrawRequest[InitialSize], copy = new DrawRequest[0];
     protected int[] requestZ = new int[InitialSize];
-    protected float[] vertices = new float[SPRITE_SIZE * InitialSize];
+    protected float[] requestVertices = new float[SPRITE_SIZE * InitialSize];
     protected int numRequests = 0, numVertices = 0;
     int[] contiguous = new int[2048], contiguousCopy = new int[2048];
+    protected int intZ = Float.floatToRawIntBits(z + 16f);
 
     {
         for(int i = 0; i < requests.length; i++){
@@ -73,59 +75,157 @@ public class SortedSpriteBatch2 extends SpriteBatch{
     }
 
     @Override
+    protected void z(float z){
+        if(this.z == z) return;
+        super.z(z);
+        intZ = Float.floatToRawIntBits(z + 16f);
+    }
+
+    protected int prepareVertices(int toWrite){
+        int idx = numVertices;
+        if(idx + toWrite > requestVertices.length){
+            requestVertices = Arrays.copyOf(requestVertices, requestVertices.length << 1);
+        }
+        numVertices += toWrite;
+        return idx;
+    }
+
+    @Override
     protected void draw(Texture texture, float[] spriteVertices, int offset, int count){
         if(sort && !flushing){
             //MDTX: shared vertices, no slice
-            if(numVertices + count >= vertices.length){
-                vertices = Arrays.copyOf(vertices, vertices.length * 3 / 2);
-            }
             int num = numRequests;
             //MDTX: 合批优化
             if(RenderExt.renderMerge && num > 1){
                 final DrawRequest last = requests[num - 1];
-                if(last.run == null && last.texture == texture && last.blending == blending && requestZ[num - 1] == Float.floatToRawIntBits(z + 16f)){
-                    System.arraycopy(spriteVertices, offset, vertices, numVertices, count);
+                if(last.run == null && last.texture == texture && last.blending == blending && requestZ[num - 1] == intZ){
+                    if(spriteVertices != EXISTED){
+                        int idx = prepareVertices(count);
+                        System.arraycopy(spriteVertices, offset, requestVertices, idx, count);
+                    }
                     last.verticesLength += count;
-                    numVertices += count;
                     return;
                 }
             }
             if(num >= this.requests.length) expandRequests();
             final DrawRequest req = requests[num];
-            System.arraycopy(spriteVertices, offset, vertices, req.verticesOffset = numVertices, req.verticesLength = count);
-            requestZ[num] = Float.floatToRawIntBits(z + 16f);
+            if(spriteVertices != EXISTED){
+                int idx = req.verticesOffset = prepareVertices(count);
+                System.arraycopy(spriteVertices, offset, requestVertices, idx, count);
+            }else{
+                req.verticesOffset = offset;
+            }
+            req.verticesLength = count;
+            requestZ[num] = intZ;
             req.texture = texture;
             req.blending = blending;
             req.run = null;
             numRequests++;
-            numVertices += count;
         }else{
             super.draw(texture, spriteVertices, offset, count);
         }
     }
 
-    @Override
-    protected void draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float rotation){
-        if(sort && !flushing){
-            if(numRequests >= requests.length) expandRequests();
-            final DrawRequest req = requests[numRequests];
-            req.x = x;
-            req.y = y;
-            requestZ[numRequests] = Float.floatToRawIntBits(z + 16f);
-            req.originX = originX;
-            req.originY = originY;
-            req.width = width;
-            req.height = height;
-            req.color = colorPacked;
-            req.rotation = rotation;
-            req.region.set(region);
-            req.mixColor = mixColorPacked;
-            req.blending = blending;
-            req.texture = null;
-            req.run = null;
-            numRequests++;
-        }else{
+    protected final void draw(TextureRegion region, float x, float y, float originX, float originY, float width, float height, float rotation){
+        if(!sort || flushing){
             super.draw(region, x, y, originX, originY, width, height, rotation);
+            return;
+        }
+        int idx = prepareVertices(SPRITE_SIZE);
+        region2vertices(requestVertices, idx, region, x, y, originX, originY, width, height, rotation);
+        draw(region.texture, EXISTED, idx, SPRITE_SIZE);
+    }
+
+
+    protected final void region2vertices(float[] vertices, int idx, TextureRegion region, float x, float y, float originX, float originY, float width, float height, float rotation){
+        float u = region.u;
+        float v = region.v2;
+        float u2 = region.u2;
+        float v2 = region.v;
+
+        float color = this.colorPacked;
+        float mixColor = this.mixColorPacked;
+
+        if(!Mathf.zero(rotation)){
+            //bottom left and top right corner points relative to origin
+            float worldOriginX = x + originX;
+            float worldOriginY = y + originY;
+            float fx = -originX;
+            float fy = -originY;
+            float fx2 = width - originX;
+            float fy2 = height - originY;
+
+            // rotate
+            float cos = Mathf.cosDeg(rotation);
+            float sin = Mathf.sinDeg(rotation);
+
+            float x1 = cos * fx - sin * fy + worldOriginX;
+            float y1 = sin * fx + cos * fy + worldOriginY;
+            float x2 = cos * fx - sin * fy2 + worldOriginX;
+            float y2 = sin * fx + cos * fy2 + worldOriginY;
+            float x3 = cos * fx2 - sin * fy2 + worldOriginX;
+            float y3 = sin * fx2 + cos * fy2 + worldOriginY;
+            float x4 = x1 + (x3 - x2);
+            float y4 = y3 - (y2 - y1);
+
+            vertices[idx] = x1;
+            vertices[idx + 1] = y1;
+            vertices[idx + 2] = color;
+            vertices[idx + 3] = u;
+            vertices[idx + 4] = v;
+            vertices[idx + 5] = mixColor;
+
+            vertices[idx + 6] = x2;
+            vertices[idx + 7] = y2;
+            vertices[idx + 8] = color;
+            vertices[idx + 9] = u;
+            vertices[idx + 10] = v2;
+            vertices[idx + 11] = mixColor;
+
+            vertices[idx + 12] = x3;
+            vertices[idx + 13] = y3;
+            vertices[idx + 14] = color;
+            vertices[idx + 15] = u2;
+            vertices[idx + 16] = v2;
+            vertices[idx + 17] = mixColor;
+
+            vertices[idx + 18] = x4;
+            vertices[idx + 19] = y4;
+            vertices[idx + 20] = color;
+            vertices[idx + 21] = u2;
+            vertices[idx + 22] = v;
+            vertices[idx + 23] = mixColor;
+        }else{
+            float fx2 = x + width;
+            float fy2 = y + height;
+
+            vertices[idx] = x;
+            vertices[idx + 1] = y;
+            vertices[idx + 2] = color;
+            vertices[idx + 3] = u;
+            vertices[idx + 4] = v;
+            vertices[idx + 5] = mixColor;
+
+            vertices[idx + 6] = x;
+            vertices[idx + 7] = fy2;
+            vertices[idx + 8] = color;
+            vertices[idx + 9] = u;
+            vertices[idx + 10] = v2;
+            vertices[idx + 11] = mixColor;
+
+            vertices[idx + 12] = fx2;
+            vertices[idx + 13] = fy2;
+            vertices[idx + 14] = color;
+            vertices[idx + 15] = u2;
+            vertices[idx + 16] = v2;
+            vertices[idx + 17] = mixColor;
+
+            vertices[idx + 18] = fx2;
+            vertices[idx + 19] = y;
+            vertices[idx + 20] = color;
+            vertices[idx + 21] = u2;
+            vertices[idx + 22] = v;
+            vertices[idx + 23] = mixColor;
         }
     }
 
@@ -138,7 +238,7 @@ public class SortedSpriteBatch2 extends SpriteBatch{
             req.blending = blending;
             req.mixColor = mixColorPacked;
             req.color = colorPacked;
-            requestZ[numRequests] = Float.floatToRawIntBits(z + 16f);
+            requestZ[numRequests] = intZ;
             req.texture = null;
             numRequests++;
         }else{
@@ -157,47 +257,49 @@ public class SortedSpriteBatch2 extends SpriteBatch{
 
     @Override
     protected void flush(){
-        flushRequests();
+        if(!flushing){
+            flushing = true;
+            flushRequests();
+            flushing = false;
+        }
         super.flush();
     }
 
     protected void flushRequests(){
-        if(!flushing && numRequests > 0){
-            flushing = true;
-            sortRequests();
-            float preColor = colorPacked, preMixColor = mixColorPacked;
-            Blending preBlending = blending;
+        if(numRequests == 0) return;
+        sortRequests();
+        float preColor = colorPacked, preMixColor = mixColorPacked;
+        Blending preBlending = blending;
 
-            DrawRequest[] r = copy;//MDTX: 'copy' instead requests
-            int num = numRequests;
-            for(int j = 0; j < num; j++){
-                final DrawRequest req = r[j];
+        float[] vertices = this.requestVertices;
+        DrawRequest[] r = copy;//MDTX: 'copy' instead requests
+        int num = numRequests;
+        for(int j = 0; j < num; j++){
+            final DrawRequest req = r[j];
 
-                colorPacked = req.color;
-                mixColorPacked = req.mixColor;
+            colorPacked = req.color;
+            mixColorPacked = req.mixColor;
 
-                super.setBlending(req.blending);
+            super.setBlending(req.blending);
 
-                if(req.run != null){
-                    req.run.run();
-                    req.run = null;
-                }else if(req.texture != null){
-                    super.draw(req.texture, vertices, req.verticesOffset, req.verticesLength);
-                }else{
-                    super.draw(req.region, req.x, req.y, req.originX, req.originY, req.width, req.height, req.rotation);
-                }
+            if(req.run != null){
+                req.run.run();
+                req.run = null;
+            }else if(req.texture != null){
+                super.draw(req.texture, vertices, req.verticesOffset, req.verticesLength);
+            }else{
+                throw new IllegalStateException("No Region Draw");
+//                    super.draw(req.region, req.x, req.y, req.originX, req.originY, req.width, req.height, req.rotation);
             }
-
-            colorPacked = preColor;
-            mixColorPacked = preMixColor;
-            color.abgr8888(colorPacked);
-            mixColor.abgr8888(mixColorPacked);
-            blending = preBlending;
-
-            numRequests = numVertices = 0;
-
-            flushing = false;
         }
+
+        colorPacked = preColor;
+        mixColorPacked = preMixColor;
+        color.abgr8888(colorPacked);
+        mixColor.abgr8888(mixColorPacked);
+        blending = preBlending;
+
+        numRequests = numVertices = 0;
     }
 
     protected void sortRequests(){
@@ -275,7 +377,7 @@ public class SortedSpriteBatch2 extends SpriteBatch{
                 z = itemZ[startI = i];
             }
         }
-        contiguous[ci] = Float.floatToRawIntBits(z + 16f);
+        contiguous[ci] = z;
         contiguous[ci + 1] = startI;
         contiguous[ci + 2] = numRequests - startI;
         this.contiguous = contiguous;
