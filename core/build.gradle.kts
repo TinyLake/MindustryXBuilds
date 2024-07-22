@@ -22,7 +22,7 @@ tasks{
         outputs.cacheIf { true }
         val outFile = projectDir.resolve("assets/locales")
         outputs.file(outFile).withPropertyName("outFile")
-        val bundles = projectDir.resolve("assets/bundles/").list()!!
+        val bundles = listOf("en") + projectDir.resolve("assets/bundles/").list()!!
             .filter { it.startsWith("bundle_") }
             .map { it.substring("bundle_".length, it.lastIndexOf('.')) }
             .sorted()
