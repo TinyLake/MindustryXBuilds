@@ -90,7 +90,7 @@ public class BufferedItemBridge extends ItemBridge{
                     float p = Math.min(((Time.time - time) * timeScale / speed), (float)(bufferCapacity - i) / bufferCapacity);
 
                     Draw.alpha(RenderExt.hiddenItemTransparency / 100f);
-                    Draw.rect(item.uiIcon, Mathf.lerp(begx, endx, p), Mathf.lerp(begy, endy, p), 4f, 4f);
+                    Draw.rect(item.fullIcon, Mathf.lerp(begx, endx, p), Mathf.lerp(begy, endy, p), 4f, 4f);
                 }
             }
         }

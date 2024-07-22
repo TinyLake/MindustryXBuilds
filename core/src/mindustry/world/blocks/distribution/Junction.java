@@ -112,7 +112,7 @@ public class Junction extends Block{
                     for(int i = 0; (item = buffer.getItem(dir, i)) != null; i++){
                         float time = buffer.getTime(dir, i);
                         float p = Math.min(((Time.time - time) * timeScale / speed), (float)(capacity - i) / capacity);
-                        Draw.rect(item.uiIcon, Mathf.lerp(begx, endx, p), Mathf.lerp(begy, endy, p), 4f, 4f);
+                        Draw.rect(item.fullIcon, Mathf.lerp(begx, endx, p), Mathf.lerp(begy, endy, p), 4f, 4f);
                     }
                 }
             }

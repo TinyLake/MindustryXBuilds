@@ -362,7 +362,7 @@ public class ItemBridge extends Block{
                 int loti = 0;
                 for(int iid = 0; iid < items.length(); iid++){
                     for(int itemid = 1; itemid <= items.get(iid); itemid++){
-                        Draw.rect(content.item(iid).uiIcon,
+                        Draw.rect(content.item(iid).fullIcon,
                         x, y - tilesize / 2f + 1f + 0.6f * (float)(loti++), 4f, 4f
                         );
                     }
