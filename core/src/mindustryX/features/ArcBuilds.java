@@ -95,7 +95,7 @@ public class ArcBuilds{
                 float ammoX = build.x - (build.block.size * tilesize / 2.0F) + (size / 2);
                 float ammoY = build.y - (build.block.size * tilesize / 2.0F) + (size / 2);
 
-                Draw.rect(lastAmmo.uiIcon, ammoX, ammoY, size, size);
+                Draw.rect(lastAmmo.fullIcon, ammoX, ammoY, size, size);
 
                 float leftAmmo = Mathf.lerp(0, 1, Math.min(1f, (float)entry.amount / ((ItemTurret)it.block).maxAmmo));
                 if(leftAmmo < 0.75f && showTurretAmmoAmount){
@@ -124,6 +124,8 @@ public class ArcBuilds{
     }
 
     public static void turretPlaceDraw(float x, float y, BaseTurret block){
+        float oldZ = Draw.z();
+        Draw.z(oldZ+0.1f);//MDTX: There no replace for Icon.power, so we offset the layer.
         float iconSize = 6f + 2f * block.size, range = block.range;
         ObjectMap<? extends UnlockableContent, BulletType> ammoTypes;
         if(block instanceof ContinuousLiquidTurret t){
@@ -146,6 +148,7 @@ public class ArcBuilds{
             if(bulletType.rangeChange > 0) Drawf.dashCircle(x, y, range + bulletType.rangeChange, Pal.placing);
             turretBulletDraw(x, y, item.uiIcon, iconSize, range + bulletType.rangeChange, (float)drawIndex / ammoTypes.size);
         }
+        Draw.z(oldZ);
     }
 
     private static void turretBulletDraw(float x, float y, TextureRegion icon, float iconSize, float range, float rotOffset){

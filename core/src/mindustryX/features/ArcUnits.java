@@ -214,6 +214,8 @@ public class ArcUnits{
         }
         Draw.reset();
 
+        float oldZ = Draw.z();
+        Draw.z(oldZ+0.1f);//MDTX: There no replace for effect.uiIcon, so we offset the layer.
         float index = 0f;
         float iconSize = 4f;
         int iconColumns = Math.max((int)(unit.hitSize() / (iconSize + 1f)), 4);
@@ -225,11 +227,12 @@ public class ArcUnits{
             iconSize, iconSize);
             index++;
         }
+        Draw.z(oldZ);
 
         index = 0f;
         if(unit instanceof Payloadc payload && payload.payloads().any()){
             for(Payload p : payload.payloads()){
-                Draw.rect(p.icon(),
+                Draw.rect(p.content().fullIcon,
                 unit.x - unit.hitSize() * 0.6f + 0.5f * iconSize * index,
                 unit.y + (unit.hitSize() / 2f) - 4f,
                 4f, 4f);
@@ -317,7 +320,7 @@ public class ArcUnits{
         if(!arcBuildInfo) return;
         if(control.input.droppingItem){
             Color color = player.within(Core.input.mouseWorld(control.input.getMouseX(), control.input.getMouseY()), itemTransferRange) ? Color.gold : Color.red;
-            drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, color, 0.25f, player.unit().stack.item.uiIcon, false);
+            drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, color, 0.25f, player.unit().stack.item.fullIcon, false);
         }else if(control.input.isBuilding || control.input.selectedBlock() || !player.unit().plans().isEmpty()){
             drawNSideRegion(player.unit().x, player.unit().y, 3, player.unit().type.buildRange, player.unit().rotation, Pal.heal, 0.25f, Icon.wrench.getRegion(), true);
         }
