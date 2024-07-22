@@ -48,7 +48,7 @@ public class UnitCargoUnloadPoint extends Block{
                 Draw.color(item.color);
                 Draw.rect(topRegion, x, y);
                 Draw.color();
-                if(RenderExt.arcChoiceUiIcon) Draw.rect(item.uiIcon, x, y,4f,4f);
+                if(RenderExt.arcChoiceUiIcon) Draw.rect(item.fullIcon, x, y,4f,4f);
             }
         }
 

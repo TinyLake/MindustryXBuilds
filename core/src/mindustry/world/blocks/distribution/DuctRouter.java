@@ -85,7 +85,7 @@ public class DuctRouter extends Block{
                 Draw.color(sortItem.color);
                 Draw.rect("center", x, y);
                 Draw.color();
-                if(RenderExt.arcChoiceUiIcon) Draw.rect(sortItem.uiIcon, x, y,4f,4f);
+                if(RenderExt.arcChoiceUiIcon) Draw.rect(sortItem.fullIcon, x, y,4f,4f);
             }else{
                 Draw.rect(topRegion, x, y, rotdeg());
             }

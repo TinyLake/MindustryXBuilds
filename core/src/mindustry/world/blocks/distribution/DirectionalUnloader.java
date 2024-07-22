@@ -123,7 +123,7 @@ public class DirectionalUnloader extends Block{
                 Draw.color(unloadItem.color);
                 Draw.rect(centerRegion, x, y);
                 Draw.color();
-                if(RenderExt.arcChoiceUiIcon) Draw.rect(unloadItem.uiIcon, x, y,4f,4f);
+                if(RenderExt.arcChoiceUiIcon) Draw.rect(unloadItem.fullIcon, x, y,4f,4f);
             }else{
                 Draw.rect(arrowRegion, x, y, rotdeg());
             }

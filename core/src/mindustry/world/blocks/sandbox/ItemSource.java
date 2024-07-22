@@ -74,7 +74,7 @@ public class ItemSource extends Block{
                 Draw.color(outputItem.color);
                 Fill.square(x, y, tilesize/2f - 0.00001f);
                 Draw.color();
-                if(RenderExt.arcChoiceUiIcon) Draw.rect(outputItem.uiIcon, x, y,4f,4f);
+                if(RenderExt.arcChoiceUiIcon) Draw.rect(outputItem.fullIcon, x, y,4f,4f);
             }
 
             super.draw();
