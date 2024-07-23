@@ -76,7 +76,7 @@ public class ArcBuilds{
             if((turretShowRange == 3 || (turretShowRange == 2 && targetAir) || (turretShowRange == 1 && targetGround)))
                 drawRange(build);
             else if(turretAlertRange > 0 && build.team != player.team()){
-                boolean canHitPlayer = !player.unit().isNull() && player.unit().hittable() && (player.unit().isFlying() ? targetAir : targetGround)
+                boolean canHitPlayer = !player.dead() && player.unit().hittable() && (player.unit().isFlying() ? targetAir : targetGround)
                 && build.within(player.unit().x, player.unit().y, build.range() + turretAlertRange);
                 boolean canHitMouse = build.within(Core.input.mouseWorldX(), Core.input.mouseWorldY(), build.range() + turretAlertRange);
                 boolean canHitCommand = control.input.commandMode && ((ArcUnits.selectedUnitsFlyer && targetAir) || (ArcUnits.selectedUnitsLand && targetGround));

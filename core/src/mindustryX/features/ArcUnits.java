@@ -141,7 +141,7 @@ public class ArcUnits{
         if(unitWeaponRange == 30){
             drawWeaponRange(unit, unitWeaponRangeAlpha);
         }else if(unit.team != player.team()){
-            boolean canHitPlayer = !player.unit().isNull() && player.unit().hittable() && (player.unit().isFlying() ? unit.type.targetAir : unit.type.targetGround)
+            boolean canHitPlayer = !player.dead() && player.unit().hittable() && (player.unit().isFlying() ? unit.type.targetAir : unit.type.targetGround)
             && unit.within(player.unit().x, player.unit().y, unit.type.maxRange + unitWeaponRange);
             boolean canHitCommand = control.input.commandMode && ((selectedUnitsFlyer && unit.type.targetAir) || (selectedUnitsLand && unit.type.targetGround));
             boolean canHitPlans = (control.input.block != null || control.input.selectPlans.size > 0) && unit.type.targetGround;

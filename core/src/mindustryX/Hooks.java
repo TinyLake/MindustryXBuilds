@@ -60,7 +60,7 @@ public class Hooks implements ApplicationListener{
             try{
                 ArcMessageDialog.resolveMsg(message, sender);
                 if(sender != null){
-                    message = (sender.unit().isNull() ? Iconc.alphaaaa : sender.unit().type.emoji()) + " " + message;
+                    message = (sender.dead() ? Iconc.alphaaaa : sender.unit().type.emoji()) + " " + message;
                 }
             }catch(Exception e){
                 Log.err(e);
