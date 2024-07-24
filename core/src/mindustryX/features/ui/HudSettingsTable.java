@@ -6,6 +6,7 @@ import arc.scene.event.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import arc.util.*;
+import mindustry.content.*;
 import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.ui.*;
@@ -15,6 +16,7 @@ import mindustryX.features.*;
 
 import static arc.Core.*;
 import static mindustry.Vars.*;
+import static mindustry.ui.Styles.flatTogglet;
 
 //moved from mindustry.arcModule.ui.quickTool.HudSettingsTable
 public class HudSettingsTable extends ToolTableBase{
@@ -91,7 +93,7 @@ public class HudSettingsTable extends ToolTableBase{
             .checked(a -> Core.settings.getBool("showweather")).size(30, 30).tooltip("天气显示");
             t.button("[cyan]扫", Styles.flatTogglet, () -> ArcScanMode.enabled = !ArcScanMode.enabled)
             .checked(a -> ArcScanMode.enabled).size(30, 30).tooltip("扫描模式");
-
+            t.button(Blocks.worldMessage.emoji(), flatTogglet, () -> Settings.toggle("displayallmessage")).checked(a -> RenderExt.displayAllMessage).size(30, 30).tooltip("开关信息板全显示");
         }).left().row();
 
         sliderPref("turretShowRange", 0, 3, 1, s -> switch(s){

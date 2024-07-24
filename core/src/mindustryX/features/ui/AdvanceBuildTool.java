@@ -23,23 +23,17 @@ import mindustry.world.blocks.logic.*;
 import mindustry.world.blocks.power.*;
 import mindustry.world.blocks.production.*;
 import mindustry.world.blocks.storage.*;
-import mindustryX.features.*;
-import mindustryX.features.Settings;
 import mindustryX.features.func.*;
 
 import static mindustry.Vars.*;
-import static mindustry.ui.Styles.flatTogglet;
 
 //moved from mindustry.arcModule.ui.quickTool.AdvanceBuildTool
 public class AdvanceBuildTool extends ToolTableBase{
     BuildRange placement = BuildRange.player;
     Rect selection = new Rect();
-    private Block original = Blocks.conveyor, newBlock = Blocks.titaniumConveyor;
-    private Block autoBuild = Blocks.turbineCondenser;
-    private Block searchBlock = Blocks.itemSource;
+    private Block find = Blocks.turbineCondenser, target = Blocks.titaniumConveyor;
     private Building searchBuild = null;
     private int searchBlockIndex = -1;
-    private boolean shadowBuild = false;
 
     public Seq<Building> buildingSeq = new Seq<>();
     private final BuildTiles buildTiles = new BuildTiles();
@@ -49,20 +43,12 @@ public class AdvanceBuildTool extends ToolTableBase{
     public AdvanceBuildTool(){
         icon = Blocks.buildTower.emoji();
         Events.on(EventType.WorldLoadEvent.class, e -> rebuild());
-        Events.run(EventType.Trigger.update, () -> {
-            if(shadowBuild && player.unit() != null && player.unit().plans != null && player.unit().activelyBuilding()){
-                if(player.unit().buildPlan().progress == 0) return;
-                player.unit().plans.remove(player.unit().buildPlan());
-                Call.deletePlans(player, new int[]{player.unit().plans.indexOf(player.unit().buildPlan(), true)});
-            }
-        });
-
     }
 
     @Override
     protected void buildTable(){
-        table(t -> {
-            t.setBackground(Styles.black6);
+        table(Styles.black6, t -> {
+            t.row().add("区域：");
             t.table(tt -> {
                 tt.button((placement == BuildRange.global ? "[cyan]" : "[gray]") + "", Styles.flatBordert, () -> {
                     placement = BuildRange.global;
@@ -70,7 +56,10 @@ public class AdvanceBuildTool extends ToolTableBase{
                 }).tooltip("[cyan]全局检查").size(30f);
                 tt.button((placement == BuildRange.zone ? "[cyan]" : "[gray]") + "\uE818", Styles.flatBordert, () -> {
                     selection = control.input.lastSelection;
-                    if(selection.area() < 10f) return;
+                    if(selection.area() < 10f){
+                        ui.announce("当前选定区域为空，请通过F规划区域");
+                        return;
+                    }
                     placement = BuildRange.zone;
                     rebuild();
                 }).tooltip("[cyan]选择范围").size(30f);
@@ -92,96 +81,79 @@ public class AdvanceBuildTool extends ToolTableBase{
                     Draw.reset();
                 });
             }).fillX().row();
+            t.row().add("设定：");
             t.table(tt -> {
-                tt.button("R", Styles.flatBordert, this::replaceBlock).tooltip("[cyan]替换方块").size(30f);
-                tt.button(replaceBlockName(), Styles.flatBordert, this::replaceBlockSetting).tooltip("[acid]设置替换").width(100f).height(30f);
-            }).fillX().row();
-            t.table(tt -> {
-                tt.button(autoBuild.emoji(), Styles.flatBordert, () -> blockAutoPlacer(autoBuild)).size(30f);
-                tt.button("\uE87C", Styles.flatBordert, () -> {
-                    new BlockSelectDialog(Block::isPlaceable, block -> autoBuild = block, block -> autoBuild == block).show();
-                    rebuild();
-                }).size(30f);
                 tt.update(() -> {
-                    if(control.input.selectedBlock()){
-                        autoBuild = control.input.block;
+                    if(control.input.selectedBlock() && target != control.input.block){
+                        target = control.input.block;
                         rebuild();
                     }
                 });
-            }).fillX().row();
-            t.table(tt -> {
-                tt.button("S", Styles.flatBordert, this::searchBlock).update(button -> {
-
-                    buildingSeq = player.team().data().buildings.select(building1 -> building1.block == searchBlock);
-                    if(searchBlock.privileged){
+                tt.button(find.emoji(), Styles.flatBordert, () -> {
+                    new BlockSelectDialog(Block::isPlaceable, block -> this.find = block, block -> this.find == block).show();
+                    rebuild();
+                }).size(30f).tooltip("源方块");
+                tt.button("", Styles.flatBordert, this::searchBlock).update(button -> {
+                    buildingSeq.clear();
+                    if(find.privileged){
                         for(Team team : Team.all){
-                            if(team == player.team()) continue;
-                            buildingSeq.add(team.data().buildings.select(building1 -> building1.block == searchBlock));
+                            buildingSeq.add(team.data().getBuildings(find));
                         }
+                    }else{
+                        buildingSeq.add(player.team().data().getBuildings(find));
                     }
 
-                    if(buildingSeq.contains(searchBuild)){
-                        searchBlockIndex = buildingSeq.indexOf(searchBuild);
-                    }else{
+                    if(!buildingSeq.contains(searchBuild)){
                         searchBuild = null;
                         searchBlockIndex = -1;
                     }
 
-                    if(buildingSeq.isEmpty() || searchBlockIndex == -1) button.setText("[lightgray]\uE88A");
-                    else button.setText("\uE88A" + (searchBlockIndex + 1) + "/" + buildingSeq.size);
-                }).tooltip("[cyan]搜索方块").growX().height(30f);
-
-                tt.button(searchBlock.emoji(), Styles.flatBordert, () -> {
-                    new BlockSelectDialog(Block::isPlaceable, block -> searchBlock = block, block -> searchBlock == block).show().hidden(this::rebuild);
-                    searchBlockIndex = 0;
-                }).tooltip("[acid]搜索替换").width(30f).height(30f);
-
-                tt.update(() -> {
-                    if(control.input.selectedBlock()){
-                        searchBlock = control.input.block;
-                        rebuild();
-                    }
-                });
-            }).fillX().row();
-            t.table(tt -> {
-                tt.button(Blocks.worldMessage.emoji(), flatTogglet, () -> Settings.toggle("displayallmessage")).checked(a -> RenderExt.displayAllMessage).size(30, 30).tooltip("开关信息板全显示");
-                tt.button(Blocks.worldProcessor.emoji(), Styles.flatBordert, () -> {
-                    showWorldProcessorInfo();
-                    searchBlock = Blocks.worldProcessor;
+                    if(buildingSeq.isEmpty()) button.setText("0/0");
+                    else button.setText((searchBlockIndex + 1) + "/" + buildingSeq.size);
+                }).tooltip("搜索方块").growX().width(90f).height(30f);
+                tt.button("\uE803", Styles.flatBordert, this::replaceBlockSetting).tooltip("快速设置").size(30f);
+                tt.button(target.emoji(), Styles.flatBordert, () -> {
+                    new BlockSelectDialog(Block::isPlaceable, block -> target = block, block -> target == block).show();
                     rebuild();
-                }).size(30).tooltip("地图世处信息");
+                }).size(30f).tooltip("目标方块");
+                tt.add().width(16);
             }).fillX().row();
-            t.table(tt -> tt.button("\uE817", flatTogglet, () -> shadowBuild = !shadowBuild).checked(a -> shadowBuild).size(30, 30).tooltip("虚影建造模式\n[red]有些服限制发包数较低，建筑较多时会被踢出。请酌情使用")).fillX().row();
-            if(!net.client()){
-                t.table(tt -> {
-                    tt.button("\uF8C9", flatTogglet, () -> {
-                        AdvanceToolTable.forcePlacement ^= true;
-                        if(mobile)
-                            ui.announce("允许蓝图建造地形");
-                    }).checked(a -> AdvanceToolTable.forcePlacement).size(30, 30).tooltip("允许蓝图建造地形");
+            t.row().add("操作：");
+            t.table(tt -> {
+                tt.button("\uE88A" + Blocks.worldProcessor.emoji(), Styles.flatBordert, () -> {
+                    showWorldProcessorInfo();
+                    find = Blocks.worldProcessor;
+                    rebuild();
+                }).tooltip("地图世处信息").width(60f).height(30f);
+                tt.button("P", Styles.flatBordert, () -> buildTiles.buildBlock(target, tile -> {
+                    if(target instanceof ThermalGenerator) return target.sumAttribute(((ThermalGenerator)target).attribute, tile);
+                    if(target instanceof Drill) return ((Drill)target).countOreArc(tile);
+                    return 1f;
+                })).tooltip("自动放置").size(30f);
+                tt.button("R", Styles.flatBordert, () -> replaceBlock(find, target)).tooltip("一键替换").size(30f);
+                if(!net.client()){
                     tt.button("\uE800", Styles.flatBordert, () -> {
                         instantBuild();
                         if(mobile)
                             ui.announce("瞬间建造\n[cyan]强制瞬间建造[acid]选择范围内[cyan]内规划中的所有建筑\n[orange]可能出现bug");
                     }).size(30, 30).tooltip("瞬间建造\n[cyan]强制瞬间建造[acid]选择范围内[cyan]规划中的所有建筑\n[orange]可能出现bug");
-                    tt.button("\uF8D2", Styles.flatBordert, () -> {
-                        if(!AdvanceToolTable.forcePlacement) ui.announce("请开启允许蓝图建造地形 \uF8C9");
-                        else saveTerrain(true);
-                    }).size(30, 30).tooltip("复制所选范围内的地板作为蓝图");
-                    tt.button("\uF8C4", Styles.flatBordert, () -> {
-                        if(!AdvanceToolTable.forcePlacement) ui.announce("请开启允许蓝图建造地形 \uF8C9");
-                        else saveTerrain(false);
-                    }).size(30, 30).tooltip("复制所选范围内的修饰作为蓝图");
-
-                }).fillX().row();
-            }
+                }
+            }).fillX().row();
         });
+    }
+
+    void replaceBlockGroup(Dialog dialog, Table t, Block ori, Block re){
+        t.button(ori.emoji() + "\uE803" + re.emoji(), () -> {
+            find = ori;
+            target = re;
+            dialog.hide();
+        }).width(100f).height(30f);
     }
 
     void replaceBlockSetting(){
         BaseDialog dialog = new BaseDialog("方块替换器");
         dialog.cont.table(t -> {
-            t.table(tt -> tt.label(() -> "当前选择：" + replaceBlockName())).row();
+            t.table(tt -> tt.label(() -> "当前选择：" + find.emoji() + "\uE803" + target.emoji())).row();
             t.image().color(Pal.accent).fillX().row();
             t.table(tt -> {
                 replaceBlockGroup(dialog, tt, Blocks.conveyor, Blocks.titaniumConveyor);
@@ -190,10 +162,6 @@ public class AdvanceBuildTool extends ToolTableBase{
                 replaceBlockGroup(dialog, tt, Blocks.conduit, Blocks.reinforcedConduit);
             }).padTop(5f).row();
             t.image().color(Pal.accent).padTop(5f).fillX().row();
-            t.table(tt -> {
-                tt.button("源方块", () -> new BlockSelectDialog(block -> block.replaceable, block -> original = block, block -> original == block).show()).width(100f).height(30f).row();
-                tt.button("新方块", () -> new BlockSelectDialog(block -> original.canReplace(block), block -> newBlock = block, block -> newBlock == block).show()).width(100f).height(30f).row();
-            }).padTop(5f).row();
         });
         dialog.hidden(this::rebuild);
         dialog.addCloseButton();
@@ -214,39 +182,9 @@ public class AdvanceBuildTool extends ToolTableBase{
         ui.announce(Strings.format("地图共有@个世处，总共@行指令，@个字符", data[0], data[1], data[2]), 10);
     }
 
-    void replaceBlockGroup(Dialog dialog, Table t, Block ori, Block re){
-        t.button(replaceBlockName(ori, re), () -> {
-            original = ori;
-            newBlock = re;
-            dialog.hide();
-        }).width(100f).height(30f);
-    }
-
-    String replaceBlockName(){
-        return replaceBlockName(original, newBlock);
-    }
-
-    String replaceBlockName(Block ori, Block re){
-        return ori.emoji() + "\uE803" + re.emoji();
-    }
-
-    void replaceBlock(){
-        replaceBlock(original, newBlock);
-    }
-
     void replaceBlock(Block ori, Block re){
         player.team().data().buildings.each(building -> building.block() == ori && contain(building.tile),
         building -> player.unit().addBuild(new BuildPlan(building.tile.x, building.tile.y, building.rotation, re, building.config())));
-    }
-
-    void blockAutoPlacer(Block block){
-        buildTiles.buildBlock(block, tile -> getBlockEff(block, tile));
-    }
-
-    float getBlockEff(Block block, Tile tile){
-        if(block instanceof ThermalGenerator) return block.sumAttribute(((ThermalGenerator)block).attribute, tile);
-        if(block instanceof Drill) return ((Drill)block).countOreArc(tile);
-        return 1f;
     }
 
     boolean contain(Tile tile){
@@ -281,7 +219,7 @@ public class AdvanceBuildTool extends ToolTableBase{
         searchBuild = buildingSeq.get(searchBlockIndex);
 
         control.input.panCamera(Tmp.v1.set(searchBuild));
-        ui.announce("[violet]方块搜索\n[acid]找到方块[cyan]" + (searchBlockIndex + 1) + "[acid]/[cyan]" + buildingSeq.size + "[white]" + searchBlock.emoji());
+        ui.announce("[violet]方块搜索\n[white]找到方块[cyan]" + (searchBlockIndex + 1) + "[]/[cyan]" + buildingSeq.size + "[]" + find.emoji());
     }
 
     void instantBuild(){
@@ -289,17 +227,6 @@ public class AdvanceBuildTool extends ToolTableBase{
             if(!contain(buildPlan.tile())) return;
             forceBuildBlock(buildPlan.block, buildPlan.tile(), player.team(), buildPlan.rotation, buildPlan.config);
         });
-    }
-
-    void saveTerrain(boolean floor){
-        buildTiles.updateTiles();
-        Seq<Schematic.Stile> tiles = new Seq<>();
-        buildTiles.validTile.each(tile -> {
-            if(!floor && tile.overlay() == Blocks.air) return;
-            tiles.add(new Schematic.Stile(floor ? tile.floor() : tile.overlay(), tile.x - buildTiles.minx, tile.y - buildTiles.miny));
-        });
-        control.input.lastSchematic = new Schematic(tiles, new StringMap(), buildTiles.width, buildTiles.height);
-        control.input.useSchematic(control.input.lastSchematic);
     }
 
     void forceBuildBlock(Block block, Tile tile, Team team, int rotation, Object config){
