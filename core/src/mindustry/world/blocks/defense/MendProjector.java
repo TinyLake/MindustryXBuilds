@@ -140,9 +140,10 @@ public class MendProjector extends Block{
             super.draw();
 
             float realRange = range + phaseHeat * phaseRangeBoost;
-            float mendZone = Core.settings.getInt("mend_zone") / 100f;
-            if(status() == BlockStatus.active && mendZone > 0.02f){
-                Draw.color(phaseHeat > 0.2 ? Color.valueOf("00ff55") : Color.valueOf("66ff99"), mendZone);
+            if(status() == BlockStatus.active && RenderExt.mendZoneTransparency > 0.02f){
+                var c = Tmp.c1.set(baseColor);
+                if(phaseHeat > 0) c.lerp(phaseColor, 0.5f);
+                Draw.color(c, RenderExt.mendZoneTransparency);
                 Lines.dashCircle(x, y, realRange);
             }
             float f = 1f - (Time.time / 100f) % 1f;

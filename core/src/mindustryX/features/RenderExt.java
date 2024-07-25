@@ -34,7 +34,7 @@ public class RenderExt{
     public static boolean showPlacementEffect;
     public static int hiddenItemTransparency;
     public static int blockBarMinHealth;
-    public static float overdriveZoneTransparency;
+    public static float overdriveZoneTransparency, mendZoneTransparency;
     public static boolean logicDisplayNoBorder, arcDrillMode;
     public static int blockRenderLevel;
     public static boolean renderSort, renderMerge;
@@ -73,6 +73,7 @@ public class RenderExt{
             hiddenItemTransparency = Core.settings.getInt("HiddleItemTransparency");
             blockBarMinHealth = Core.settings.getInt("blockbarminhealth");
             overdriveZoneTransparency = Core.settings.getInt("overdrive_zone") / 100f;
+            mendZoneTransparency = Core.settings.getInt("mend_zone") / 100f;
             logicDisplayNoBorder = Core.settings.getBool("arclogicbordershow");
             arcDrillMode = Core.settings.getBool("arcdrillmode");
             blockRenderLevel = Core.settings.getInt("blockRenderLevel");
