@@ -61,7 +61,6 @@ public class OverdriveProjector extends Block{
             indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range + phaseRangeBoost, other -> other.block.canOverdrive, other -> Drawf.selected(other, Tmp.c1.set(phaseColor).a(Mathf.absin(4f, 1f))));
         }
 
-
         indexer.eachBlock(player.team(), x * tilesize + offset, y * tilesize + offset, range, other -> other.block.canOverdrive, other -> Drawf.selected(other, Tmp.c1.set(baseColor).a(Mathf.absin(4f, 1f))));
     }
 

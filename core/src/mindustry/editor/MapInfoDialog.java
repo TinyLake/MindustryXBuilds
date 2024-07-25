@@ -220,21 +220,16 @@ public class MapInfoDialog extends BaseDialog{
     }
 
     private boolean arcreadBoolLable(String labelname) {
-        ObjectMap<String, String> tags = editor.tags;
-        if (tags.get("description", "").contains(labelname)) {
-            return Boolean.TRUE;
-        } else {
-            return Boolean.FALSE;
-        }
+        return editor.tags.get("description", "").contains(labelname);
     }
 
     private void arcAddBoolLable(Boolean isadd, String labelname) {
         ObjectMap<String, String> tags = editor.tags;
         String des = tags.get("description", "");
-        if (des.contains(labelname) && !isadd) {
+        if(des.contains(labelname) && !isadd){
             tags.put("description", des.replace(labelname, ""));
-        } else if (!des.contains(labelname) && isadd) {
-            tags.put("description", des.concat(labelname));
+        }else if(!des.contains(labelname) && isadd){
+            tags.put("description", des + labelname);
         }
     }
 }

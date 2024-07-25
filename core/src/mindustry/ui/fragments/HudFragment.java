@@ -1132,29 +1132,23 @@ public class HudFragment{
     }
 
     private String calWaveShower(){
-        StringBuilder builder = new StringBuilder();
-
-
-        if(!state.rules.waves && state.rules.attackMode){
-            int sum = Math.max(state.teams.present.sum(t -> t.team != player.team() ? t.cores.size : 0), 1);
-            builder.append("敌人核心：[orange]").append(sum);
-            return builder.toString();
-        }
-
-        if(!state.rules.waves && state.isCampaign()){
-            builder.append("[lightgray]").append(Core.bundle.get("sector.curcapture"));
-        }
-
         if(!state.rules.waves){
-            return builder.toString();
+            if(state.rules.attackMode){
+                int sum = Math.max(state.teams.present.sum(t -> t.team != player.team() ? t.cores.size : 0), 1);
+                return "敌人核心：[orange]" + sum;
+            }
+
+            if(state.isCampaign()){
+                return "[lightgray]" + Core.bundle.get("sector.curcapture");
+            }
+            return "";
         }
 
         if(CalWinWave() > 1 && CalWinWave() >= state.wave){
-            builder.append("[orange]").append(state.wave).append("[white]/[yellow]").append(CalWinWave());
+            return "[orange]" + state.wave + "[white]/[yellow]" + CalWinWave();
         }else{
-            builder.append("波次：[orange]").append(state.wave);
+            return "波次：[orange]" + state.wave;
         }
-        return builder.toString();
     }
 
     private int calWaveEnemy(int wave){
