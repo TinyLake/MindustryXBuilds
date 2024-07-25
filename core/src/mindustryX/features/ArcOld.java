@@ -203,7 +203,6 @@ public class ArcOld{
             c.sliderPref("editorBrush", 4, 3, 12, i -> i + "");
             c.checkPref("autoSelSchematic", false);
             c.checkPref("researchViewer", false);
-            c.checkPref("arcShareMedia", true);
 
 
             c.addCategory("arcRadar");
@@ -219,9 +218,6 @@ public class ArcOld{
 
             c.addCategory("personalized");
             c.checkPref("menuFloatText", true);
-            c.sliderPref("menuFlyersCount", 0, -15, 50, 5, i -> i + "");
-            c.checkPref("menuFlyersRange", false);
-            c.checkPref("menuFlyersFollower", false);
             c.checkPref("colorizedContent", false);
             c.textPref("arcBackgroundPath", "");
 
