@@ -465,8 +465,10 @@ public class LCanvas extends Table{
             statements.addChildBefore(this, newElem);
             remove();
             for(Element c : statements.getChildren()){
-                if(c instanceof StatementElem ste && ste.st instanceof JumpStatement jst && (jst.dest == null || jst.dest == st.elem))
+                if(c instanceof StatementElem ste && ste.st instanceof JumpStatement jst && (jst.dest == null || jst.dest == st.elem)){
+                    if(0 > jst.destIndex || jst.destIndex >= statements.getChildren().size) continue;
                     jst.dest = (StatementElem)statements.getChildren().get(jst.destIndex);
+                }
             }
             statements.layout();
         }
