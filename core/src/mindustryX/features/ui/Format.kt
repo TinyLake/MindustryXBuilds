@@ -80,7 +80,7 @@ data class Format @JvmOverloads constructor(var decimal: Int = 2, var fixDecimal
     }
 
     @JvmOverloads
-    fun percent(cur: Float, max: Float, percent: Float = 100 * cur / max, showPercent: Boolean = percent < 0.95f): String {
+    fun percent(cur: Float, max: Float, percent: Float = cur / max, showPercent: Boolean = percent < 0.95f): String {
         return buildString {
             if (Mathf.zero(percent, 0.1f)) append('\uE815') else append(format(cur))
             if (percent < 0.99f) {
@@ -89,7 +89,7 @@ data class Format @JvmOverloads constructor(var decimal: Int = 2, var fixDecimal
             }
             if (showPercent) {
                 append(" [lightgray]| ")
-                append(percent.toInt())
+                append((percent * 100).toInt())
                 append('%')
             }
         }
@@ -103,7 +103,7 @@ data class Format @JvmOverloads constructor(var decimal: Int = 2, var fixDecimal
 object FormatDefault {
     @JvmOverloads
     @JvmStatic
-    fun percent(cur: Float, max: Float, percent: Float = 100 * cur / max, showPercent: Boolean = percent <= 0.99f): String = Format.default.percent(cur, max, percent, showPercent)
+    fun percent(cur: Float, max: Float, percent: Float = cur / max, showPercent: Boolean = percent <= 0.99f): String = Format.default.percent(cur, max, percent, showPercent)
 
     @JvmStatic
     fun format(number: Float): String = Format.default.format(number)
