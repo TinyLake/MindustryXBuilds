@@ -3,7 +3,7 @@ sourceSets.main.java.srcDirs = ["src/"]
 project.ext.mainClassName = "mindustry.desktop.DesktopLauncher"
 project.ext.assetsDir = new File("../core/assets")
 
-task run(dependsOn: classes, type: JavaExec){
+task run(dependsOn: [classes, ":core:allAssets"], type: JavaExec){
     mainClass = project.mainClassName
     classpath = sourceSets.main.runtimeClasspath
     standardInput = System.in
