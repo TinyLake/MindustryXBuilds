@@ -169,7 +169,6 @@ public class ArcOld{
                 case 3 -> "全部记录";
                 default -> s + "";
             });
-            c.checkPref("arcPlayerList", true);
             c.checkPref("ShowInfoPopup", true);
             c.checkPref("arcShareWaveInfo", false);
             c.checkPref("arcAlwaysTeamColor", false);
