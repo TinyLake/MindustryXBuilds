@@ -36,8 +36,8 @@ public abstract class ClientLauncher extends ApplicationCore implements Platform
     @Override
     public void setup(){
         String dataDir = OS.env("MINDUSTRY_DATA_DIR");
-        if(app.isDesktop() && dataDir == null && Fi.get("config").isDirectory()){
-            dataDir = "config";
+        if(app.isDesktop() && dataDir == null && Fi.get("data").isDirectory()){
+            dataDir = "data";
         }
         if(dataDir != null){
             Core.settings.setDataDirectory(files.absolute(dataDir));
