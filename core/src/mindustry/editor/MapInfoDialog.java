@@ -56,61 +56,59 @@ public class MapInfoDialog extends BaseDialog{
                 tags.put("modeName", text);
             }).size(400f, 55f).maxTextLength(1000).get();
 
-            if (Core.settings.getBool("arcPlayerList")) {
-                t.row();
-                t.add("[cyan]服务器标签").padRight(8).left();
-                t.button("编辑...", () -> {
-                    BaseDialog dialog = new BaseDialog("地图标签");
+            t.row();
+            t.add("[cyan]服务器特殊标签").padRight(8).left();
+            t.button("编辑...", () -> {
+                BaseDialog dialog = new BaseDialog("地图标签");
 
-                    dialog.cont.pane(td -> {
-                        td.add("[cyan]微泽系服务器标签编辑器 \n[white]BY [violet]Lucky Clover"
-                                + "\n\n[white]用于国内新版微泽系插件标签。"
-                                + "\n[orange]如果您发现标签无效，可能是您所在的服务器插件版本过低。请联系服主更新插件"
-                                + "\n所有标签与主服同步"
-                                + "\n\n[red]需要退出地图界面后重新打开才会更新"
-                                + "\n\n[white]如果有bug欢迎提出"
-                        );
-                        td.row();
-                        td.row();
+                dialog.cont.pane(td -> {
+                    td.add("[cyan]微泽系服务器标签编辑器 \n[white]BY [violet]Lucky Clover"
+                            + "\n\n[white]用于国内新版微泽系插件标签。"
+                            + "\n[orange]如果您发现标签无效，可能是您所在的服务器插件版本过低。请联系服主更新插件"
+                            + "\n所有标签与主服同步"
+                            + "\n\n[red]需要退出地图界面后重新打开才会更新"
+                            + "\n\n[white]如果有bug欢迎提出"
+                    );
+                    td.row();
+                    td.row();
 
-                        td.add("PVP保护时间(s)").left();
-                        td.field(arcReadStringLabel("@pvpProtect"), pama -> {
-                            arcAddStringLabel(pama, "@pvpProtect");
-                        }).maxTextLength(5).left();
-                        td.row();
-                        td.add("禁用队伍(如1,2,3...)").left();
-                        td.field(arcReadStringLabel("@banTeam"), pama -> {
-                            arcAddStringLabel(pama, "@banTeam");
-                        }).maxTextLength(5).left();
-                        td.row();
-                        td.add("插件选择").left();
-                        td.field(arcReadStringLabel("@mapScript"), pama -> {
-                            arcAddStringLabel(pama, "@mapScript");
-                        }).maxTextLength(6).left();
-                        td.row();
-                        td.check("空域管制 [acid]敌方核心保护区内禁止空军", arcreadBoolLable("[@limitAir]"), islimit -> {
-                            arcAddBoolLable(islimit, "[@limitAir]");
-                        }).left();
-                        td.row();
-                        td.check("塔防模式 [acid]怪物仅会在出生点地板移动，不会攻击", arcreadBoolLable("[@towerDefend]"), islimit -> {
-                            arcAddBoolLable(islimit, "[@towerDefend]");
-                        }).left();
-                        td.row();
-                        td.check("敌人掉落 [acid]非塔防模式下，打怪掉落资源", arcreadBoolLable("[@TDDrop]"), islimit -> {
-                            arcAddBoolLable(islimit, "[@TDDrop]");
-                        }).left();
-                        td.row();
-                        td.check("水漫金山 [acid]蓝队核心会释放洪水淹没你的核心", arcreadBoolLable("[@floodV2]"), islimit -> {
-                            arcAddBoolLable(islimit, "[@flood]");
-                        }).left();
+                    td.add("PVP保护时间(s)").left();
+                    td.field(arcReadStringLabel("@pvpProtect"), pama -> {
+                        arcAddStringLabel(pama, "@pvpProtect");
+                    }).maxTextLength(5).left();
+                    td.row();
+                    td.add("禁用队伍(如1,2,3...)").left();
+                    td.field(arcReadStringLabel("@banTeam"), pama -> {
+                        arcAddStringLabel(pama, "@banTeam");
+                    }).maxTextLength(5).left();
+                    td.row();
+                    td.add("插件选择").left();
+                    td.field(arcReadStringLabel("@mapScript"), pama -> {
+                        arcAddStringLabel(pama, "@mapScript");
+                    }).maxTextLength(6).left();
+                    td.row();
+                    td.check("空域管制 [acid]敌方核心保护区内禁止空军", arcreadBoolLable("[@limitAir]"), islimit -> {
+                        arcAddBoolLable(islimit, "[@limitAir]");
                     }).left();
-                    dialog.row();
-                    dialog.addCloseButton();
-                    dialog.margin(16f);
+                    td.row();
+                    td.check("塔防模式 [acid]怪物仅会在出生点地板移动，不会攻击", arcreadBoolLable("[@towerDefend]"), islimit -> {
+                        arcAddBoolLable(islimit, "[@towerDefend]");
+                    }).left();
+                    td.row();
+                    td.check("敌人掉落 [acid]非塔防模式下，打怪掉落资源", arcreadBoolLable("[@TDDrop]"), islimit -> {
+                        arcAddBoolLable(islimit, "[@TDDrop]");
+                    }).left();
+                    td.row();
+                    td.check("水漫金山 [acid]蓝队核心会释放洪水淹没你的核心", arcreadBoolLable("[@floodV2]"), islimit -> {
+                        arcAddBoolLable(islimit, "[@flood]");
+                    }).left();
+                }).left();
+                dialog.row();
+                dialog.addCloseButton();
+                dialog.margin(16f);
 
-                    dialog.show();
-                }).left().width(200f);
-            }
+                dialog.show();
+            }).left().width(200f);
 
 
             t.row();
