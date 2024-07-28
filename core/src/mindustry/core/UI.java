@@ -83,10 +83,6 @@ public class UI implements ApplicationListener, Loadable{
 
     private @Nullable Element lastAnnouncement;
 
-    public UI(){
-        Fonts.loadFonts();
-    }
-
     public static void loadColors(){
         Colors.put("accent", Pal.accent);
         Colors.put("unlaunched", Color.valueOf("8982ed"));
