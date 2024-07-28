@@ -204,7 +204,7 @@ public class ConstructBlock extends Block{
                 requirements.append(stack.item.emoji()).append(hasItem ? "[#ffd37f]" : "[#e55454]").append(investItem).append("/").append(needItem).append("/").append(UI.formatAmount(coreAmount)).append("[]");
             }
             pos.set(this).add(-buildHitSize / 2f, -buildHitSize / 2f);//左下角
-            FuncX.drawText(pos, requirements.toString(), scl, Color.white, Align.bottomLeft);
+            FuncX.drawText(pos, requirements.toString(), scl, Color.white, Align.topLeft);
         }
 
         @Override

@@ -1292,7 +1292,7 @@ public abstract class InputHandler implements InputProcessor, GestureListener{
         NormalizeDrawResult result = Placement.normalizeDrawArea(Blocks.air, x1, y1, x2, y2, false, maxLength, 1f);
 
         String arcSelectionSize = Math.abs(x2 - x1) + 1 + "×" + (Math.abs(y1 - y2) + 1);
-        FuncX.drawText(Tmp.v1.set((x1 + x2) / 2f, Math.max(y1, y2) + 1).scl(tilesize), arcSelectionSize, 2f, Pal.accent, Align.top);
+        FuncX.drawText(Tmp.v1.set((x1 + x2) / 2f, Math.max(y1, y2) + 1).scl(tilesize), arcSelectionSize, 2f, Pal.accent, Align.bottom);
         Lines.stroke(2f);
 
         Draw.color(col1);
