@@ -7,6 +7,7 @@ import arc.struct.*;
 import arc.util.*;
 import arc.util.io.*;
 import arc.util.pooling.*;
+import arc.util.pooling.Pool.*;
 import mindustry.annotations.Annotations.*;
 import mindustry.entities.units.*;
 import mindustry.gen.*;
@@ -60,7 +61,7 @@ public class Unloader extends Block{
         removeBar("items");
     }
 
-    public static class ContainerStat{
+    public static class ContainerStat implements Poolable{
         Building building;
         float loadFactor;
         boolean canLoad;
@@ -68,9 +69,14 @@ public class Unloader extends Block{
         int lastUsed;
 
         @Override
+        public void reset(){
+            building = null;
+        }
+
+        @Override
         public String toString(){
             return "ContainerStat{" +
-            "building=" + building.block + "#" + building.id +
+            "building=" + (building != null ? (building.block + "#" + building.id) : "null") +
             ", loadFactor=" + loadFactor +
             ", canLoad=" + canLoad +
             ", canUnload=" + canUnload +
