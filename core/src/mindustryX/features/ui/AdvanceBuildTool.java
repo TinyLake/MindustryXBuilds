@@ -73,7 +73,7 @@ public class AdvanceBuildTool extends ToolTableBase{
                 }).tooltip("[cyan]玩家建造区").size(30f);
                 tt.update(() -> {
                     if(placement != BuildRange.zone) return;
-                    FuncX.drawText(selection.getCenter(Tmp.v1).scl(tilesize), "建造区域", Scl.scl(1.25f), Color.white, Align.bottom);
+                    FuncX.drawText(selection.getCenter(Tmp.v1).scl(tilesize), "建造区域", Scl.scl(1.25f), Color.white);
                     Draw.color(Pal.stat, 0.7f);
                     Draw.z(Layer.effect - 1f);
                     Lines.stroke(Math.min(Math.abs(width), Math.abs(height)) / tilesize / 10f);
