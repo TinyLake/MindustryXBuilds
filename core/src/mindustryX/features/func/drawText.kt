@@ -22,12 +22,10 @@ import mindustry.ui.Fonts
 @JvmOverloads
 fun drawText(
     pos: Position, text: String,
-    fontScl: Float = 1f, color: Color = Color.white, align: Int = Align.center,
+    fontScl: Float = 1f, color: Color = Color.white, anchor: Int = Align.center,
     font: Font = Fonts.outline, background: Boolean = false,
 ) {
-    Tmp.v1.set(pos)
-    val x = Tmp.v1.x
-    var y = Tmp.v1.y
+    val p = Tmp.v1.set(pos)
     //参考来源 mindustry.gen.WorldLabel.drawAt
     val z = Drawf.text()
     val ints = font.usesIntegerPositions()
@@ -37,15 +35,21 @@ fun drawText(
 
     Pools.obtain(GlyphLayout::class.java, ::GlyphLayout).apply {
         setText(font, text)
-        if (Align.isTop(align)) y += height
-        else if (Align.isCenterVertical(align)) y += height / 2
+
+        if (Align.isCenterVertical(anchor)) p.y += height / 2
+        else if (Align.isBottom(anchor)) p.y += height
+        var centerX = p.x
+        if (Align.isLeft(anchor)) centerX += width / 2
+        else if (Align.isRight(anchor)) centerX -= width / 2
         if (background) {
             Draw.color(Color.black, 0.3f)
-            Fill.rect(x, y - height / 2, width + 2, height + 3)
+            Fill.rect(centerX, p.y - height / 2, width + 2, height + 3)
             Draw.color()
         }
     }.let(Pools::free)
-    font.draw(text, pos.x, pos.y, 0f, Align.center, false)
+    val align = if (Align.isCenterHorizontal(anchor)) anchor or Align.center else anchor
+    //此次x为绘制区域顶部
+    font.draw(text, p.x, p.y, 0f, align, false)
     Draw.reset()
 
     font.color.set(Color.white)
