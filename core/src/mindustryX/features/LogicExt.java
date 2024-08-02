@@ -10,6 +10,7 @@ public class LogicExt{
     public static boolean worldCreator = false;
     public static boolean allUnlocked = false;
     public static boolean terrainSchematic = false;
+    public static boolean invertMapClick = false;
 
     public static void init(){
         Events.run(Trigger.update, () -> {
@@ -22,6 +23,7 @@ public class LogicExt{
             worldCreator = Core.settings.getBool("worldCreator");
             allUnlocked = Core.settings.getBool("allUnlocked");
             terrainSchematic = Core.settings.getBool("terrainSchematic");
+            invertMapClick = Core.settings.getBool("invertMapClick");
         });
     }
 }
