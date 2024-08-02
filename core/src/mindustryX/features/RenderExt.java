@@ -229,7 +229,7 @@ public class RenderExt{
         var unit = player.unit();
         Payloadc pay = unit instanceof Payloadc it ? it : null;
         if(pay == null) return;
-        Draw.z(Layer.playerName - 1f);
+        Draw.z(Layer.playerName + 1f);
 
         Unit res = Units.closest(unit.team, unit.x, unit.y, unit.type.hitSize * 2f, u -> u.isAI() && u.isGrounded() && pay.canPickup(u) && u.within(unit, u.hitSize + unit.hitSize));
         if(res != null){
@@ -238,14 +238,10 @@ public class RenderExt{
             return;
         }
 
-        Tile tileOn = player.tileOn();
-        if(tileOn == null) return;
-        if(tileOn.build != null){
+        Building tileOn = player.tileOn() != null ? player.tileOn().build : null;
+        if(tileOn != null && pay.canPickup(tileOn)){
             Lines.stroke(1, Tmp.c1.set(Color.green).a(0.5f));
-            Lines.square(tileOn.build.x, tileOn.build.y, tileOn.block().size * tilesize * 0.9f, 20);
-        }else{
-            Lines.stroke(1, Tmp.c1.set(Color.lime).a(0.5f));
-            Lines.square(tileOn.worldx(), tileOn.worldy(), 5, 20);
+            Lines.square(tileOn.x, tileOn.y, tileOn.block().size * tilesize * 0.9f, 20);
         }
     }
 }
