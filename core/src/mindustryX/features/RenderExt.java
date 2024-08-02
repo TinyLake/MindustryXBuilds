@@ -45,6 +45,7 @@ public class RenderExt{
     public static boolean drawBlockDisabled;
     public static boolean showOtherInfo;
     public static boolean payloadPreview;
+    public static boolean deadOverlay;
 
     public static boolean unitHide = false;
     public static Color massDriverLineColor = Color.clear;
@@ -89,6 +90,7 @@ public class RenderExt{
             showOtherInfo = Core.settings.getBool("showOtherTeamState");
             showOtherInfo |= Vars.player.team().id == 255 || Vars.state.rules.mode() != Gamemode.pvp;
             payloadPreview = Core.settings.getBool("payloadpreview");
+            deadOverlay = Core.settings.getBool("deadOverlay");
         });
         Events.run(Trigger.draw, RenderExt::draw);
         Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
