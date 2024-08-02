@@ -99,7 +99,7 @@ public class LogicBlock extends Block{
     }
 
     public boolean accessible(){
-        return !privileged || state.rules.editor || state.playtestingMap != null || RenderExt.showOtherInfo;
+        return !privileged || state.rules.editor || state.playtestingMap != null;
     }
 
     @Override
@@ -406,7 +406,7 @@ public class LogicBlock extends Block{
 
         @Override
         public boolean displayable(){
-            return accessible();
+            return accessible() || RenderExt.showOtherInfo;
         }
 
         @Override
@@ -429,7 +429,7 @@ public class LogicBlock extends Block{
 
         @Override
         public Cursor getCursor(){
-            return !accessible() ? SystemCursor.arrow : super.getCursor();
+            return !accessible() && !RenderExt.showOtherInfo ? SystemCursor.arrow : super.getCursor();
         }
 
         //logic blocks cause write problems when picked up
@@ -588,7 +588,7 @@ public class LogicBlock extends Block{
 
         @Override
         public boolean shouldShowConfigure(Player player){
-            return accessible();
+            return accessible() || RenderExt.showOtherInfo;
         }
 
         @Override
