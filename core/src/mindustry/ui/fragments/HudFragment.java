@@ -28,6 +28,7 @@ import mindustry.input.*;
 import mindustry.net.Packets.*;
 import mindustry.type.*;
 import mindustry.ui.*;
+import mindustry.world.blocks.defense.turrets.*;
 import mindustryX.features.*;
 import mindustryX.features.ui.*;
 
@@ -948,7 +949,7 @@ public class HudFragment{
     }
 
 
-    private Table makeStatusTableArc() {
+    private Table makeStatusTableArc(){
         Table table = new Table(buttonEdge4);
 
         table.name = "waves";
@@ -958,7 +959,7 @@ public class HudFragment{
         table.table(t -> {
             t.margin(0);
             t.clicked(() -> {
-                if (!player.dead() && mobile) {
+                if(!player.dead() && mobile){
                     Call.unitClear(player);
                     control.input.recentRespawnTimer = 1f;
                     control.input.controlledType = null;
@@ -967,27 +968,26 @@ public class HudFragment{
             t.image(() -> player.icon()).size(iconMed);
             t.row();
             t.add(new Bar(
-                    () -> {
-                        if (player.unit().shield > 0) {
-                            return UI.formatAmount((long) player.unit().health) + "[gray]+[white]" + UI.formatAmount((long) player.unit().shield);
-                        } else {
-                            return UI.formatAmount((long) player.unit().health);
-                        }
-                    },
-                    () -> Pal.health,
-                    () -> Math.min(player.unit().health / player.unit().maxHealth, 1))).height(18).growX();
+            () -> {
+                if(player.unit().shield > 0){
+                    return UI.formatAmount((long)player.unit().health) + "[gray]+[white]" + UI.formatAmount((long)player.unit().shield);
+                }else{
+                    return UI.formatAmount((long)player.unit().health);
+                }
+            },
+            () -> Pal.health,
+            () -> Math.min(player.unit().health / player.unit().maxHealth, 1))).height(18).growX();
             t.row();
             t.add(new Bar(
-                    () -> {
-                        if (state.rules.unitAmmo)
-                            return player.unit().type.ammoType.icon() + (int) player.unit().ammo + "/" + player.unit().type.ammoCapacity;
-                        else return player.unit().type.ammoType.icon();
-                    },
-                    () -> player.unit().type.ammoType.barColor(),
-                    () -> {
-                        if (state.rules.unitAmmo) return player.unit().ammo / player.unit().type.ammoCapacity;
-                        else return 1;
-                    })).height(18).growX();
+            () -> {
+                if(player.unit() instanceof BlockUnitUnit u && u.tile().buildOn() instanceof ItemTurret.ItemTurretBuild it)
+                    return ((float)it.totalAmmo > 0 ? ((ItemTurret.ItemEntry)it.ammo.peek()).item.emoji() + it.totalAmmo + "/" + ((ItemTurret)it.block).maxAmmo : "");
+                if(state.rules.unitAmmo)
+                    return player.unit().type.ammoType.icon() + (int)player.unit().ammo + "/" + player.unit().type.ammoCapacity;
+                else return player.unit().type.ammoType.icon();
+            },
+            () -> player.unit().type.ammoType.barColor(),
+            () -> player.unit().ammof())).height(18).growX();
             t.row();
 
         }).size(110, 80).padRight(4);
@@ -996,7 +996,7 @@ public class HudFragment{
         table.add(arcStatus).growX().pad(4f);
 
         // Power bar display
-        if (Core.settings.getBool("powerStatistic")) {
+        if(Core.settings.getBool("powerStatistic")){
             table.row();
             table.add(ArcPowerInfo.getBars()).growX().colspan(table.getColumns());
         }
