@@ -32,6 +32,10 @@ public class Settings{
             c.checkPref("showUpdateDialog", true);
             c.checkPref("githubMirror", false);
 
+            c.addCategory("gameSettings");
+            c.checkPref("deadOverlay", false);
+            c.checkPref("invertMapClick", false);
+
             c.addCategory("arcReWork");
             c.checkPref("replayRecord", false);
             c.checkPref("menuFloatText", true);
@@ -64,6 +68,7 @@ public class Settings{
             c.checkPref("bulletShow", true);
             c.checkPref("showMineBeam".toLowerCase(), true);
             c.checkPref("noPlayerHitBox", false);
+            c.checkPref("payloadpreview", true);
 
             c.addCategory("developerMode");
             c.checkPref("renderMerge", false);
