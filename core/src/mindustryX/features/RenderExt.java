@@ -8,8 +8,8 @@ import arc.math.geom.*;
 import arc.util.*;
 import mindustry.*;
 import mindustry.entities.*;
-import mindustry.game.*;
 import mindustry.game.EventType.*;
+import mindustry.game.*;
 import mindustry.gen.*;
 import mindustry.graphics.*;
 import mindustry.type.*;
@@ -25,7 +25,7 @@ import mindustry.world.blocks.storage.*;
 import mindustry.world.blocks.units.*;
 import mindustryX.features.func.*;
 
-import static mindustry.Vars.tilesize;
+import static mindustry.Vars.*;
 
 public class RenderExt{
     public static boolean bulletShow, showMineBeam, displayAllMessage;
@@ -44,6 +44,7 @@ public class RenderExt{
     public static float healthBarMinHealth;
     public static boolean drawBlockDisabled;
     public static boolean showOtherInfo;
+    public static boolean payloadPreview;
 
     public static boolean unitHide = false;
     public static Color massDriverLineColor = Color.clear;
@@ -87,13 +88,14 @@ public class RenderExt{
             drawBlockDisabled = Core.settings.getBool("blockdisabled");
             showOtherInfo = Core.settings.getBool("showOtherTeamState");
             showOtherInfo |= Vars.player.team().id == 255 || Vars.state.rules.mode() != Gamemode.pvp;
+            payloadPreview = Core.settings.getBool("payloadpreview");
         });
         Events.run(Trigger.draw, RenderExt::draw);
         Events.on(TileChangeEvent.class, RenderExt::onSetBlock);
     }
 
     private static void draw(){
-
+        if(RenderExt.payloadPreview) drawPayloadPreview();
     }
 
     public static void onGroupDraw(Drawc t){
@@ -219,5 +221,29 @@ public class RenderExt{
         Lines.line(x1, y, Mathf.lerp(x1, x2, Mathf.clamp(ratio, 0f, 1f)), y);
 
         Draw.reset();
+    }
+
+    private static void drawPayloadPreview(){
+        var unit = player.unit();
+        Payloadc pay = unit instanceof Payloadc it ? it : null;
+        if(pay == null) return;
+        Draw.z(Layer.playerName - 1f);
+
+        Unit res = Units.closest(unit.team, unit.x, unit.y, unit.type.hitSize * 2f, u -> u.isAI() && u.isGrounded() && pay.canPickup(u) && u.within(unit, u.hitSize + unit.hitSize));
+        if(res != null){
+            Lines.stroke(1, Tmp.c1.set(Color.acid).a(0.5f));
+            Lines.square(res.x, res.y, res.type.hitSize, 20);
+            return;
+        }
+
+        Tile tileOn = player.tileOn();
+        if(tileOn == null) return;
+        if(tileOn.build != null){
+            Lines.stroke(1, Tmp.c1.set(Color.green).a(0.5f));
+            Lines.square(tileOn.build.x, tileOn.build.y, tileOn.block().size * tilesize * 0.9f, 20);
+        }else{
+            Lines.stroke(1, Tmp.c1.set(Color.lime).a(0.5f));
+            Lines.square(tileOn.worldx(), tileOn.worldy(), 5, 20);
+        }
     }
 }
