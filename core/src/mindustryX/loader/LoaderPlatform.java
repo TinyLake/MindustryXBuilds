@@ -6,9 +6,10 @@ import java.util.*;
 interface LoaderPlatform{
     void withSafeClassloader(String method);
 
-    void cleanup();
-
     ClassLoader createClassloader();
+
+    default void beforeLaunch(){
+    }
 
     void launch(ClassLoader loader) throws Exception;
 

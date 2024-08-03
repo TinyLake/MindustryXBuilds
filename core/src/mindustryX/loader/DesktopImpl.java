@@ -23,7 +23,7 @@ public class DesktopImpl implements LoaderPlatform{
     }
 
     @Override
-    public void cleanup(){
+    public void beforeLaunch(){
         //fix steam
         //noinspection unchecked
         Seq<?> listeners = ((ObjectMap<Object, Seq<?>>)Reflect.get(Events.class, "events")).get(EventType.DisposeEvent.class);
@@ -38,13 +38,18 @@ public class DesktopImpl implements LoaderPlatform{
             }
         }
         Core.app.dispose();
-        try{
-            Class<?> sdl = Class.forName("arc.backend.sdl.jni.SDL");
-            Reflect.invoke(sdl, "SDL_DestroyWindow", new Object[]{Reflect.get(Core.app, "window")}, long.class);
-//            Reflect.invoke(sdl, "SDL_Quit");
-        }catch(Throwable e){
-            throw new RuntimeException(e);
-        }
+//        try{
+//            Class<?> sdl = Class.forName("arc.backend.sdl.jni.SDL");
+//            Reflect.invoke(sdl, "SDL_DestroyWindow", new Object[]{Reflect.get(Core.app, "window")}, long.class);
+////            Reflect.invoke(sdl, "SDL_Quit");
+//        }catch(Throwable e){
+//            throw new RuntimeException(e);
+//        }
+
+        System.setProperty("MDTX-SDL-width", "" + Core.graphics.getWidth());
+        System.setProperty("MDTX-SDL-height", "" + Core.graphics.getHeight());
+        System.setProperty("MDTX-SDL-window", Reflect.get(Core.app, "window").toString());
+        System.setProperty("MDTX-SDL-context", Reflect.get(Core.app, "context").toString());
     }
 
     @Override

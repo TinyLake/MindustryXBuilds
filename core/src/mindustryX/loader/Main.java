@@ -40,18 +40,11 @@ public class Main extends Mod{
             }
             impl.withSafeClassloader("preload");
         }else{
-            Log.infoTag("MindustryX", "Already inside MindustryX, cleanup outside");
-            try{
-                Class<?> mod = Core.class.getClassLoader().loadClass(Main.class.getName());
-                Reflect.invoke(mod, "cleanup");
-            }catch(Exception e){
-                Log.err(e);
-            }
+            Log.infoTag("MindustryX", "Already inside MindustryX.");
         }
     }
 
     private static LoaderPlatform impl;
-    private static boolean needClear = false;
 
     private static void loadError(String msg){
         Log.errTag("MindustryX", msg);
@@ -105,27 +98,11 @@ public class Main extends Mod{
         return true;
     }
 
-    @SuppressWarnings("unused")//reflect
-    public static void cleanup(){
-        if(!needClear) return;
-        needClear = false;
-        impl.cleanup();
-        Log.info("END cleanup");
-    }
-
     static void load(){
         ClassLoader classLoader = impl.createClassloader();
-        Log.info("=========== Start mindustryX client ===============");
-        needClear = true;
-        Threads.daemon(() -> {
-            try{
-                Thread.sleep(5000);
-                cleanup();
-            }catch(InterruptedException e){
-                throw new RuntimeException(e);
-            }
-        });
+        impl.beforeLaunch();
         Vars.finishLaunch();//mark a successful launch
+        Log.info("=========== Start mindustryX client ===============");
         Log.logger = new NoopLogHandler();
         try{
             Thread.currentThread().setContextClassLoader(classLoader);

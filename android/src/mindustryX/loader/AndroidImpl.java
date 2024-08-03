@@ -270,8 +270,4 @@ public class AndroidImpl implements LoaderPlatform{
             cb = cb.getSuperclass();
         }
     }
-
-    @Override
-    public void cleanup(){
-    }
 }
