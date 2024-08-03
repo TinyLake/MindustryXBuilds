@@ -82,6 +82,11 @@ public class Main extends Mod{
             return false;
         }catch(Exception e){/*ignore*/}
 
+        try{
+            loadError("Detected FOO client, skip: " + Reflect.get(Version.class, "clientVersion"));
+            return false;
+        }catch(Exception e){/*ignore*/}
+
         ModMeta meta = null;
         @SuppressWarnings("unchecked")
         var metas = ((ObjectMap<Class<?>, ModMeta>)Reflect.get(Vars.mods, "metas"));
