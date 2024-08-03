@@ -30,16 +30,7 @@ public class ItemImage extends Stack{
     }
 
     public ItemImage(TextureRegion region, int reqAmount, Intp curAmount){
-        add(new Table(o -> {
-            o.left();
-            o.add(new Image(region)).size(32f).scaling(Scaling.fit);
-        }));
-
-        add(new Table(t -> {
-            t.left().bottom();
-            t.add(String.valueOf(reqAmount)).get().setFontScale(1f);
-            t.pack();
-        }));
+        this(region, reqAmount);
         add(new Table(t -> {
             t.left().top();
             t.label(() -> String.valueOf(curAmount.get())).get().setFontScale(0.6f);
