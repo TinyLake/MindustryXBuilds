@@ -233,15 +233,17 @@ public class RenderExt{
 
         Unit res = Units.closest(unit.team, unit.x, unit.y, unit.type.hitSize * 2f, u -> u.isAI() && u.isGrounded() && pay.canPickup(u) && u.within(unit, u.hitSize + unit.hitSize));
         if(res != null){
-            Lines.stroke(1, Tmp.c1.set(Color.acid).a(0.5f));
+            Draw.color(Color.acid, 0.5f);
             Lines.square(res.x, res.y, res.type.hitSize, 20);
+            Draw.color();
             return;
         }
 
         Building tileOn = player.tileOn() != null ? player.tileOn().build : null;
         if(tileOn != null && pay.canPickup(tileOn)){
-            Lines.stroke(1, Tmp.c1.set(Color.green).a(0.5f));
+            Draw.color(Color.green, 0.5f);
             Lines.square(tileOn.x, tileOn.y, tileOn.block().size * tilesize * 0.9f, 20);
+            Draw.color();
         }
     }
 }
