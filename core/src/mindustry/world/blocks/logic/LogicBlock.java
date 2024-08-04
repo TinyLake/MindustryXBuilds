@@ -596,7 +596,7 @@ public class LogicBlock extends Block{
             table.setBackground(Styles.black3);
             Table vars = new Table();
             table.table(t -> {
-                t.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
+                t.button(Icon.pencil, Styles.cleari, () -> showEditDialog(RenderExt.showOtherInfo)).size(40);
                 t.button(Icon.copy, Styles.cleari, () -> {
                     Core.app.setClipboardText(code);
                     UIExt.announce("已复制逻辑");
