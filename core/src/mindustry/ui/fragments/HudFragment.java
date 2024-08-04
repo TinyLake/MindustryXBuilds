@@ -44,7 +44,7 @@ public class HudFragment{
 
     private ImageButton flip;
     public NewCoreItemsDisplay coreItems = new NewCoreItemsDisplay();
-    private AuxiliaryTools auxiliaryTools;
+    private final AuxiliaryTools auxiliaryTools = new AuxiliaryTools();
 
     private boolean hideObjectives = true;
 
@@ -58,7 +58,6 @@ public class HudFragment{
     private final Table arcStatus = new Table();
 
     public void build(Group parent){
-        auxiliaryTools = new AuxiliaryTools();
 
         //warn about guardian/boss waves
         Events.on(WaveEvent.class, e -> {
@@ -137,11 +136,7 @@ public class HudFragment{
                 tt.button("♐",cleart, MarkerType::lockOnLastMark).size(30,30).tooltip("锁定上个标记点");
             }).style(Styles.outlineLabel);
             if(Core.settings.getInt("AuxiliaryTable") == 3){
-                t.row();
-                t.table(infoWave -> {
-                    infoWave.left().top();
-                    infoWave.add(auxiliaryTools);
-                }).left().top();
+                t.row().add(auxiliaryTools);
             }
             t.top().right();
         });
@@ -273,11 +268,7 @@ public class HudFragment{
             wavesMain.row();
 
             if(Core.settings.getInt("AuxiliaryTable") == 2){
-                wavesMain.table(t->{
-                    t.name = "AuxiliaryTable";
-                    t.left().top().add(auxiliaryTools);
-                }).left();
-                wavesMain.row();
+                wavesMain.add(auxiliaryTools).left().top().row();
             }
 
             addInfoTable(wavesMain.table().width(dsize * 5f + 4f).left().get());
@@ -310,11 +301,7 @@ public class HudFragment{
 
             //map info/nextwave display
             if(Core.settings.getInt("AuxiliaryTable") == 1){
-                cont.table(infoWave -> {
-                    infoWave.name = "map/wave";
-                    infoWave.left().top();
-                    infoWave.add(auxiliaryTools);
-                }).left().top();
+                cont.add(auxiliaryTools).left().top();
             }
 
             //fps display
