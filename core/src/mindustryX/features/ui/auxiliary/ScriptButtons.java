@@ -57,7 +57,7 @@ public class ScriptButtons extends AuxiliaryTools.Table{
     }
 
     protected Cell<ImageButton> scriptButton(Drawable icon, String description, Runnable runnable){
-        return button(icon, RStyles.clearLineNonei, iconMed, runnable).tooltip(description, true);
+        return button(icon, RStyles.clearLineNonei, iconMed, runnable).tooltip(description);//TODO allowMobile
     }
 
 }
