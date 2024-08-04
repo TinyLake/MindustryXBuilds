@@ -23,6 +23,7 @@ import mindustry.world.blocks.logic.MessageBlock.*;
 import mindustry.world.blocks.production.Drill.*;
 import mindustry.world.blocks.storage.*;
 import mindustry.world.blocks.units.*;
+import mindustryX.features.draw.*;
 import mindustryX.features.func.*;
 
 import static mindustry.Vars.*;
@@ -97,7 +98,7 @@ public class RenderExt{
     }
 
     private static void draw(){
-        if(RenderExt.payloadPreview) drawPayloadPreview();
+        if(RenderExt.payloadPreview) PayloadDropHint.draw(player);
     }
 
     public static void onGroupDraw(Drawc t){
@@ -223,27 +224,5 @@ public class RenderExt{
         Lines.line(x1, y, Mathf.lerp(x1, x2, Mathf.clamp(ratio, 0f, 1f)), y);
 
         Draw.reset();
-    }
-
-    private static void drawPayloadPreview(){
-        var unit = player.unit();
-        Payloadc pay = unit instanceof Payloadc it ? it : null;
-        if(pay == null) return;
-        Draw.z(Layer.playerName + 1f);
-
-        Unit res = Units.closest(unit.team, unit.x, unit.y, unit.type.hitSize * 2f, u -> u.isAI() && u.isGrounded() && pay.canPickup(u) && u.within(unit, u.hitSize + unit.hitSize));
-        if(res != null){
-            Draw.color(Color.acid, 0.5f);
-            Lines.square(res.x, res.y, res.type.hitSize, 20);
-            Draw.color();
-            return;
-        }
-
-        Building tileOn = player.tileOn() != null ? player.tileOn().build : null;
-        if(tileOn != null && pay.canPickup(tileOn)){
-            Draw.color(Color.green, 0.5f);
-            Lines.square(tileOn.x, tileOn.y, tileOn.block().size * tilesize * 0.9f, 20);
-            Draw.color();
-        }
     }
 }
