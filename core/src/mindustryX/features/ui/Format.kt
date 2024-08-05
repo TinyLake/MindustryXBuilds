@@ -82,7 +82,7 @@ data class Format @JvmOverloads constructor(var decimal: Int = 2, var fixDecimal
     @JvmOverloads
     fun percent(cur: Float, max: Float, percent: Float = cur / max, showPercent: Boolean = percent < 0.95f): String {
         return buildString {
-            if (Mathf.zero(percent, 0.1f)) append('\uE815') else append(format(cur))
+            append(format(cur))
             if (percent < 0.99f) {
                 append('/')
                 append(format(max))
