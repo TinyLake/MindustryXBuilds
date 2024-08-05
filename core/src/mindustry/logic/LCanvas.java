@@ -253,7 +253,7 @@ public class LCanvas extends Table{
                 }
             }
 
-            invalidateHierarchy();
+            if(parent != null) parent.invalidateHierarchy();//MDTX don't invalid self
 
             if(parent != null && parent instanceof Table){
                 setCullingArea(parent.getCullingArea());
