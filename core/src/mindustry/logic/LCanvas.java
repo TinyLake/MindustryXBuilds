@@ -115,6 +115,8 @@ public class LCanvas extends Table{
             t.add(statements).pad(2f).center().width(targetWidth);
             t.addChild(jumps);
 
+            jumps.touchable = Touchable.disabled;
+            jumps.update(()->jumps.setCullingArea(t.getCullingArea()));
             jumps.cullable = false;
         }).grow().get();
         pane.setFlickScroll(false);
@@ -570,6 +572,22 @@ public class LCanvas extends Table{
         public void act(float delta){
             super.act(delta);
 
+            //MDTX(WayZer, 2024/8/6) Support Cull
+            Group desc = canvas.jumps.parent;
+            Vec2 t = Tmp.v1.set(button.getWidth() / 2f, button.getHeight() / 2f);
+            button.localToAscendantCoordinates(desc, t);
+            setPosition(t.x, t.y);
+            Element hover = button.to.get() == null && button.selecting ? canvas.hovered : button.to.get();
+            if(hover != null){
+                t.set(hover.getWidth(), hover.getHeight() / 2f);
+                hover.localToAscendantCoordinates(desc, t);
+                setSize(t.x - x, t.y - y);
+            }else if(button.selecting){
+                setSize(button.mx, button.my);
+            }else{
+                setSize(0, 0);
+            }
+
             if(button.listener.isOver()){
                 toFront();
             }
@@ -577,42 +595,21 @@ public class LCanvas extends Table{
 
         @Override
         public void draw(){
-            canvas.jumpCount ++;
+            canvas.jumpCount++;
 
-            if(canvas.jumpCount > maxJumpsDrawn && !button.selecting && !button.listener.isOver()){
-                return;
-            }
-
-            Element hover = button.to.get() == null && button.selecting ? canvas.hovered : button.to.get();
-            boolean draw = false;
-            Vec2 t = Tmp.v1, r = Tmp.v2;
+            if(height == 0) return;
+            Vec2 t = Tmp.v1.set(width, height), r = Tmp.v2.set(0, 0);
 
             Group desc = canvas.pane;
+            localToAscendantCoordinates(desc, r);
+            localToAscendantCoordinates(desc, t);
 
-            button.localToAscendantCoordinates(desc, r.set(0, 0));
+            drawCurve(r.x, r.y, t.x, t.y);
 
-            if(hover != null){
-                hover.localToAscendantCoordinates(desc, t.set(hover.getWidth(), hover.getHeight()/2f));
-
-                draw = true;
-            }else if(button.selecting){
-                t.set(r).add(button.mx, button.my);
-                draw = true;
-            }
-
-            float offset = canvas.pane.getVisualScrollY() - canvas.pane.getMaxY();
-
-            t.y += offset;
-            r.y += offset;
-
-            if(draw){
-                drawCurve(r.x + button.getWidth()/2f, r.y + button.getHeight()/2f, t.x, t.y);
-
-                float s = button.getWidth();
-                Draw.color(button.color);
-                Tex.logicNode.draw(t.x + s*0.75f, t.y - s/2f, -s, s);
-                Draw.reset();
-            }
+            float s = button.getWidth();
+            Draw.color(button.color);
+            Tex.logicNode.draw(t.x + s * 0.75f, t.y - s / 2f, -s, s);
+            Draw.reset();
         }
 
         public void drawCurve(float x, float y, float x2, float y2){
