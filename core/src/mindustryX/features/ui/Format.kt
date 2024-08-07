@@ -10,7 +10,7 @@ import kotlin.math.abs
 data class Format @JvmOverloads constructor(var decimal: Int = 2, var fixDecimals: Boolean = false) {
     /**以固定的有效位数输出*/
     fun fixedPrecision(v: Float): String {
-        val exponent = Mathf.floor(Mathf.log(10f, abs(v)))
+        val exponent = Mathf.floor(Mathf.log(10f, abs(v))).coerceAtLeast(0)
         if (exponent >= decimal) return v.toInt().toString()
         return Strings.fixed(v, decimal - exponent)
     }
