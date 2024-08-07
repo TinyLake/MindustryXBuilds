@@ -57,13 +57,13 @@ public class LogicBlock extends Block{
         envEnabled = Env.any;
 
         config(byte[].class, (LogicBuild build, byte[] data) -> {
-            if(!accessible()) return;
+            if(!accessibleStrict(build)) return;
 
             build.readCompressed(data, true);
         });
 
         config(Integer.class, (LogicBuild entity, Integer pos) -> {
-            if(!accessible()) return;
+            if(!accessibleStrict(entity)) return;
 
             //if there is no valid link in the first place, nobody cares
             if(!entity.validLink(world.build(pos))) return;
@@ -98,8 +98,12 @@ public class LogicBlock extends Block{
         return !accessible();
     }
 
+    private boolean accessibleStrict(LogicBuild build){
+        return !privileged || state.rules.editor || state.playtestingMap != null || (RenderExt.showOtherInfo && !headless && control.input.config.getSelected() == build);
+    }
+
     public boolean accessible(){
-        return !privileged || state.rules.editor || state.playtestingMap != null;
+        return !privileged || state.rules.editor || state.playtestingMap != null || RenderExt.showOtherInfo;
     }
 
     @Override
@@ -406,7 +410,7 @@ public class LogicBlock extends Block{
 
         @Override
         public boolean displayable(){
-            return accessible() || RenderExt.showOtherInfo;
+            return accessible();
         }
 
         @Override
@@ -429,7 +433,7 @@ public class LogicBlock extends Block{
 
         @Override
         public Cursor getCursor(){
-            return !accessible() && !RenderExt.showOtherInfo ? SystemCursor.arrow : super.getCursor();
+            return !accessible() ? SystemCursor.arrow : super.getCursor();
         }
 
         //logic blocks cause write problems when picked up
@@ -588,7 +592,7 @@ public class LogicBlock extends Block{
 
         @Override
         public boolean shouldShowConfigure(Player player){
-            return accessible() || RenderExt.showOtherInfo;
+            return accessible();
         }
 
         @Override
@@ -596,7 +600,7 @@ public class LogicBlock extends Block{
             table.setBackground(Styles.black3);
             Table vars = new Table();
             table.table(t -> {
-                t.button(Icon.pencil, Styles.cleari, () -> showEditDialog(RenderExt.showOtherInfo)).size(40);
+                t.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
                 t.button(Icon.copy, Styles.cleari, () -> {
                     Core.app.setClipboardText(code);
                     UIExt.announce("已复制逻辑");
