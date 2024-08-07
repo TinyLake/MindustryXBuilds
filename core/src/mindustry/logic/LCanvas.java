@@ -563,9 +563,20 @@ public class LCanvas extends Table{
 
     public static class JumpCurve extends Element{
         public JumpButton button;
+        private boolean invertedHeight;
 
         public JumpCurve(JumpButton button){
             this.button = button;
+        }
+
+        @Override
+        public void setSize(float width, float height){
+            if(height < 0){
+                y += height;
+                height = -height;
+                invertedHeight = true;
+            }
+            super.setSize(width, height);
         }
 
         @Override
@@ -573,6 +584,7 @@ public class LCanvas extends Table{
             super.act(delta);
 
             //MDTX(WayZer, 2024/8/6) Support Cull
+            invertedHeight = false;
             Group desc = canvas.jumps.parent;
             Vec2 t = Tmp.v1.set(button.getWidth() / 2f, button.getHeight() / 2f);
             button.localToAscendantCoordinates(desc, t);
@@ -598,7 +610,7 @@ public class LCanvas extends Table{
             canvas.jumpCount++;
 
             if(height == 0) return;
-            Vec2 t = Tmp.v1.set(width, height), r = Tmp.v2.set(0, 0);
+            Vec2 t = Tmp.v1.set(width, !invertedHeight ? height : 0), r = Tmp.v2.set(0, !invertedHeight ? 0 : height);
 
             Group desc = canvas.pane;
             localToAscendantCoordinates(desc, r);
