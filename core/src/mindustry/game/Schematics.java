@@ -415,10 +415,10 @@ public class Schematics implements Loadable{
         }
 
         if(found || LogicExt.terrainSchematic){
-            x = minx;
-            y = miny;
-            x2 = maxx;
-            y2 = maxy;
+            x = Math.max(minx, 0);
+            y = Math.max(miny, 0);
+            x2 = Math.min(maxx, world.width());
+            y2 = Math.min(maxy, world.height());
         }else{
             return new Schematic(new Seq<>(), new StringMap(), 1, 1);
         }
