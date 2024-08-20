@@ -461,18 +461,25 @@ public class LCanvas extends Table{
                 StringBuilder thisText = new StringBuilder();
                 LogicIO.write(st, thisText);
                 var stNew = new PrintStatement();
-                stNew.value = thisText.toString();
+                stNew.value = thisText.toString().replace(' ','_');
                 newElem = new StatementElem(stNew);
             }
-            statements.addChildBefore(this, newElem);
-            remove();
             for(Element c : statements.getChildren()){
                 if(c instanceof StatementElem ste && ste.st instanceof JumpStatement jst && (jst.dest == null || jst.dest == st.elem)){
                     if(0 > jst.destIndex || jst.destIndex >= statements.getChildren().size) continue;
-                    jst.dest = (StatementElem)statements.getChildren().get(jst.destIndex);
+                    jst.saveUI();
                 }
             }
+            statements.addChildBefore(this, newElem);
+            remove();
             statements.layout();
+            for(Element c : statements.getChildren()){
+                if(c instanceof StatementElem ste && ste.st instanceof JumpStatement jst && (jst.dest == null || jst.dest == st.elem)){
+                    if(0 > jst.destIndex || jst.destIndex >= statements.getChildren().size) continue;
+                    jst.setupUI();
+                }
+            }
+            newElem.st.setupUI();
         }
 
 
