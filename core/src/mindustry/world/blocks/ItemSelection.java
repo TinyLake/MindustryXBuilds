@@ -12,7 +12,6 @@ import mindustry.gen.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
-import mindustryX.features.ui.*;
 
 import static mindustry.Vars.*;
 
@@ -66,7 +65,7 @@ public class ItemSelection{
 
             Seq<T> list = items.select(u -> (text.isEmpty() || u.localizedName.toLowerCase().contains(text.toLowerCase())));
             for(T item : list){
-                if(!AdvanceToolTable.allBlocksReveal && (!item.unlockedNow() || (item instanceof Item checkVisible && state.rules.hiddenBuildItems.contains(checkVisible)) || item.isHidden())) continue;
+                if(!item.unlockedNow() || (item instanceof Item checkVisible && state.rules.hiddenBuildItems.contains(checkVisible)) || item.isHidden()) continue;
 
                 ImageButton button = cont.button(Tex.whiteui, Styles.clearNoneTogglei, Mathf.clamp(item.selectionSize, 0f, 40f), () -> {
                     if(closeSelect) control.input.config.hideConfig();
