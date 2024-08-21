@@ -57,13 +57,13 @@ public class LogicBlock extends Block{
         envEnabled = Env.any;
 
         config(byte[].class, (LogicBuild build, byte[] data) -> {
-            if(!accessibleStrict(build)) return;
+            if(!accessible()) return;
 
             build.readCompressed(data, true);
         });
 
         config(Integer.class, (LogicBuild entity, Integer pos) -> {
-            if(!accessibleStrict(entity)) return;
+            if(!accessible()) return;
 
             //if there is no valid link in the first place, nobody cares
             if(!entity.validLink(world.build(pos))) return;
@@ -95,15 +95,15 @@ public class LogicBlock extends Block{
 
     @Override
     public boolean checkForceDark(Tile tile){
-        return !accessible();
-    }
-
-    private boolean accessibleStrict(LogicBuild build){
-        return !privileged || state.rules.editor || state.playtestingMap != null || (RenderExt.showOtherInfo && !headless && control.input.config.getSelected() == build);
+        return !accessibleRead();
     }
 
     public boolean accessible(){
-        return !privileged || state.rules.editor || state.playtestingMap != null || RenderExt.showOtherInfo;
+        return !privileged || state.rules.editor || state.playtestingMap != null || RenderExt.showOtherInfo && !net.client();
+    }
+
+    private boolean accessibleRead(){
+        return accessible() || RenderExt.showOtherInfo;
     }
 
     @Override
@@ -410,7 +410,7 @@ public class LogicBlock extends Block{
 
         @Override
         public boolean displayable(){
-            return accessible();
+            return accessibleRead();
         }
 
         @Override
@@ -433,7 +433,7 @@ public class LogicBlock extends Block{
 
         @Override
         public Cursor getCursor(){
-            return !accessible() ? SystemCursor.arrow : super.getCursor();
+            return !accessibleRead() ? SystemCursor.arrow : super.getCursor();
         }
 
         //logic blocks cause write problems when picked up
@@ -592,7 +592,7 @@ public class LogicBlock extends Block{
 
         @Override
         public boolean shouldShowConfigure(Player player){
-            return accessible();
+            return accessibleRead();
         }
 
         @Override
@@ -600,14 +600,10 @@ public class LogicBlock extends Block{
             table.setBackground(Styles.black3);
             Table vars = new Table();
             table.table(t -> {
-                t.button(Icon.pencil, Styles.cleari, this::showEditDialog).size(40);
-                t.button(Icon.copy, Styles.cleari, () -> {
-                    Core.app.setClipboardText(code);
-                    UIExt.announce("已复制逻辑");
-                }).size(40);
-                t.button(Icon.download, Styles.cleari, () -> {
-                    updateCode(Core.app.getClipboardText().replace("\r\n", "\n"));
-                    UIExt.announce("已导入逻辑(仅单机生效)");
+                t.button(Icon.pencil, Styles.cleari, ()->{
+                    if(!accessible())
+                        UIExt.announce("[yellow]当前无权编辑，仅供查阅");
+                    showEditDialog();
                 }).size(40);
                 t.button(Icon.info, Styles.cleari, () -> {
                     showVars = !showVars;
