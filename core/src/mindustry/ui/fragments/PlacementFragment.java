@@ -787,11 +787,6 @@ public class PlacementFragment{
     /** Returns the thing being hovered over. */
     @Nullable
     Displayable hovered(){
-        Vec2 v = topTable.stageToLocalCoordinates(Core.input.mouse());
-
-        //if the mouse intersects the table or the UI has the mouse, no hovering can occur
-        if(Core.scene.hasMouse() || topTable.hit(v.x, v.y, false) != null) return null;
-
         //check tile being hovered over
         Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
         this.hoverTile = (hoverTile != null && (hoverTile.build == null || !hoverTile.build.inFogTo(player.team()))) ? hoverTile : null;
