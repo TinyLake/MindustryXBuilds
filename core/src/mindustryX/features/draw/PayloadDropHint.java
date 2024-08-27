@@ -5,6 +5,7 @@ import arc.graphics.g2d.*;
 import arc.math.geom.*;
 import arc.util.*;
 import mindustry.*;
+import mindustry.core.*;
 import mindustry.ctype.*;
 import mindustry.entities.*;
 import mindustry.gen.*;
@@ -32,9 +33,10 @@ public class PayloadDropHint{
             }else if(payload instanceof BuildPayload p){
                 Building build = p.build;
                 Block block = build.block;
-                boolean valid = Build.validPlace(block, build.team, on.x, on.y, build.rotation, false);
+                int tx = World.toTile(build.x - block.offset), ty = World.toTile(build.y - block.offset);
+                boolean valid = Build.validPlace(block, build.team, tx, ty, build.rotation, false);
 
-                Vec2 center = block.bounds(on.x, on.y, Tmp.r1).getCenter(Tmp.v1);
+                Vec2 center = block.bounds(tx, ty, Tmp.r1).getCenter(Tmp.v1);
                 draw(center, block, build.rotation * 90, valid);
             }else if(payload instanceof UnitPayload p){
                 var u = p.unit;
