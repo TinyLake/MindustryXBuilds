@@ -100,10 +100,11 @@ public enum Binding implements KeyBind{
     console(KeyCode.f8),
 
     //MDTX
-    toggle_unit(KeyCode.unknown, "mindustryX"),
+    toggle_unit(KeyCode.unset, "mindustryX"),
     point(KeyCode.j),
-    lockonLastMark(KeyCode.unknown),
-    toggle_block_render(KeyCode.unknown),
+    lockonLastMark(KeyCode.unset),
+    toggle_block_render(KeyCode.unset),
+    focusLogicController(KeyCode.unset),
     ;
 
     private final KeybindValue defaultValue;

@@ -6,13 +6,12 @@ import arc.util.*;
 import mindustry.*;
 import mindustry.gen.*;
 import mindustry.input.*;
-import mindustryX.features.*;
 import mindustryX.features.Settings;
+import mindustryX.features.*;
+import mindustryX.features.func.*;
 
 import java.net.*;
 import java.util.*;
-
-import static arc.Core.*;
 
 public class Hooks implements ApplicationListener{
     /** invoke before `Vars.init`. Note that may be executed from `Vars.loadAsync` */
@@ -78,8 +77,11 @@ public class Hooks implements ApplicationListener{
         if(Core.input.keyTap(Binding.point)){
             MarkerType.selected.markWithMessage(Core.input.mouseWorld());
         }
-        if(input.keyTap(Binding.toggle_block_render)){
-            settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
+        if(Core.input.keyTap(Binding.toggle_block_render)){
+            Core.settings.put("blockRenderLevel", (RenderExt.blockRenderLevel + 1) % 3);
+        }
+        if(Core.input.keyTap(Binding.focusLogicController)){
+            FuncX.focusLogicController();
         }
     }
 
