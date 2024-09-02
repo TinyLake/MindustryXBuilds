@@ -787,6 +787,7 @@ public class PlacementFragment{
     /** Returns the thing being hovered over. */
     @Nullable
     Displayable hovered(){
+        if(Core.scene.hasMouse() && !topTable.hasMouse()) return null;//MDTX: fix flashing. Note: when loading show, world is empty, and not use `Units`
         //check tile being hovered over
         Tile hoverTile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
         this.hoverTile = (hoverTile != null && (hoverTile.build == null || !hoverTile.build.inFogTo(player.team()))) ? hoverTile : null;
