@@ -24,12 +24,15 @@ import mindustry.input.*;
 import mindustry.type.*;
 import mindustry.ui.*;
 import mindustry.world.*;
+import mindustry.world.blocks.*;
 import mindustry.world.blocks.ConstructBlock.*;
+import mindustryX.features.*;
 
 import static mindustry.Vars.*;
 
 public class PlacementFragment{
     final int rowWidth = 4;
+    private boolean lastAllUnlocked = LogicExt.allUnlocked;
 
     public Category currentCategory = Category.distribution;
 
@@ -106,6 +109,10 @@ public class PlacementFragment{
                 if(nextFlowBuild.flowItems() != null) nextFlowBuild.flowItems().updateFlow();
                 if(nextFlowBuild.liquids != null) nextFlowBuild.liquids.updateFlow();
             }
+
+            if(lastAllUnlocked != LogicExt.allUnlocked){
+                rebuild();
+            }
         });
     }
 
@@ -128,6 +135,27 @@ public class PlacementFragment{
         if(Core.input.keyTap(Binding.pick) && player.isBuilder() && !Core.scene.hasDialog()){ //mouse eyedropper select
             var build = world.buildWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
 
+            if (build == null && LogicExt.worldCreator) {
+                var tile = world.tileWorld(Core.input.mouseWorld().x, Core.input.mouseWorld().y);
+                if (tile != null) {
+                    Block target;
+                    if (tile.block() != Blocks.air) {
+                        target = tile.block();
+                    }
+                    else if (tile.overlay() != Blocks.air) {
+                        target = tile.overlay();
+                    }
+                    else {
+                        target = tile.floor();
+                    }
+                    if (target != Blocks.air && target.isVisible()) {
+                        input.block = target;
+                        currentCategory = input.block.category;
+                        return true;
+                    }
+
+                }
+            }
             //can't middle click buildings in fog
             if(build != null && build.inFogTo(player.team())){
                 build = null;
@@ -242,6 +270,7 @@ public class PlacementFragment{
     }
 
     public void build(Group parent){
+        lastAllUnlocked = LogicExt.allUnlocked;
         parent.fill(full -> {
             toggler = full;
             full.bottom().right().visible(() -> ui.hudfrag.shown);
@@ -260,6 +289,7 @@ public class PlacementFragment{
 
                     for(Block block : getUnlockedByCategory(currentCategory)){
                         if(!unlocked(block)) continue;
+                        if (block == Blocks.air || block instanceof ConstructBlock) continue;
                         if(index++ % rowWidth == 0){
                             blockTable.row();
                         }
@@ -700,7 +730,7 @@ public class PlacementFragment{
     }
 
     boolean unlocked(Block block){
-        return block.unlockedNow() && block.placeablePlayer && block.environmentBuildable() &&
+        return LogicExt.allUnlocked || block.unlockedNow() && block.placeablePlayer && block.environmentBuildable() &&
             block.supportsEnv(state.rules.env); //TODO this hides env unsupported blocks, not always a good thing
     }
 

@@ -11,6 +11,7 @@ import mindustry.ctype.*;
 import mindustry.gen.*;
 import mindustry.ui.*;
 import mindustry.world.*;
+import mindustryX.features.*;
 
 import static mindustry.Vars.*;
 
@@ -64,7 +65,7 @@ public class ItemSelection{
 
             Seq<T> list = items.select(u -> (text.isEmpty() || u.localizedName.toLowerCase().contains(text.toLowerCase())));
             for(T item : list){
-                if(!item.unlockedNow() || !item.isOnPlanet(state.getPlanet()) || item.isHidden()) continue;
+                if(!LogicExt.allUnlocked && (!item.unlockedNow() || !item.isOnPlanet(state.getPlanet()) || item.isHidden())) continue;
 
                 ImageButton button = cont.button(Tex.whiteui, Styles.clearNoneTogglei, Mathf.clamp(item.selectionSize, 0f, 40f), () -> {
                     if(closeSelect) control.input.config.hideConfig();
