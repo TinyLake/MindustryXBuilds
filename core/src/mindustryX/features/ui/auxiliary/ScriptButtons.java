@@ -21,9 +21,7 @@ public class ScriptButtons extends AuxiliaryTools.Table{
         defaults().size(40);
 
         scriptButton(Blocks.buildTower.uiIcon, "在建造列表加入被摧毁建筑", () -> player.buildDestroyedBlocks());
-        scriptButton(Blocks.message.uiIcon, "锁定上个标记点", MarkerType::lockOnLastMark);
         scriptButton(Items.copper.uiIcon, "一键放置", () -> player.dropItems());
-        scriptButton(Icon.pencilSmall, "特效显示", () -> EffectsDialog.withAllEffects().show());
         addSettingButton(Icon.modeAttack, "autotarget", "自动攻击", null);
         addSettingButton(UnitTypes.vela.uiIcon, "forceBoost", "强制助推", null);
         addSettingButton(Icon.eyeSmall, "viewMode", "视角脱离玩家", s -> {

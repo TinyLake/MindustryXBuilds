@@ -38,6 +38,7 @@ public class MapInfoTable extends AuxiliaryTools.Table{
             UIExt.announce("视角追踪：" + InputHandler.follow.name);
         }).tooltip("切换跟踪玩家");
         if(!mobile) button(Icon.editSmall, RStyles.clearAccentNonei, this::uiTable).tooltip("ui大全");
+        button(Icon.pencilSmall, RStyles.clearAccentNonei, () -> EffectsDialog.withAllEffects().show()).tooltip("特效大全");
     }
 
     private void floorStatisticDialog(){

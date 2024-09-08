@@ -4,6 +4,7 @@ import arc.*;
 import arc.input.*;
 import arc.scene.*;
 import arc.scene.event.*;
+import mindustry.content.*;
 import mindustry.gen.*;
 import mindustry.ui.fragments.*;
 import mindustryX.features.*;
@@ -47,5 +48,6 @@ public class MarkTable extends Table{
 
         button("T", RStyles.clearLineNoneTogglet, () -> ui.chatfrag.nextMode())
         .checked(b -> ui.chatfrag.mode == ChatFragment.ChatMode.team).size(40).tooltip("前缀添加/t");
+        button("" + Iconc.zoom, RStyles.clearLineNonet, MarkerType::lockOnLastMark).size(40).tooltip("锁定上个标记点");
     }
 }
