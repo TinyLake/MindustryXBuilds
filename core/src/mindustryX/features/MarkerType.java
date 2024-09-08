@@ -51,14 +51,16 @@ public class MarkerType{
             stroke(1f);
             Lines.circle(e.x, e.y, 4f * tilesize * (e.finpow() * 8f - (int)(e.finpow() * 8f)));
             for(int j = 0; j < 4; j++){
+                Draw.alpha(Math.min(1f, j - e.fout() * 3));
                 if(e.fout() * 3 < j){
                     for(int i = 0; i < 8; i++){
                         float rot = i * 45f;
                         float radius = 4f * tilesize + j * 6f + 4f;
-                        Drawf.simpleArrow(e.x + Angles.trnsx(rot, radius), e.y + Angles.trnsy(rot, radius), e.x, e.y, 4f, 2f, Color.cyan, Math.min(1f, j - e.fout() * 3));
+                        drawSimpleArrow(e.x + Angles.trnsx(rot, radius), e.y + Angles.trnsy(rot, radius), e.x, e.y, 4f, 2f);
                     }
                 }
             }
+            Draw.color();
         }), Color.cyan);
         attackMark = new MarkerType("Attack", new Effect(1800, e -> {
             color(e.color);
@@ -68,7 +70,7 @@ public class MarkerType{
             Lines.circle(e.x, e.y, radius);
             for(int i = 0; i < 4; i++){
                 float rot = i * 90f + 45f + (-Time.time) % 360f;
-                Drawf.simpleArrow(e.x + Angles.trnsx(rot, radius), e.y + Angles.trnsy(rot, radius), e.x, e.y, 6f + 4 * e.finpow(), 2f + 4 * e.finpow());
+                drawSimpleArrow(e.x + Angles.trnsx(rot, radius), e.y + Angles.trnsy(rot, radius), e.x, e.y, 6f + 4 * e.finpow(), 2f + 4 * e.finpow());
             }
         }), Color.valueOf("#DC143C"));
         defenseMark = new MarkerType("Defend", new Effect(1800, e -> {
@@ -82,7 +84,7 @@ public class MarkerType{
             for(int i = 0; i < 16; i++){
                 float rot = i * 22.5f;
                 if((e.fin() - 0.2f) * 50 > i)
-                    Drawf.simpleArrow(e.x, e.y, e.x + Angles.trnsx(rot, 120f), e.y + Angles.trnsy(rot, 120f), 96f, 4f);
+                    drawSimpleArrow(e.x, e.y, e.x + Angles.trnsx(rot, 120f), e.y + Angles.trnsy(rot, 120f), 96f, 4f);
             }
         }), Color.acid);
         quesMark = new MarkerType("What", new Effect(1200, e -> {
@@ -175,6 +177,14 @@ public class MarkerType{
 
     public static @Nullable Position getLastPos(){
         return last;
+    }
+
+    /** 在x,y附近length范围，绘制一个指向x2,y2的三角箭头，箭头大小radius */
+    private static void drawSimpleArrow(float x, float y, float x2, float y2, float length, float radius){
+        float angle = Angles.angle(x, y, x2, y2);
+        Tmp.v1.set(x2, y2).sub(x, y).limit(length);
+        float vx = Tmp.v1.x + x, vy = Tmp.v1.y + y;
+        Fill.poly(vx, vy, 3, radius, angle);
     }
 
 
