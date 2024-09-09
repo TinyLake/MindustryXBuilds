@@ -3,6 +3,7 @@ package mindustryX.features.ui.auxiliary;
 
 import arc.*;
 import arc.graphics.*;
+import arc.scene.style.*;
 import arc.scene.ui.*;
 import arc.scene.ui.layout.*;
 import mindustry.content.*;
@@ -26,7 +27,7 @@ public class MapInfoTable extends AuxiliaryTools.Table{
 
         MapInfoDialog mapInfoDialog = new MapInfoDialog();
         button(Icon.map, RStyles.clearAccentNonei, mapInfoDialog::show).tooltip("地图信息");
-        button(Items.copper.emoji(), RStyles.clearLineNonet, this::floorStatisticDialog).tooltip("矿物信息");
+        button(new TextureRegionDrawable(Items.copper.uiIcon), RStyles.clearAccentNonei, this::floorStatisticDialog).tooltip("矿物信息");
         button(Icon.chatSmall, RStyles.clearAccentNonei, () -> UIExt.arcMessageDialog.show()).tooltip("中央监控室");
         button(Icon.playersSmall, RStyles.clearAccentNonei, () -> {
             var players = Groups.player.copy();
