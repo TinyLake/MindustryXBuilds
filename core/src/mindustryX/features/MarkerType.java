@@ -141,8 +141,8 @@ public class MarkerType{
     public static boolean resolveMessage(String text){
         var matcher = posPattern.matcher(Strings.stripColors(text));
         if(!matcher.find()) return false;
-        var typeName = matcher.group("type");
-        Vec2 pos = Tmp.v1.set(Strings.parseInt(matcher.group("x")), Strings.parseInt(matcher.group("y")));
+        var typeName = matcher.group(1);//use index to support old Android
+        Vec2 pos = Tmp.v1.set(Strings.parseInt(matcher.group(2)), Strings.parseInt(matcher.group(3)));
 
         MarkerType type = mark;
         if(typeName != null){
