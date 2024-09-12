@@ -105,6 +105,7 @@ public class UIExt{
                 i += add;
             }
             sendChatMessage(message.substring(i));
+            return;
         }
         Call.sendChatMessage(ui.chatfrag.mode.normalizedPrefix() + message);
     }
