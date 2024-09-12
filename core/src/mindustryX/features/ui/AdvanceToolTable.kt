@@ -37,10 +37,12 @@ class AdvanceToolTable : ToolTableBase() {
             row().add("单位：")
             with(table().get()) {
                 button(Items.copper.emoji() + "[acid]+", Styles.cleart) {
-                    for (item in Vars.content.items()) Vars.player.core().items[item] = Vars.player.core().storageCapacity
+                    val core = Vars.player.core() ?: return@button
+                    for (item in Vars.content.items()) core.items[item] = core.storageCapacity
                 }.width(40f).tooltip("[acid]填满核心的所有资源")
                 button(Items.copper.emoji() + "[red]-", Styles.cleart) {
-                    for (item in Vars.content.items()) Vars.player.core().items[item] = 0
+                    val core = Vars.player.core() ?: return@button
+                    core.items.clear()
                 }.width(40f).tooltip("[acid]清空核心的所有资源")
                 button(UnitTypes.gamma.emoji() + "[acid]+", Styles.cleart) {
                     val cloneUnit = cloneExactUnit(Vars.player.unit())
