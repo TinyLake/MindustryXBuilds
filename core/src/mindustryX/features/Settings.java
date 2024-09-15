@@ -108,6 +108,7 @@ public class Settings{
                 });
             });
             c.sliderPref("limitdst", 10, 0, 100, 1, s -> s + "格");
+            c.checkPref("reliableSync", false);
         }));
         ArcOld.init(categories);
         Events.on(ClientLoadEvent.class, e -> {

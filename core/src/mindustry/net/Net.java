@@ -231,6 +231,7 @@ public class Net{
                 con.send(object, reliable);
             }
         }else{
+            reliable |= LogicExt.reliableSync;
             provider.sendClient(object, reliable);
         }
     }
