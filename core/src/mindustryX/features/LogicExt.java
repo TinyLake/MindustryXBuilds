@@ -11,6 +11,7 @@ public class LogicExt{
     public static boolean allUnlocked = false;
     public static boolean terrainSchematic = false;
     public static boolean invertMapClick = false;
+    public static boolean reliableSync = false;
 
     public static void init(){
         Events.run(Trigger.update, () -> {
@@ -24,6 +25,7 @@ public class LogicExt{
             allUnlocked = Core.settings.getBool("allUnlocked");
             terrainSchematic = Core.settings.getBool("terrainSchematic");
             invertMapClick = Core.settings.getBool("invertMapClick");
+            reliableSync = Core.settings.getBool("reliableSync");
         });
     }
 }

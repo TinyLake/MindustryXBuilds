@@ -73,6 +73,7 @@ public class Settings{
             c.addCategory("developerMode");
             c.checkPref("renderMerge", true);
             c.checkPref("renderSort", false);
+            c.checkPref("reliableSync", false);
         }));
         ArcOld.init(categories);
         Events.on(ClientLoadEvent.class, e -> {
