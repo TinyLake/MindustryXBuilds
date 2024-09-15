@@ -171,6 +171,12 @@ public abstract class SaveVersion extends SaveFileReader{
             }
         }
 
+        //MDTX: compatibility for old mixed tech
+        //noinspection deprecation
+        if(state.rules.planet == Planets.serpulo && !state.rules.hiddenBuildItems.contains(Items.beryllium)){
+            state.rules.planet = Planets.sun;
+        }
+
         //replace the default serpulo env with erekir
         if(state.rules.planet == Planets.serpulo && state.rules.hasEnv(Env.scorching)){
             state.rules.planet = Planets.erekir;
