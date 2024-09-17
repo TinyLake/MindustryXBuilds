@@ -17,7 +17,7 @@ public class ScriptButtons extends AuxiliaryTools.Table{
         defaults().size(40);
 
         button(new TextureRegionDrawable(Blocks.buildTower.uiIcon), RStyles.clearLineNonei, iconMed, () -> player.buildDestroyedBlocks()).tooltip("在建造列表加入被摧毁建筑");
-        button(new TextureRegionDrawable(Blocks.buildTower.uiIcon), RStyles.clearLineNonei, iconMed, () -> player.dropItems()).tooltip("一键放置");
+        button(new TextureRegionDrawable(Items.copper.uiIcon), RStyles.clearLineNonei, iconMed, () -> player.dropItems()).tooltip("一键放置");
         addSettingButton(Icon.modeAttack, "autotarget", "自动攻击", null);
         addSettingButton(new TextureRegionDrawable(UnitTypes.vela.uiIcon), "forceBoost", "强制助推", null);
         addSettingButton(Icon.eyeSmall, "viewMode", "视角脱离玩家", s -> {
