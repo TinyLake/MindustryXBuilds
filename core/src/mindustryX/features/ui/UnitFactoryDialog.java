@@ -195,44 +195,50 @@ public class UnitFactoryDialog extends BaseDialog{
         // 等table分配大小后重构
         Core.app.post(this::rebuildUnitSelection);
 
-        Cell<?> selectionCell = main.add(selection);
+        Table rightTable = new Table();
+
+        rightTable.top();
+        rightTable.defaults().growX();
+
+        rightTable.add(infoTable).row();
+
+        rightTable.defaults().padTop(12f);
+
+        rightTable.add(posTable).row();
+        rightTable.add(countTable).row();
+        rightTable.table(randDstTable -> {
+            randDstTable.add("生成范围：");
+            randDstTable.field(Strings.autoFixed(unitRandDst, 3), text -> {
+                unitRandDst = Float.parseFloat(text);
+            }).valid(Strings::canParsePositiveFloat).tooltip("在目标点附近的这个范围内随机生成").maxTextLength(6).padLeft(4f);
+            randDstTable.add("格").expandX().left();
+        }).row();
+        rightTable.add(itemTable).row();
+        rightTable.add(propertiesTable).row();
+
+        rightTable.add(teamTable).row();
+
+        rightTable.table(bottomTable -> {
+            bottomTable.left();
+            bottomTable.defaults().top().left();
+
+            bottomTable.add(effectTable);
+
+            bottomTable.defaults().padLeft(16f);
+            bottomTable.add(payloadTable);
+        }).padTop(8f).fillY();
+
+        Cell<?> unitPropsTable, selectionCell = main.add(selection);
 
         if(Core.graphics.isPortrait()){
             main.row();
         }
 
-        Cell<?> mainCell = main.table(null, rightTable -> {
-            rightTable.top();
-            rightTable.defaults().growX();
-
-            rightTable.add(infoTable).row();
-
-            rightTable.defaults().padTop(12f);
-
-            rightTable.add(posTable).row();
-            rightTable.add(countTable).row();
-            rightTable.table(randDstTable -> {
-                randDstTable.add("生成范围：");
-                randDstTable.field(Strings.autoFixed(unitRandDst, 3), text -> {
-                    unitRandDst = Float.parseFloat(text);
-                }).valid(Strings::canParsePositiveFloat).tooltip("在目标点附近的这个范围内随机生成").maxTextLength(6).padLeft(4f);
-                randDstTable.add("格").expandX().left();
-            }).row();
-            rightTable.add(itemTable).row();
-            rightTable.add(propertiesTable).row();
-
-            rightTable.add(teamTable).row();
-
-            rightTable.table(bottomTable -> {
-                bottomTable.left();
-                bottomTable.defaults().top().left();
-
-                bottomTable.add(effectTable);
-
-                bottomTable.defaults().padLeft(16f);
-                bottomTable.add(payloadTable);
-            }).padTop(8f).fillY();
-        });
+        if(Core.graphics.isPortrait()){
+            unitPropsTable = main.add(rightTable);
+        }else{
+            unitPropsTable = main.pane(Styles.noBarPane, rightTable).scrollX(false);
+        }
 
         if(Core.graphics.isPortrait()){
             selectionCell.maxHeight(10 * 64f);
@@ -240,7 +246,7 @@ public class UnitFactoryDialog extends BaseDialog{
         }else{
             selectionCell.padRight(8f);
             selectionCell.expand(1, 1).fill();
-            mainCell.expand(4, 1).fill();
+            unitPropsTable.expand(4, 1).fill();
         }
     }
 
@@ -499,7 +505,7 @@ public class UnitFactoryDialog extends BaseDialog{
             changeItem[0].get(null);
         }).size(48f).padLeft(4);
 
-        Slider slider = itemTable.slider(0, itemCapacity, 1, 1, n -> {
+        Slider slider = itemTable.slider(0, itemCapacity, 1, unit.stack.amount, n -> {
             changeItemCount[0].get((int)n);
         }).width(128f).padLeft(4).get();
 
@@ -513,6 +519,10 @@ public class UnitFactoryDialog extends BaseDialog{
             field.setText("" + n);
             slider.setValue(n);
         };
+
+        if(unit.stack.amount > itemCapacity){
+            changeItemCount[0].get(itemCapacity);
+        }
     }
 
     private void rebuildTeamTable(Unit unit, Table teamTable){
@@ -639,7 +649,7 @@ public class UnitFactoryDialog extends BaseDialog{
 
         effectTable.row();
 
-        effectTable.pane(noBarPane, settingTable).fillY();
+        effectTable.add(settingTable).fillY();
         rebuildEffectSettingTable(unitStatus, settingTable);
     }
 
@@ -803,7 +813,7 @@ public class UnitFactoryDialog extends BaseDialog{
         Table main = new Table();
 
         float width = Core.scene.getWidth() * (Core.scene.getWidth() > 1500 ? 0.6f : 0.9f) / Scl.scl(1);
-        dialog.cont.add(main).width(width).growY();
+        dialog.cont.pane(Styles.noBarPane, main).scrollX(false).width(width).growY();
 
         main.top();
         main.defaults().growX();
