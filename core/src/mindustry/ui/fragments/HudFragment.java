@@ -174,7 +174,7 @@ public class HudFragment{
             Table leftTable = new Table();
 
             // MDTX: More compatibility
-            if(mobile){
+            if(mobile && !Core.graphics.isPortrait()){
                 cont = cont.add(leftTable).get();
             }
 
@@ -342,7 +342,7 @@ public class HudFragment{
                 }).left().top();
             }
 
-            if(mobile){
+            if(mobile && !Core.graphics.isPortrait()){
                 cont = container;
             }
 
