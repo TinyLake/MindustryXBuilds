@@ -171,11 +171,11 @@ public class HudFragment{
             cont.top().left();
 
             Table container = cont;
-            Table leftTable = cont.table().get();
+            Table leftTable = new Table();
 
             // MDTX: More compatibility
             if(mobile){
-                cont = leftTable;
+                cont = cont.add(leftTable).get();
             }
 
             if(mobile){
