@@ -170,6 +170,14 @@ public class HudFragment{
             cont.name = "overlaymarker";
             cont.top().left();
 
+            Table container = cont;
+            Table leftTable = cont.table().get();
+
+            // MDTX: More compatibility
+            if(mobile){
+                cont = leftTable;
+            }
+
             if(mobile){
                 //for better inset visuals
                 cont.rect((x, y, w, h) -> {
@@ -332,6 +340,10 @@ public class HudFragment{
                     infoWave.left().top();
                     infoWave.add(auxiliaryTools);
                 }).left().top();
+            }
+
+            if(mobile){
+                cont = container;
             }
 
             //fps display
